@@ -15,7 +15,7 @@
             --text-main: #f8fafc;
             --text-dim: #94a3b8;
             --success: #4ade80;
-            --danger: #f43f5e; /* Tambahan untuk status mati */
+            --danger: #f43f5e;
         }
 
         body {
@@ -29,7 +29,6 @@
         .brand { display: flex; align-items: center; gap: 15px; }
         .logo-box { background: var(--accent-blue); padding: 8px; border-radius: 8px; font-weight: bold; color: white; display: flex; align-items: center; justify-content: center; }
 
-        /* Edit Style Status Badge agar bisa berubah warna */
         .status-badge {
             padding: 8px 16px; border-radius: 20px;
             font-size: 0.8em; display: flex; align-items: center; gap: 8px;
@@ -77,7 +76,12 @@
     <div class="grid-container">
         <div class="card">
             <span class="label">Suhu Ruangan</span>
-            <div class="value"><span id="temp">--.-</span><span class="unit">°C</span></div>
+            <div class="value"><span id="temp-ruangan">--.-</span><span class="unit">°C</span></div>
+        </div>
+
+        <div class="card">
+            <span class="label">Suhu Output PAC</span>
+            <div class="value"><span id="temp-pac">--.-</span><span class="unit">°C</span></div>
         </div>
 
         <div class="card">
@@ -85,13 +89,8 @@
             <div class="value"><span id="humi">--</span><span class="unit">%</span></div>
         </div>
 
-        <div class="card">
-            <span class="label">Suhu Logam (Est)</span>
-            <div class="value"><span id="temp-metal">--.-</span><span class="unit">°C</span></div>
-        </div>
-
         <div class="card card-large">
-            <span class="label">Grafik Riwayat (Real-time)</span>
+            <span class="label">Grafik Riwayat Ruangan (Real-time)</span>
             <canvas id="tempChart"></canvas>
         </div>
 
@@ -115,7 +114,6 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
-        // EDIT 2: Logika Deteksi Koneksi
         const statusBadge = document.getElementById('connection-badge');
         const statusText = document.getElementById('status-text');
         const statusDot = document.getElementById('status-dot');
@@ -138,7 +136,7 @@
             data: {
                 labels: [],
                 datasets: [{
-                    label: 'Suhu (°C)',
+                    label: 'Suhu Ruangan (°C)',
                     data: [],
                     borderColor: '#38bdf8',
                     backgroundColor: 'rgba(56, 189, 248, 0.1)',
@@ -167,28 +165,33 @@
             if (logList.childNodes.length > 10) logList.removeChild(logList.lastChild);
         }
 
+        // AMBIL DATA DARI FIREBASE (Mengikuti Struktur Arduino Baru)
         db.ref("monitoring").on("value", (snapshot) => {
             const data = snapshot.val();
             if(data) {
-                const s = data.suhu.toFixed(1);
-                const k = data.kelembaban;
+                // Mapping Data
+                const r = data.suhu_ruangan ? data.suhu_ruangan.toFixed(1) : "--.-";
+                const p = data.suhu_pac ? data.suhu_pac.toFixed(1) : "--.-";
+                const k = data.kelembaban ? data.kelembaban : "--";
 
-                document.getElementById("temp").innerText = s;
+                // Update UI
+                document.getElementById("temp-ruangan").innerText = r;
+                document.getElementById("temp-pac").innerText = p;
                 document.getElementById("humi").innerText = k;
-                document.getElementById("temp-metal").innerText = (parseFloat(s) + 1.2).toFixed(1);
 
+                // Update Grafik (Mengambil Suhu Ruangan)
                 const now = new Date();
-                const timeLabel = now.getHours() + ":" + now.getMinutes();
+                const timeLabel = now.getHours().toString().padStart(2, '0') + ":" + now.getMinutes().toString().padStart(2, '0');
                 
                 if (tempChart.data.labels.length > 10) {
                     tempChart.data.labels.shift();
                     tempChart.data.datasets[0].data.shift();
                 }
                 tempChart.data.labels.push(timeLabel);
-                tempChart.data.datasets[0].data.push(s);
+                tempChart.data.datasets[0].data.push(r);
                 tempChart.update();
 
-                addLog(`Data diterima: Suhu ${s}°C, Kelembaban ${k}%`);
+                addLog(`Update: Ruangan ${r}°C | PAC ${p}°C`);
             }
         });
     </script>
