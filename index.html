@@ -19,45 +19,48 @@
         }
 
         body {
-            font-family: 'Inter', sans-serif;
+            font-family: 'Segoe UI', sans-serif;
             background-color: var(--bg-color);
             color: var(--text-main);
             margin: 0; padding: 20px;
         }
 
-        .header { display: flex; justify-content: space-between; align-items: center; padding: 10px 20px; margin-bottom: 30px; }
+        .header { display: flex; justify-content: space-between; align-items: center; padding: 10px 20px; margin-bottom: 20px; }
         .brand { display: flex; align-items: center; gap: 15px; }
-        .logo-box { background: var(--accent-blue); padding: 8px; border-radius: 8px; font-weight: bold; color: white; display: flex; align-items: center; justify-content: center; }
+        .logo-box { background: var(--accent-blue); padding: 8px; border-radius: 12px; font-weight: bold; color: white; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 15px rgba(56, 189, 248, 0.4); }
 
         .status-badge {
             padding: 8px 16px; border-radius: 20px;
             font-size: 0.8em; display: flex; align-items: center; gap: 8px;
-            transition: 0.3s;
+            transition: 0.3s; font-weight: 600;
         }
         .status-online { background: rgba(74, 222, 128, 0.1); color: var(--success); border: 1px solid var(--success); }
         .status-offline { background: rgba(244, 63, 94, 0.1); color: var(--danger); border: 1px solid var(--danger); }
 
         .grid-container { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
         .card { background: var(--card-bg); border-radius: 24px; padding: 25px; border: 1px solid rgba(255,255,255,0.05); }
-        .card-large { grid-column: span 2; }
+        
+        /* Tinggi Tabel sesuai request (lebih kecil) */
+        .card-large { grid-column: span 2; height: 230px; } 
+        .log-card { height: 230px; }
 
         .label { color: var(--text-dim); font-size: 0.75em; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 15px; display: block; }
         .value { font-size: 3.5em; font-weight: 700; }
         .unit { color: var(--text-dim); font-size: 0.4em; margin-left: 5px; }
 
         #log-list {
-            height: 180px; overflow-y: auto; list-style: none; padding: 0; margin: 0;
+            height: 160px; overflow-y: auto; list-style: none; padding: 0; margin: 0;
             text-align: left; font-family: monospace; font-size: 0.8em;
         }
-        #log-list li { padding: 5px 0; border-bottom: 1px solid rgba(255,255,255,0.05); color: var(--text-dim); }
-        #log-list li span { color: var(--accent-blue); }
+        #log-list li { padding: 5px 0; border-bottom: 1px solid rgba(255,255,255,0.05); color: var(--text-dim); animation: fadeInLog 0.5s ease; }
+        #log-list li span { color: var(--accent-blue); font-weight: bold; }
 
-        canvas { width: 100% !important; height: 200px !important; }
-        
-        @media (max-width: 768px) {
-            .grid-container { grid-template-columns: 1fr; }
-            .card-large { grid-column: span 1; }
+        @keyframes fadeInLog {
+            from { opacity: 0; transform: translateY(-5px); }
+            to { opacity: 1; transform: translateY(0); }
         }
+
+        canvas { width: 100% !important; height: 160px !important; }
     </style>
 </head>
 <body>
@@ -72,20 +75,20 @@
                 <div style="font-size: 0.7em; color: var(--text-dim);">THERMAL MONITORING SYSTEM</div>
             </div>
         </div>
-        <div id="connection-badge" class="status-badge status-offline">
-            <div id="status-dot" style="width:8px; height:8px; background:var(--danger); border-radius:50%"></div> 
-            <span id="status-text">DISCONNECTED</span>
+        <div id="status" class="status-badge status-online">
+            <div id="status-dot" style="width:8px; height:8px; background:var(--success); border-radius:50%"></div> 
+            <span id="status-text">CONNECTED</span>
         </div>
     </div>
 
     <div class="grid-container">
         <div class="card">
             <span class="label">Suhu Ruangan</span>
-            <div class="value"><span id="temp-ruangan">--.-</span><span class="unit">°C</span></div>
+            <div class="value"><span id="temp">--.-</span><span class="unit">°C</span></div>
         </div>
 
         <div class="card">
-            <span class="label">Suhu Output PAC</span>
+            <span class="label">Suhu PAC</span>
             <div class="value"><span id="temp-pac">--.-</span><span class="unit">°C</span></div>
         </div>
 
@@ -99,10 +102,10 @@
             <canvas id="tempChart"></canvas>
         </div>
 
-        <div class="card">
+        <div class="card log-card">
             <span class="label">Log Aktivitas</span>
             <ul id="log-list">
-                <li>Menunggu data dari Firebase...</li>
+                <li>Menunggu data...</li>
             </ul>
         </div>
     </div>
@@ -119,12 +122,11 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
-        const statusBadge = document.getElementById('connection-badge');
-        const statusText = document.getElementById('status-text');
-        const statusDot = document.getElementById('status-dot');
-
-        // Cek Koneksi ke Firebase
+        // Cek Status Koneksi
         db.ref(".info/connected").on("value", (snap) => {
+            const statusBadge = document.getElementById('status');
+            const statusText = document.getElementById('status-text');
+            const statusDot = document.getElementById('status-dot');
             if (snap.val() === true) {
                 statusBadge.className = "status-badge status-online";
                 statusText.innerText = "CONNECTED";
@@ -136,7 +138,7 @@
             }
         });
 
-        // Konfigurasi Chart.js
+        // Inisialisasi Grafik
         const ctx = document.getElementById('tempChart').getContext('2d');
         const tempChart = new Chart(ctx, {
             type: 'line',
@@ -149,7 +151,8 @@
                     backgroundColor: 'rgba(56, 189, 248, 0.1)',
                     borderWidth: 3,
                     fill: true,
-                    tension: 0.4
+                    tension: 0.4,
+                    pointRadius: 2
                 }]
             },
             options: {
@@ -157,7 +160,12 @@
                 maintainAspectRatio: false,
                 scales: {
                     x: { grid: { display: false }, ticks: { color: '#94a3b8' } },
-                    y: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#94a3b8' } }
+                    y: { 
+                        grid: { color: 'rgba(255,255,255,0.05)' }, 
+                        ticks: { color: '#94a3b8' },
+                        suggestedMax: 26,
+                        suggestedMin: 22
+                    }
                 },
                 plugins: { legend: { display: false } }
             }
@@ -166,41 +174,46 @@
         function addLog(msg) {
             const logList = document.getElementById('log-list');
             const now = new Date();
-            const time = now.getHours().toString().padStart(2, '0') + ":" + now.getMinutes().toString().padStart(2, '0') + ":" + now.getSeconds().toString().padStart(2, '0');
+            const time = now.toLocaleTimeString('id-ID', { hour12: false });
+            if (logList.innerHTML.includes("Menunggu")) logList.innerHTML = '';
             const newLog = document.createElement('li');
             newLog.innerHTML = `<span>[${time}]</span> ${msg}`;
             logList.insertBefore(newLog, logList.firstChild);
-            if (logList.childNodes.length > 15) logList.removeChild(logList.lastChild);
+            if (logList.childNodes.length > 8) logList.removeChild(logList.lastChild);
         }
 
-        // AMBIL DATA DARI FIREBASE (Mengikuti Struktur Arduino Baru)
-        db.ref("monitoring").on("value", (snapshot) => {
+        // Listener Data Real-time dari Firebase
+        db.ref("live_data").on("value", (snapshot) => {
             const data = snapshot.val();
-            if(data) {
-                // Ambil data (sesuai path di Arduino: suhu_ruangan, suhu_pac, kelembaban)
-                const r = data.suhu_ruangan !== undefined ? parseFloat(data.suhu_ruangan).toFixed(1) : "--.-";
-                const p = data.suhu_pac !== undefined ? parseFloat(data.suhu_pac).toFixed(1) : "--.-";
-                const k = data.kelembaban !== undefined ? parseFloat(data.kelembaban).toFixed(1) : "--.-";
+            if (data) {
+                const suhuRuangan = parseFloat(data.ruangan || 0).toFixed(1);
+                const suhuPac = parseFloat(data.pac || 0).toFixed(1);
+                const kelembaban = parseInt(data.humi || 0);
 
-                // Update teks UI
-                document.getElementById("temp-ruangan").innerText = r;
-                document.getElementById("temp-pac").innerText = p;
-                document.getElementById("humi").innerText = k;
+                // Update Angka
+                document.getElementById("temp").innerText = suhuRuangan;
+                document.getElementById("temp-pac").innerText = suhuPac;
+                document.getElementById("humi").innerText = kelembaban;
 
-                // Update Grafik (Berdasarkan Suhu Ruangan)
-                const now = new Date();
-                const timeLabel = now.getHours().toString().padStart(2, '0') + ":" + now.getMinutes().toString().padStart(2, '0');
-                
+                // Update Grafik
+                const sekarang = new Date();
+                const jamMenitDetik = sekarang.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+
                 if (tempChart.data.labels.length > 15) {
                     tempChart.data.labels.shift();
                     tempChart.data.datasets[0].data.shift();
                 }
-                tempChart.data.labels.push(timeLabel);
-                tempChart.data.datasets[0].data.push(r);
+                tempChart.data.labels.push(jamMenitDetik);
+                tempChart.data.datasets[0].data.push(suhuRuangan);
                 tempChart.update();
 
-                addLog(`Sync: Ruangan ${r}°C | PAC ${p}°C | Humi ${k}%`);
+                // Update Log
+                addLog(`Sinkron: R ${suhuRuangan}°C | P ${suhuPac}°C | H ${kelembaban}%`);
+            } else {
+                console.warn("Data tidak ditemukan di path /live_data");
             }
+        }, (error) => {
+            addLog("Koneksi Gagal: " + error.message);
         });
     </script>
 </body>
