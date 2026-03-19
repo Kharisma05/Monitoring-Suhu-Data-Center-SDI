@@ -53,6 +53,11 @@
         #log-list li span { color: var(--accent-blue); }
 
         canvas { width: 100% !important; height: 200px !important; }
+        
+        @media (max-width: 768px) {
+            .grid-container { grid-template-columns: 1fr; }
+            .card-large { grid-column: span 1; }
+        }
     </style>
 </head>
 <body>
@@ -67,9 +72,9 @@
                 <div style="font-size: 0.7em; color: var(--text-dim);">THERMAL MONITORING SYSTEM</div>
             </div>
         </div>
-        <div id="connection-badge" class="status-badge status-online">
-            <div id="status-dot" style="width:8px; height:8px; background:var(--success); border-radius:50%"></div> 
-            <span id="status-text">CONNECTED</span>
+        <div id="connection-badge" class="status-badge status-offline">
+            <div id="status-dot" style="width:8px; height:8px; background:var(--danger); border-radius:50%"></div> 
+            <span id="status-text">DISCONNECTED</span>
         </div>
     </div>
 
@@ -97,7 +102,7 @@
         <div class="card">
             <span class="label">Log Aktivitas</span>
             <ul id="log-list">
-                <li>Menunggu data...</li>
+                <li>Menunggu data dari Firebase...</li>
             </ul>
         </div>
     </div>
@@ -118,6 +123,7 @@
         const statusText = document.getElementById('status-text');
         const statusDot = document.getElementById('status-dot');
 
+        // Cek Koneksi ke Firebase
         db.ref(".info/connected").on("value", (snap) => {
             if (snap.val() === true) {
                 statusBadge.className = "status-badge status-online";
@@ -130,6 +136,7 @@
             }
         });
 
+        // Konfigurasi Chart.js
         const ctx = document.getElementById('tempChart').getContext('2d');
         const tempChart = new Chart(ctx, {
             type: 'line',
@@ -147,6 +154,7 @@
             },
             options: {
                 responsive: true,
+                maintainAspectRatio: false,
                 scales: {
                     x: { grid: { display: false }, ticks: { color: '#94a3b8' } },
                     y: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#94a3b8' } }
@@ -162,28 +170,28 @@
             const newLog = document.createElement('li');
             newLog.innerHTML = `<span>[${time}]</span> ${msg}`;
             logList.insertBefore(newLog, logList.firstChild);
-            if (logList.childNodes.length > 10) logList.removeChild(logList.lastChild);
+            if (logList.childNodes.length > 15) logList.removeChild(logList.lastChild);
         }
 
         // AMBIL DATA DARI FIREBASE (Mengikuti Struktur Arduino Baru)
         db.ref("monitoring").on("value", (snapshot) => {
             const data = snapshot.val();
             if(data) {
-                // Mapping Data
-                const r = data.suhu_ruangan ? data.suhu_ruangan.toFixed(1) : "--.-";
-                const p = data.suhu_pac ? data.suhu_pac.toFixed(1) : "--.-";
-                const k = data.kelembaban ? data.kelembaban : "--";
+                // Ambil data (sesuai path di Arduino: suhu_ruangan, suhu_pac, kelembaban)
+                const r = data.suhu_ruangan !== undefined ? parseFloat(data.suhu_ruangan).toFixed(1) : "--.-";
+                const p = data.suhu_pac !== undefined ? parseFloat(data.suhu_pac).toFixed(1) : "--.-";
+                const k = data.kelembaban !== undefined ? parseFloat(data.kelembaban).toFixed(1) : "--.-";
 
-                // Update UI
+                // Update teks UI
                 document.getElementById("temp-ruangan").innerText = r;
                 document.getElementById("temp-pac").innerText = p;
                 document.getElementById("humi").innerText = k;
 
-                // Update Grafik (Mengambil Suhu Ruangan)
+                // Update Grafik (Berdasarkan Suhu Ruangan)
                 const now = new Date();
                 const timeLabel = now.getHours().toString().padStart(2, '0') + ":" + now.getMinutes().toString().padStart(2, '0');
                 
-                if (tempChart.data.labels.length > 10) {
+                if (tempChart.data.labels.length > 15) {
                     tempChart.data.labels.shift();
                     tempChart.data.datasets[0].data.shift();
                 }
@@ -191,7 +199,7 @@
                 tempChart.data.datasets[0].data.push(r);
                 tempChart.update();
 
-                addLog(`Update: Ruangan ${r}°C | PAC ${p}°C`);
+                addLog(`Sync: Ruangan ${r}°C | PAC ${p}°C | Humi ${k}%`);
             }
         });
     </script>
