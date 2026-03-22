@@ -1,4 +1,41 @@
-<!DOCTYPE html>
+[04.30, 23/3/2026] Kharisma Alhamdi: <!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DC-SDI LIVE | Professional Monitoring</title>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --card-bg: #1e293b;
+            --accent-blue: #38bdf8;
+            --text-main: #f8fafc;
+            --text-dim: #94a3b8;
+            --success: #4ade80;
+            --danger: #f43f5e;
+        }
+
+        body {
+            font-family: 'Segoe UI', sans…
+[04.42, 23/3/2026] Kharisma Alhamdi: // Import the functions you need from the SDKs you need
+import { initializeApp } from "firebase/app";
+import { getAnalytics } from "firebase/analytics";
+// TODO: Add SDKs for Firebase products that you want to use
+// https://firebase.google.com/docs/web/setup#available-libraries
+
+// Your web app's Firebase configuration
+// For Firebase JS SDK v7.20.0 and later, measurementId is optional
+const firebaseConfig = {
+  apiKey: "AIzaSyDyB9XdSHVW-1o_9XdF3drJDXxy6B7OrMw",
+  authDomain: "monitoring-suhu-dc---sdi.firebaseapp.com",
+  databaseURL: "https://monitoring-suhu-dc---sdi-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "monitoring-suhu-dc---sdi",
+  storageBucket: "monitoring-suhu-dc---sdi.firebasestorage.app",
+  messagingSenderId: "153204480111"…
+[04.43, 23/3/2026] Kharisma Alhamdi: <!DOCTYPE html>
 <html lang="id">
 <head>
     <meta charset="UTF-8">
@@ -87,11 +124,13 @@
         </div>
 
         <div class="card">
-            <span class="label">Suhu Output PAC</span> <div class="value"><span id="temp-pac">--.-</span><span class="unit">°C</span></div>
+            <span class="label">Suhu Output PAC</span>
+            <div class="value"><span id="temp-pac">--.-</span><span class="unit">°C</span></div>
         </div>
 
         <div class="card">
-            <span class="label">Humidity</span> <div class="value"><span id="humi">--</span><span class="unit">%</span></div>
+            <span class="label">Humidity</span>
+            <div class="value"><span id="humi">--</span><span class="unit">%</span></div>
         </div>
 
         <div class="card card-large">
@@ -108,17 +147,23 @@
     </div>
 
     <script>
+        // CONFIG TERBARU MILIK ANDA
         const firebaseConfig = {
-            apiKey: "AIzaSyDyB9XdSHVW-1o_9XdF3drJDXxy6B70rMw",
-            authDomain: "monitoring-suhu-dc---sdi.firebaseapp.com",
-            databaseURL: "https://monitoring-suhu-dc---sdi-default-rtdb.asia-southeast1.firebasedatabase.app",
-            projectId: "monitoring-suhu-dc---sdi",
-            appId: "1:153204480111:web:c6dbf37fbfd9e44014959a"
+          apiKey: "AIzaSyDyB9XdSHVW-1o_9XdF3drJDXxy6B7OrMw",
+          authDomain: "monitoring-suhu-dc---sdi.firebaseapp.com",
+          databaseURL: "https://monitoring-suhu-dc---sdi-default-rtdb.asia-southeast1.firebasedatabase.app",
+          projectId: "monitoring-suhu-dc---sdi",
+          storageBucket: "monitoring-suhu-dc---sdi.firebasestorage.app",
+          messagingSenderId: "153204480111",
+          appId: "1:153204480111:web:c6dbf37fbfd9e44014959a",
+          measurementId: "G-8TQW3QCS9L"
         };
 
+        // Inisialisasi Firebase
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
+        // Status Koneksi
         db.ref(".info/connected").on("value", (snap) => {
             const statusBadge = document.getElementById('status');
             const statusText = document.getElementById('status-text');
@@ -134,6 +179,7 @@
             }
         });
 
+        // Inisialisasi Grafik
         const ctx = document.getElementById('tempChart').getContext('2d');
         const tempChart = new Chart(ctx, {
             type: 'line',
@@ -159,7 +205,7 @@
                         grid: { color: 'rgba(255,255,255,0.05)' }, 
                         ticks: { color: '#94a3b8' },
                         suggestedMax: 26,
-                        suggestedMin: 22
+                        suggestedMin: 15
                     }
                 },
                 plugins: { legend: { display: false } }
@@ -177,17 +223,20 @@
             if (logList.childNodes.length > 8) logList.removeChild(logList.lastChild);
         }
 
+        // AMBIL DATA DARI FOLDER live_data
         db.ref("live_data").on("value", (snapshot) => {
             const data = snapshot.val();
             if (data) {
                 const suhuRuangan = parseFloat(data.ruangan || 0).toFixed(1);
-                const suhuOutputPac = parseFloat(data.pac || 0).toFixed(1); // BERUBAH
-                const humidity = parseInt(data.humi || 0); // BERUBAH
+                const suhuOutputPac = parseFloat(data.pac || 0).toFixed(1);
+                const humidity = parseFloat(data.humi || 0).toFixed(1);
 
+                // Update ke Layar
                 document.getElementById("temp").innerText = suhuRuangan;
                 document.getElementById("temp-pac").innerText = suhuOutputPac;
                 document.getElementById("humi").innerText = humidity;
 
+                // Update Grafik
                 const sekarang = new Date();
                 const jamMenitDetik = sekarang.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
 
@@ -199,11 +248,10 @@
                 tempChart.data.datasets[0].data.push(suhuRuangan);
                 tempChart.update();
 
-                // UPDATE LOG DENGAN ISTILAH BARU
-                addLog(Sinkron: R ${suhuRuangan}°C | Out-P ${suhuOutputPac}°C | Hum ${humidity}%);
+                addLog(Data Sinkron: R:${suhuRuangan}°C | Out-P:${suhuOutputPac}°C | Hum:${humidity}%);
             }
         }, (error) => {
-            addLog("Koneksi Gagal: " + error.message);
+            addLog("Error Koneksi: " + error.message);
         });
     </script>
 </body>
