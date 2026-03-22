@@ -40,7 +40,6 @@
         .grid-container { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
         .card { background: var(--card-bg); border-radius: 24px; padding: 25px; border: 1px solid rgba(255,255,255,0.05); }
         
-        /* Tinggi Tabel sesuai request (lebih kecil) */
         .card-large { grid-column: span 2; height: 230px; } 
         .log-card { height: 230px; }
 
@@ -88,13 +87,11 @@
         </div>
 
         <div class="card">
-            <span class="label">Suhu PAC</span>
-            <div class="value"><span id="temp-pac">--.-</span><span class="unit">°C</span></div>
+            <span class="label">Suhu Output PAC</span> <div class="value"><span id="temp-pac">--.-</span><span class="unit">°C</span></div>
         </div>
 
         <div class="card">
-            <span class="label">Kelembaban</span>
-            <div class="value"><span id="humi">--</span><span class="unit">%</span></div>
+            <span class="label">Humidity</span> <div class="value"><span id="humi">--</span><span class="unit">%</span></div>
         </div>
 
         <div class="card card-large">
@@ -122,7 +119,6 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
-        // Cek Status Koneksi
         db.ref(".info/connected").on("value", (snap) => {
             const statusBadge = document.getElementById('status');
             const statusText = document.getElementById('status-text');
@@ -138,7 +134,6 @@
             }
         });
 
-        // Inisialisasi Grafik
         const ctx = document.getElementById('tempChart').getContext('2d');
         const tempChart = new Chart(ctx, {
             type: 'line',
@@ -177,25 +172,22 @@
             const time = now.toLocaleTimeString('id-ID', { hour12: false });
             if (logList.innerHTML.includes("Menunggu")) logList.innerHTML = '';
             const newLog = document.createElement('li');
-            newLog.innerHTML = `<span>[${time}]</span> ${msg}`;
+            newLog.innerHTML = <span>[${time}]</span> ${msg};
             logList.insertBefore(newLog, logList.firstChild);
             if (logList.childNodes.length > 8) logList.removeChild(logList.lastChild);
         }
 
-        // Listener Data Real-time dari Firebase
         db.ref("live_data").on("value", (snapshot) => {
             const data = snapshot.val();
             if (data) {
                 const suhuRuangan = parseFloat(data.ruangan || 0).toFixed(1);
-                const suhuPac = parseFloat(data.pac || 0).toFixed(1);
-                const kelembaban = parseInt(data.humi || 0);
+                const suhuOutputPac = parseFloat(data.pac || 0).toFixed(1); // BERUBAH
+                const humidity = parseInt(data.humi || 0); // BERUBAH
 
-                // Update Angka
                 document.getElementById("temp").innerText = suhuRuangan;
-                document.getElementById("temp-pac").innerText = suhuPac;
-                document.getElementById("humi").innerText = kelembaban;
+                document.getElementById("temp-pac").innerText = suhuOutputPac;
+                document.getElementById("humi").innerText = humidity;
 
-                // Update Grafik
                 const sekarang = new Date();
                 const jamMenitDetik = sekarang.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
 
@@ -207,10 +199,8 @@
                 tempChart.data.datasets[0].data.push(suhuRuangan);
                 tempChart.update();
 
-                // Update Log
-                addLog(`Sinkron: R ${suhuRuangan}°C | P ${suhuPac}°C | H ${kelembaban}%`);
-            } else {
-                console.warn("Data tidak ditemukan di path /live_data");
+                // UPDATE LOG DENGAN ISTILAH BARU
+                addLog(Sinkron: R ${suhuRuangan}°C | Out-P ${suhuOutputPac}°C | Hum ${humidity}%);
             }
         }, (error) => {
             addLog("Koneksi Gagal: " + error.message);
