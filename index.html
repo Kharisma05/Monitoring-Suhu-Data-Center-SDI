@@ -1,49 +1,14 @@
-[04.30, 23/3/2026] Kharisma Alhamdi: <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="id">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>DC-SDI LIVE | Professional Monitoring</title>
+    
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <style>
-        :root {
-            --bg-color: #0f172a;
-            --card-bg: #1e293b;
-            --accent-blue: #38bdf8;
-            --text-main: #f8fafc;
-            --text-dim: #94a3b8;
-            --success: #4ade80;
-            --danger: #f43f5e;
-        }
 
-        body {
-            font-family: 'Segoe UI', sans…
-[04.42, 23/3/2026] Kharisma Alhamdi: // Import the functions you need from the SDKs you need
-import { initializeApp } from "firebase/app";
-import { getAnalytics } from "firebase/analytics";
-// TODO: Add SDKs for Firebase products that you want to use
-// https://firebase.google.com/docs/web/setup#available-libraries
-
-// Your web app's Firebase configuration
-// For Firebase JS SDK v7.20.0 and later, measurementId is optional
-const firebaseConfig = {
-  apiKey: "AIzaSyDyB9XdSHVW-1o_9XdF3drJDXxy6B7OrMw",
-  authDomain: "monitoring-suhu-dc---sdi.firebaseapp.com",
-  databaseURL: "https://monitoring-suhu-dc---sdi-default-rtdb.asia-southeast1.firebasedatabase.app",
-  projectId: "monitoring-suhu-dc---sdi",
-  storageBucket: "monitoring-suhu-dc---sdi.firebasestorage.app",
-  messagingSenderId: "153204480111"…
-[04.43, 23/3/2026] Kharisma Alhamdi: <!DOCTYPE html>
-<html lang="id">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DC-SDI LIVE | Professional Monitoring</title>
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root {
             --bg-color: #0f172a;
@@ -88,15 +53,16 @@ const firebaseConfig = {
             height: 160px; overflow-y: auto; list-style: none; padding: 0; margin: 0;
             text-align: left; font-family: monospace; font-size: 0.8em;
         }
-        #log-list li { padding: 5px 0; border-bottom: 1px solid rgba(255,255,255,0.05); color: var(--text-dim); animation: fadeInLog 0.5s ease; }
+        #log-list li { padding: 5px 0; border-bottom: 1px solid rgba(255,255,255,0.05); color: var(--text-dim); }
         #log-list li span { color: var(--accent-blue); font-weight: bold; }
 
-        @keyframes fadeInLog {
-            from { opacity: 0; transform: translateY(-5px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
         canvas { width: 100% !important; height: 160px !important; }
+
+        /* Responsif untuk HP */
+        @media (max-width: 768px) {
+            .grid-container { grid-template-columns: 1fr; }
+            .card-large { grid-column: span 1; }
+        }
     </style>
 </head>
 <body>
@@ -141,13 +107,13 @@ const firebaseConfig = {
         <div class="card log-card">
             <span class="label">Log Aktivitas</span>
             <ul id="log-list">
-                <li>Menunggu data...</li>
+                <li>Menunggu data dari sensor...</li>
             </ul>
         </div>
     </div>
 
     <script>
-        // CONFIG TERBARU MILIK ANDA
+        // Pakai Config Asli yang Anda kirim tadi
         const firebaseConfig = {
           apiKey: "AIzaSyDyB9XdSHVW-1o_9XdF3drJDXxy6B7OrMw",
           authDomain: "monitoring-suhu-dc---sdi.firebaseapp.com",
@@ -159,99 +125,60 @@ const firebaseConfig = {
           measurementId: "G-8TQW3QCS9L"
         };
 
-        // Inisialisasi Firebase
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
-        // Status Koneksi
-        db.ref(".info/connected").on("value", (snap) => {
-            const statusBadge = document.getElementById('status');
-            const statusText = document.getElementById('status-text');
-            const statusDot = document.getElementById('status-dot');
-            if (snap.val() === true) {
-                statusBadge.className = "status-badge status-online";
-                statusText.innerText = "CONNECTED";
-                statusDot.style.background = "var(--success)";
-            } else {
-                statusBadge.className = "status-badge status-offline";
-                statusText.innerText = "DISCONNECTED";
-                statusDot.style.background = "var(--danger)";
-            }
-        });
-
-        // Inisialisasi Grafik
+        // Grafik Setup
         const ctx = document.getElementById('tempChart').getContext('2d');
         const tempChart = new Chart(ctx, {
             type: 'line',
             data: {
                 labels: [],
                 datasets: [{
-                    label: 'Suhu Ruangan (°C)',
+                    label: 'Suhu (°C)',
                     data: [],
                     borderColor: '#38bdf8',
                     backgroundColor: 'rgba(56, 189, 248, 0.1)',
                     borderWidth: 3,
                     fill: true,
-                    tension: 0.4,
-                    pointRadius: 2
+                    tension: 0.4
                 }]
             },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                scales: {
-                    x: { grid: { display: false }, ticks: { color: '#94a3b8' } },
-                    y: { 
-                        grid: { color: 'rgba(255,255,255,0.05)' }, 
-                        ticks: { color: '#94a3b8' },
-                        suggestedMax: 26,
-                        suggestedMin: 15
-                    }
-                },
-                plugins: { legend: { display: false } }
-            }
+            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
         });
 
         function addLog(msg) {
             const logList = document.getElementById('log-list');
-            const now = new Date();
-            const time = now.toLocaleTimeString('id-ID', { hour12: false });
+            const time = new Date().toLocaleTimeString('id-ID');
             if (logList.innerHTML.includes("Menunggu")) logList.innerHTML = '';
-            const newLog = document.createElement('li');
-            newLog.innerHTML = <span>[${time}]</span> ${msg};
-            logList.insertBefore(newLog, logList.firstChild);
-            if (logList.childNodes.length > 8) logList.removeChild(logList.lastChild);
+            const li = document.createElement('li');
+            li.innerHTML = `<span>[${time}]</span> ${msg}`;
+            logList.insertBefore(li, logList.firstChild);
         }
 
-        // AMBIL DATA DARI FOLDER live_data
+        // Listener Data
         db.ref("live_data").on("value", (snapshot) => {
             const data = snapshot.val();
             if (data) {
-                const suhuRuangan = parseFloat(data.ruangan || 0).toFixed(1);
-                const suhuOutputPac = parseFloat(data.pac || 0).toFixed(1);
-                const humidity = parseFloat(data.humi || 0).toFixed(1);
+                const sR = parseFloat(data.ruangan || 0).toFixed(1);
+                const sP = parseFloat(data.pac || 0).toFixed(1);
+                const hM = parseFloat(data.humi || 0).toFixed(1);
 
-                // Update ke Layar
-                document.getElementById("temp").innerText = suhuRuangan;
-                document.getElementById("temp-pac").innerText = suhuOutputPac;
-                document.getElementById("humi").innerText = humidity;
+                document.getElementById("temp").innerText = sR;
+                document.getElementById("temp-pac").innerText = sP;
+                document.getElementById("humi").innerText = hM;
 
-                // Update Grafik
-                const sekarang = new Date();
-                const jamMenitDetik = sekarang.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-
+                // Update Chart
                 if (tempChart.data.labels.length > 15) {
                     tempChart.data.labels.shift();
                     tempChart.data.datasets[0].data.shift();
                 }
-                tempChart.data.labels.push(jamMenitDetik);
-                tempChart.data.datasets[0].data.push(suhuRuangan);
+                tempChart.data.labels.push(new Date().toLocaleTimeString('id-ID'));
+                tempChart.data.datasets[0].data.push(sR);
                 tempChart.update();
 
-                addLog(Data Sinkron: R:${suhuRuangan}°C | Out-P:${suhuOutputPac}°C | Hum:${humidity}%);
+                addLog(`Data Sinkron: R:${sR}°C | P:${sP}°C | H:${hM}%`);
             }
-        }, (error) => {
-            addLog("Error Koneksi: " + error.message);
         });
     </script>
 </body>
