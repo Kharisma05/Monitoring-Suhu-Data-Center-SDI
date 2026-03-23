@@ -37,7 +37,9 @@
             transition: 0.3s; font-weight: 600;
         }
         .status-online { background: rgba(74, 222, 128, 0.1); color: var(--success); border: 1px solid var(--success); }
-        .status-offline { background: rgba(244, 63, 94, 0.1); color: var(--danger); border: 1px solid var(--danger); }
+        .status-offline { background: rgba(244, 63, 94, 0.1); color: var(--danger); border: 1px solid var(--danger); animation: blink 1.5s infinite; }
+
+        @keyframes blink { 50% { opacity: 0.6; } }
 
         .grid-container { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
         .card { background: var(--card-bg); border-radius: 24px; padding: 25px; border: 1px solid rgba(255,255,255,0.05); }
@@ -58,7 +60,6 @@
 
         canvas { width: 100% !important; height: 160px !important; }
 
-        /* Responsif untuk HP */
         @media (max-width: 768px) {
             .grid-container { grid-template-columns: 1fr; }
             .card-large { grid-column: span 1; }
@@ -90,7 +91,7 @@
         </div>
 
         <div class="card">
-            <span class="label">Suhu Output PAC</span>
+            <span class="label">Suhu Output PAC (+2)</span>
             <div class="value"><span id="temp-pac">--.-</span><span class="unit">°C</span></div>
         </div>
 
@@ -113,7 +114,6 @@
     </div>
 
     <script>
-        // Pakai Config Asli yang Anda kirim tadi
         const firebaseConfig = {
           apiKey: "AIzaSyDyB9XdSHVW-1o_9XdF3drJDXxy6B7OrMw",
           authDomain: "monitoring-suhu-dc---sdi.firebaseapp.com",
@@ -127,6 +127,9 @@
 
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
+
+        // Variabel untuk Heartbeat
+        let lastUpdateTimestamp = Date.now();
 
         // Grafik Setup
         const ctx = document.getElementById('tempChart').getContext('2d');
@@ -147,19 +150,44 @@
             options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
         });
 
-        function addLog(msg) {
+        function addLog(msg, type = "info") {
             const logList = document.getElementById('log-list');
             const time = new Date().toLocaleTimeString('id-ID');
             if (logList.innerHTML.includes("Menunggu")) logList.innerHTML = '';
             const li = document.createElement('li');
+            if(type === "danger") li.style.color = "#f43f5e";
             li.innerHTML = `<span>[${time}]</span> ${msg}`;
             logList.insertBefore(li, logList.firstChild);
+            
+            // Batasi log agar tidak terlalu panjang (maks 20)
+            if (logList.children.length > 20) logList.lastChild.remove();
         }
+
+        // --- FITUR HEARTBEAT: CEK APAKAH ARDUINO MATI ---
+        setInterval(() => {
+            const timeDiff = Date.now() - lastUpdateTimestamp;
+            const statusBadge = document.getElementById("status");
+            const statusText = document.getElementById("status-text");
+            const statusDot = document.getElementById("status-dot");
+
+            if (timeDiff > 15000) { // Jika lebih dari 15 detik tidak ada data baru
+                statusBadge.className = "status-badge status-offline";
+                statusText.innerText = "OFFLINE (LOST POWER)";
+                statusDot.style.background = "#f43f5e";
+                if(timeDiff < 17000) addLog("⚠️ PERINGATAN: Koneksi ke Arduino terputus!", "danger");
+            } else {
+                statusBadge.className = "status-badge status-online";
+                statusText.innerText = "CONNECTED";
+                statusDot.style.background = "#4ade80";
+            }
+        }, 5000);
 
         // Listener Data
         db.ref("live_data").on("value", (snapshot) => {
             const data = snapshot.val();
             if (data) {
+                lastUpdateTimestamp = Date.now(); // Reset waktu setiap data masuk
+                
                 const sR = parseFloat(data.ruangan || 0).toFixed(1);
                 const sP = parseFloat(data.pac || 0).toFixed(1);
                 const hM = parseFloat(data.humi || 0).toFixed(1);
