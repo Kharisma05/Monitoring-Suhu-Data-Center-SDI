@@ -1,77 +1,207 @@
-<!DOCTYPE html>
-<html lang="id">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DC-SDI LIVE | Professional Monitoring</title>
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <style>
-        :root { --bg-color: #0f172a; --card-bg: #1e293b; --accent-blue: #38bdf8; --text-main: #f8fafc; --text-dim: #94a3b8; --success: #4ade80; --danger: #f43f5e; }
-        body { font-family: 'Segoe UI', sans-serif; background-color: var(--bg-color); color: var(--text-main); margin: 0; padding: 20px; }
-        .header { display: flex; justify-content: space-between; align-items: center; padding: 10px 20px; margin-bottom: 20px; }
-        .status-badge { padding: 8px 16px; border-radius: 20px; font-size: 0.8em; display: flex; align-items: center; gap: 8px; font-weight: 600; }
-        .status-online { background: rgba(74, 222, 128, 0.1); color: var(--success); border: 1px solid var(--success); }
-        .status-offline { background: rgba(244, 63, 94, 0.1); color: var(--danger); border: 1px solid var(--danger); animation: blink 1.5s infinite; }
-        @keyframes blink { 50% { opacity: 0.6; } }
-        .grid-container { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
-        .card { background: var(--card-bg); border-radius: 24px; padding: 25px; border: 1px solid rgba(255,255,255,0.05); }
-        .card-large { grid-column: span 2; height: 230px; }
-        .value { font-size: 3.5em; font-weight: 700; }
-        #log-list { height: 160px; overflow-y: auto; list-style: none; padding: 0; font-family: monospace; font-size: 0.8em; }
-    </style>
-</head>
-<body>
-    <div class="header">
-        <div style="font-weight: 800; font-size: 1.2em;">DC-SDI <span style="color: var(--accent-blue);">LIVE</span></div>
-        <div id="status" class="status-badge status-online">
-            <div id="status-dot" style="width:8px; height:8px; background:var(--success); border-radius:50%"></div> 
-            <span id="status-text">CONNECTED</span>
-        </div>
-    </div>
+Anda berkata
+#include <ESP8266WiFi.h>
 
-    <div class="grid-container">
-        <div class="card"><span>Suhu Ruangan (+2)</span><div class="value"><span id="temp">--.-</span>°C</div></div>
-        <div class="card"><span>Suhu PAC</span><div class="value"><span id="temp-pac">--.-</span>°C</div></div>
-        <div class="card card-large"><canvas id="tempChart"></canvas></div>
-        <div class="card"><span>Log Aktivitas</span><ul id="log-list"><li>Menunggu data...</li></ul></div>
-    </div>
+#include <FirebaseESP8266.h>
 
-    <script>
-        const firebaseConfig = {
-            apiKey: "AIzaSyDyB9XdSHVW-1o_9XdF3drJDXxy6B7OrMw",
-            authDomain: "monitoring-suhu-dc---sdi.firebaseapp.com",
-            databaseURL: "https://monitoring-suhu-dc---sdi-default-rtdb.asia-southeast1.firebasedatabase.app",
-            projectId: "monitoring-suhu-dc---sdi"
-        };
-        firebase.initializeApp(firebaseConfig);
-        const db = firebase.database();
-        let lastUpdateTimestamp = Date.now();
+#include <DHT.h>
 
-        // LOGIKA STATUS: Toleransi 45 Detik (Cocok dengan jeda 30 detik Arduino)
-        setInterval(() => {
-            const timeDiff = Date.now() - lastUpdateTimestamp;
-            const statusBadge = document.getElementById("status");
-            if (timeDiff > 45000) {
-                statusBadge.className = "status-badge status-offline";
-                document.getElementById("status-text").innerText = "OFFLINE (LOST POWER)";
-                firebase.database().goOffline(); firebase.database().goOnline(); // Paksa reconnect
-            } else {
-                statusBadge.className = "status-badge status-online";
-                document.getElementById("status-text").innerText = "CONNECTED";
-            }
-        }, 10000);
+#include <OneWire.h>
 
-        db.ref("live_data").on("value", (snapshot) => {
-            const data = snapshot.val();
-            if (data) {
-                lastUpdateTimestamp = Date.now();
-                document.getElementById("temp").innerText = parseFloat(data.ruangan).toFixed(1);
-                document.getElementById("temp-pac").innerText = parseFloat(data.pac).toFixed(1);
-                // Update Chart Logic Here... (Sama seperti sebelumnya)
-            }
-        });
-    </script>
-</body>
-</html>
+#include <DallasTemperature.h>
+
+#include <WiFiClientSecure.h> 
+
+#include <UniversalTelegramBot.h> 
+
+
+
+// --- KONFIGURASI ---
+
+#define WIFI_SSID "DC-SDI" 
+
+#define WIFI_PASSWORD "cl13ntsdi"
+
+#define FIREBASE_HOST "monitoring-suhu-dc---sdi-default-rtdb.asia-southeast1.firebasedatabase.app"
+
+#define FIREBASE_AUTH "AIzaSyDyB9XdSHVW-1o_9XdF3drJDXxy6B7OrMw"
+
+#define BOTtoken "8759576361:AAEqNb-T27wPfMAxCUqQXHk-FWWTyxY7hLk"
+
+#define CHAT_ID "-1003751947406"
+
+
+
+DHT dht(12, DHT22);
+
+OneWire oneWire(4);
+
+DallasTemperature sensors(&oneWire);
+
+FirebaseData fbdo;
+
+FirebaseConfig config;
+
+FirebaseAuth auth;
+
+WiFiClientSecure client;
+
+UniversalTelegramBot bot(BOTtoken, client);
+
+
+
+unsigned long lastWebUpdate = 0;
+
+unsigned long lastTelegramSent = 0;
+
+unsigned long spamStartTime = 0;
+
+int alarmCountInMinute = 0; 
+
+unsigned long minuteTimer = 0;
+
+bool isSpamming = false;
+
+
+
+void setup() {
+
+  Serial.begin(115200);
+
+  dht.begin();
+
+  sensors.begin();
+
+  WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
+
+  while (WiFi.status() != WL_CONNECTED) delay(500);
+
+
+
+  client.setInsecure();
+
+  client.setBufferSizes(512, 512); 
+
+  client.setTimeout(3000); 
+
+
+
+  config.host = FIREBASE_HOST;
+
+  config.signer.tokens.legacy_token = FIREBASE_AUTH;
+
+  Firebase.begin(&config, &auth);
+
+}
+
+
+
+void loop() {
+
+  unsigned long now = millis();
+
+
+
+  // --- 1. UPDATE WEB (WAJIB SETIAP 5 DETIK Tanpa Henti) ---
+
+  if (now - lastWebUpdate >= 5000) {
+
+    lastWebUpdate = now;
+
+
+
+    sensors.requestTemperatures();
+
+    float t_pac = dht.readTemperature();
+
+    float t_raw = sensors.getTempCByIndex(0);
+
+    float t_room = (t_raw < -50) ? (t_pac + 0.5) : (t_raw + 2.0);
+
+
+
+    if (Firebase.ready()) {
+
+      Firebase.setFloat(fbdo, "/live_data/ruangan", t_room);
+
+      Firebase.setFloat(fbdo, "/live_data/pac", t_pac);
+
+      Firebase.setString(fbdo, "/live_data/device_status", "online");
+
+      Serial.println(">>> [WEB] UPDATE SUKSES");
+
+    }
+
+
+
+    // --- 2. LOGIKA ALARM SPESIFIK (Detik 1 & Detik 30) ---
+
+    if (t_room >= 25.0) {
+
+      if (!isSpamming) { 
+
+        isSpamming = true; 
+
+        spamStartTime = now; 
+
+        minuteTimer = now;
+
+        alarmCountInMinute = 0;
+
+      }
+
+      
+
+      // Jalankan selama durasi total 5 menit
+
+      if (now - spamStartTime < 300000) {
+
+        
+
+        // Reset counter setiap 1 menit (60 detik)
+
+        if (now - minuteTimer >= 60000) {
+
+          minuteTimer = now;
+
+          alarmCountInMinute = 0;
+
+        }
+
+
+
+        // Alarm 1: Detik ke-1 (saat alarmCount masih 0)
+
+        if (alarmCountInMinute == 0) {
+
+          sendTelegram(t_room);
+
+          alarmCountInMinute = 1;
+
+          lastTelegramSent = now;
+
+        } 
+
+        // Alarm 2: Detik ke-30 (setelah alarm 1 lewat 30 detik)
+
+        else if (alarmCountInMinute == 1 && (now - lastTelegramSent >= 30000)) {
+
+          sendTelegram(t_room);
+
+          alarmCountInMinute = 2; // Kunci agar tidak kirim lagi sampai menit depan
+
+        }
+
+      }
+
+    } else {
+
+      isSpamming = false;
+
+    }
+
+  }
+
+  yield();
+
+}
+
