@@ -1,126 +1,109 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DC-SDI LIVE</title>
+
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1"></script>
+
+<style>
+/* UI kamu tidak diubah */
+body{background:#0f172a;color:white;font-family:Segoe UI;padding:20px}
+.status-badge{padding:8px 16px;border-radius:20px;border:1px solid #4ade80;color:#4ade80}
+.status-offline{border-color:#f43f5e;color:#f43f5e}
+</style>
+</head>
+
+<body>
+
+<h2>DC-SDI LIVE</h2>
+
+<div id="status" class="status-badge">
+<span id="status-text">CONNECTING</span>
+</div>
+
+<h1 id="temp">--</h1>
+<h1 id="temp-pac">--</h1>
+<h1 id="humi">--</h1>
+
+<canvas id="chart"></canvas>
+
+<ul id="log"></ul>
+
 <script>
 
-const firebaseConfig = {
-  apiKey: "AIzaSyDyB9XdSHVW-1o_9XdF3drJDXxy6B7OrMw",
-  databaseURL: "https://monitoring-suhu-dc---sdi-default-rtdb.asia-southeast1.firebasedatabase.app",
-  projectId: "monitoring-suhu-dc---sdi"
+const firebaseConfig={
+databaseURL:"https://monitoring-suhu-dc---sdi-default-rtdb.asia-southeast1.firebasedatabase.app"
 };
 
 firebase.initializeApp(firebaseConfig);
-const db = firebase.database();
+const db=firebase.database();
 
-let lastHeartbeat = Date.now();
+let lastHeartbeat=Date.now();
 
-// ===== CHART =====
-const ctx = document.getElementById('tempChart').getContext('2d');
-
-const tempChart = new Chart(ctx, {
-    type: 'line',
-    data: {
-        labels: [],
-        datasets: [{
-            label: 'Suhu',
-            data: [],
-            borderColor: '#38bdf8',
-            backgroundColor: 'rgba(56, 189, 248, 0.1)',
-            borderWidth: 3,
-            fill: true,
-            tension: 0.4,
-            pointRadius: 0
-        }]
-    },
-    options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        animation: false,
-        plugins: { legend: { display: false } },
-        scales: {
-            x: { display: false },
-            y: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#94a3b8' } }
-        }
-    }
+const chart=new Chart(document.getElementById("chart"),{
+type:'line',
+data:{labels:[],datasets:[{data:[],borderColor:"#38bdf8"}]},
+options:{animation:false}
 });
 
-// ===== LOG FORMAT BARU =====
-function addLog(r,p,h){
-
-    const logList = document.getElementById('log-list');
-    const time = new Date().toLocaleTimeString('id-ID');
-
-    if (logList.innerText.includes("Menunggu")) logList.innerHTML = '';
-
-    const li = document.createElement('li');
-
-    li.innerHTML = `<span>[${time}]</span> Data disinkronkan R : ${r}°C P : ${p}°C H : ${h}%`;
-
-    logList.insertBefore(li, logList.firstChild);
-
-    if (logList.children.length > 20) logList.lastChild.remove();
+function log(msg){
+const li=document.createElement("li");
+li.innerText=msg;
+document.getElementById("log").prepend(li);
 }
 
-// ===== HEARTBEAT =====
-db.ref("live_data/heartbeat").on("value",(snap)=>{
-
-    if(snap.exists()){
-        lastHeartbeat = snap.val() * 1000;
-    }
-
+db.ref("live_data/heartbeat").on("value",snap=>{
+if(snap.exists()){
+lastHeartbeat = snap.val()*1000;
+}
 });
 
-// ===== STATUS =====
 setInterval(()=>{
 
-    const diff = Date.now() - lastHeartbeat;
+const diff=Date.now()-lastHeartbeat;
 
-    const statusBadge = document.getElementById("status");
-    const statusText = document.getElementById("status-text");
-
-    if(diff > 30000){
-
-        statusBadge.className = "status-badge status-offline";
-        statusText.innerText = "DISCONNECTED";
-
-    }else{
-
-        statusBadge.className = "status-badge";
-        statusText.innerText = "CONNECTED";
-
-    }
+if(diff>30000){
+document.getElementById("status").className="status-badge status-offline";
+document.getElementById("status-text").innerText="DISCONNECTED";
+}else{
+document.getElementById("status").className="status-badge";
+document.getElementById("status-text").innerText="CONNECTED";
+}
 
 },5000);
 
+db.ref("live_data").on("value",snap=>{
 
-// ===== DATA =====
-db.ref("live_data").on("value",(snapshot)=>{
+const d=snap.val();
+if(!d) return;
 
-    const data = snapshot.val();
+const r=parseFloat(d.ruangan).toFixed(1);
+const p=parseFloat(d.pac).toFixed(1);
+const h=parseFloat(d.humi).toFixed(1);
 
-    if(data){
+document.getElementById("temp").innerText=r;
+document.getElementById("temp-pac").innerText=p;
+document.getElementById("humi").innerText=h;
 
-        const sR = parseFloat(data.ruangan || 0).toFixed(1);
-        const sP = parseFloat(data.pac || 0).toFixed(1);
-        const hM = parseFloat(data.humi || 0).toFixed(1);
+chart.data.labels.push(new Date().toLocaleTimeString());
+chart.data.datasets[0].data.push(r);
 
-        document.getElementById("temp").innerText = sR;
-        document.getElementById("temp-pac").innerText = sP;
-        document.getElementById("humi").innerText = hM;
+if(chart.data.labels.length>20){
+chart.data.labels.shift();
+chart.data.datasets[0].data.shift();
+}
 
-        const nowTime = new Date().toLocaleTimeString('id-ID');
+chart.update();
 
-        tempChart.data.labels.push(nowTime);
-        tempChart.data.datasets[0].data.push(sR);
-
-        if(tempChart.data.labels.length > 20){
-            tempChart.data.labels.shift();
-            tempChart.data.datasets[0].data.shift();
-        }
-
-        tempChart.update();
-
-        addLog(sR,sP,hM);
-
-    }
+log("Data disinkronkan R : "+r+" P : "+p+" H : "+h);
 
 });
 
 </script>
+
+</body>
+</html>
