@@ -145,7 +145,12 @@
                     tension: 0.4
                 }]
             },
-            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
+            options: { 
+                responsive: true, 
+                maintainAspectRatio: false, 
+                animation: false, // Matikan animasi agar dashboard enteng
+                plugins: { legend: { display: false } } 
+            }
         });
 
         function addLog(msg, type = "info") {
@@ -160,24 +165,28 @@
             if (logList.children.length > 20) logList.lastChild.remove();
         }
 
-        // --- TOLERANSI STATUS OFFLINE DITINGKATKAN (30 Detik) ---
+        // --- TOLERANSI STATUS OFFLINE (45 DETIK) ---
+        // Memberi ruang napas saat ESP8266 sedang jabat tangan SSL Telegram yang berat
         setInterval(() => {
             const timeDiff = Date.now() - lastUpdateTimestamp;
             const statusBadge = document.getElementById("status");
             const statusText = document.getElementById("status-text");
             const statusDot = document.getElementById("status-dot");
 
-            if (timeDiff > 30000) { // Toleransi ditingkatkan ke 30 detik agar tidak mudah 'merah'
+            if (timeDiff > 45000) { 
                 statusBadge.className = "status-badge status-offline";
                 statusText.innerText = "OFFLINE (LOST POWER)";
                 statusDot.style.background = "#f43f5e";
-                if(timeDiff < 35000) addLog("⚠️ PERINGATAN: Koneksi ke Arduino terputus!", "danger");
+                
+                // Coba paksa sinkronisasi ulang koneksi Firebase
+                firebase.database().goOffline();
+                firebase.database().goOnline();
             } else {
                 statusBadge.className = "status-badge status-online";
                 statusText.innerText = "CONNECTED";
                 statusDot.style.background = "#4ade80";
             }
-        }, 5000);
+        }, 10000); // Cek status tiap 10 detik
 
         db.ref("live_data").on("value", (snapshot) => {
             const data = snapshot.val();
@@ -198,10 +207,12 @@
                 }
                 tempChart.data.labels.push(new Date().toLocaleTimeString('id-ID'));
                 tempChart.data.datasets[0].data.push(sR);
-                tempChart.update();
+                tempChart.update('none'); // Update tanpa animasi
 
                 addLog(`Data Sinkron: R:${sR}°C | P:${sP}°C | H:${hM}%`);
             }
+        }, (error) => {
+            addLog("Firebase Error: " + error.message, "danger");
         });
     </script>
 </body>
