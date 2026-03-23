@@ -1,134 +1,182 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DC-SDI LIVE | Professional Monitoring</title>
+
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1"></script>
+
+<style>
+/* CSS KAMU TIDAK DIUBAH */
+:root{
+--bg-color:#0f172a;
+--card-bg:#1e293b;
+--accent-blue:#38bdf8;
+--text-main:#f8fafc;
+--text-dim:#94a3b8;
+--success:#4ade80;
+--danger:#f43f5e;
+}
+body{
+font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;
+background-color:var(--bg-color);
+color:var(--text-main);
+margin:0;
+padding:20px;
+}
+.header{display:flex;justify-content:space-between;align-items:center;padding:10px 20px;margin-bottom:20px;}
+.brand{display:flex;align-items:center;gap:15px;}
+.logo-box{background:var(--accent-blue);padding:8px;border-radius:12px;display:flex;align-items:center;justify-content:center;box-shadow:0 0 15px rgba(56,189,248,.4);}
+.status-badge{padding:8px 16px;border-radius:20px;font-size:.8em;display:flex;align-items:center;gap:8px;font-weight:600;border:1px solid var(--success);color:var(--success);}
+.status-offline{background:rgba(244,63,94,.1);color:var(--danger);border-color:var(--danger);animation:blink 1.5s infinite;}
+@keyframes blink{50%{opacity:.6}}
+.grid-container{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;}
+.card{background:var(--card-bg);border-radius:24px;padding:25px;border:1px solid rgba(255,255,255,.05);}
+.card-large{grid-column:span 2;height:250px;}
+.label{color:var(--text-dim);font-size:.75em;font-weight:600;text-transform:uppercase;letter-spacing:1px;margin-bottom:15px;display:block;}
+.value{font-size:3.5em;font-weight:700;}
+.unit{color:var(--text-dim);font-size:.4em;margin-left:5px;}
+#log-list{height:160px;overflow-y:auto;list-style:none;padding:0;margin:0;font-family:monospace;font-size:.8em;}
+#log-list li{padding:8px 0;border-bottom:1px solid rgba(255,255,255,.05);color:var(--text-dim);}
+#log-list li span{color:var(--accent-blue);font-weight:bold;}
+@media(max-width:992px){.grid-container{grid-template-columns:1fr}.card-large{grid-column:span 1}}
+</style>
+</head>
+
+<body>
+
+<div class="header">
+<div class="brand">
+<div class="logo-box">
+<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><path d="M14 14.76V3.5a2.5 2.5 0 0 0-5 0v11.26a4.5 4.5 0 1 0 5 0z"></path></svg>
+</div>
+<div>
+<div style="font-weight:800;font-size:1.2em;">DC-SDI <span style="color:var(--accent-blue);font-weight:400;">LIVE</span></div>
+<div style="font-size:.7em;color:var(--text-dim);">THERMAL MONITORING SYSTEM</div>
+</div>
+</div>
+
+<div id="status" class="status-badge">
+<div style="width:8px;height:8px;background:currentColor;border-radius:50%"></div>
+<span id="status-text">CONNECTING</span>
+</div>
+</div>
+
+<div class="grid-container">
+
+<div class="card">
+<span class="label">Suhu Ruangan (+2)</span>
+<div class="value"><span id="temp">--.-</span><span class="unit">°C</span></div>
+</div>
+
+<div class="card">
+<span class="label">Suhu Output PAC</span>
+<div class="value"><span id="temp-pac">--.-</span><span class="unit">°C</span></div>
+</div>
+
+<div class="card">
+<span class="label">Humidity</span>
+<div class="value"><span id="humi">--</span><span class="unit">%</span></div>
+</div>
+
+<div class="card card-large">
+<span class="label">Grafik Riwayat Ruangan (Real-time)</span>
+<div style="height:180px;"><canvas id="tempChart"></canvas></div>
+</div>
+
+<div class="card">
+<span class="label">Log Aktivitas</span>
+<ul id="log-list">
+<li>Menunggu data sinkronisasi...</li>
+</ul>
+</div>
+
+</div>
+
 <script>
-const firebaseConfig = {
-  apiKey: "AIzaSyDyB9XdSHVW-1o_9XdF3drJDXxy6B7OrMw",
-  databaseURL: "https://monitoring-suhu-dc---sdi-default-rtdb.asia-southeast1.firebasedatabase.app",
-  projectId: "monitoring-suhu-dc---sdi"
+
+const firebaseConfig={
+apiKey:"AIzaSyDy...",
+databaseURL:"https://monitoring-suhu-dc---sdi-default-rtdb.asia-southeast1.firebasedatabase.app",
+projectId:"monitoring-suhu-dc---sdi"
 };
 
 firebase.initializeApp(firebaseConfig);
-const db = firebase.database();
+const db=firebase.database();
 
-let lastHeartbeat = Date.now();
+let lastHeartbeat=Date.now();
 
-// ===== CHART =====
-const ctx = document.getElementById('tempChart').getContext('2d');
-
-const tempChart = new Chart(ctx, {
-    type: 'line',
-    data: {
-        labels: [],
-        datasets: [{
-            data: [],
-            borderColor: '#38bdf8',
-            backgroundColor: 'rgba(56,189,248,0.1)',
-            borderWidth: 3,
-            fill: true,
-            tension: 0.4,
-            pointRadius: 0
-        }]
-    },
-    options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        animation: false,
-        plugins: { legend: { display: false } },
-        scales: {
-            x: { display: false },
-            y: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#94a3b8' } }
-        }
-    }
-});
-
-// ===== LOG =====
-function addLog(msg, type="info") {
-
-    const logList = document.getElementById('log-list');
-    const time = new Date().toLocaleTimeString('id-ID');
-
-    if (logList.innerText.includes("Menunggu")) logList.innerHTML='';
-
-    const li = document.createElement('li');
-
-    if(type==="danger") li.style.color="#f43f5e";
-
-    li.innerHTML = `<span>[${time}]</span> ${msg}`;
-
-    logList.insertBefore(li, logList.firstChild);
-
-    if(logList.children.length>20) logList.lastChild.remove();
+function safeLog(msg){
+const list=document.getElementById("log-list");
+if(!list) return;
+const li=document.createElement("li");
+li.innerHTML="<span>["+new Date().toLocaleTimeString('id-ID')+"]</span> "+msg;
+list.prepend(li);
+if(list.children.length>20) list.lastChild.remove();
 }
 
+const ctx=document.getElementById('tempChart').getContext('2d');
 
-// ===== HEARTBEAT LISTENER (ANTI OFFLINE PALSU) =====
-db.ref("live_data/heartbeat").on("value",(snap)=>{
-
-    if(snap.exists()){
-        lastHeartbeat = snap.val()*1000;
-    }
-
+const chart=new Chart(ctx,{
+type:'line',
+data:{labels:[],datasets:[{data:[],borderColor:'#38bdf8',backgroundColor:'rgba(56,189,248,0.1)',fill:true,tension:.4,pointRadius:0}]},
+options:{responsive:true,maintainAspectRatio:false,animation:false,plugins:{legend:{display:false}}}
 });
 
+db.ref("live_data/heartbeat").on("value",snap=>{
+if(snap.exists() && !isNaN(snap.val())){
+lastHeartbeat=Number(snap.val())*1000;
+}
+});
 
-// ===== STATUS CHECK =====
 setInterval(()=>{
 
-    const diff = Date.now() - lastHeartbeat;
+const diff=Date.now()-lastHeartbeat;
 
-    const statusBadge = document.getElementById("status");
-    const statusText = document.getElementById("status-text");
+const badge=document.getElementById("status");
+const text=document.getElementById("status-text");
 
-    if(diff > 30000){
-
-        statusBadge.className = "status-badge status-offline";
-        statusText.innerText = "OFFLINE";
-
-        db.goOffline();
-        db.goOnline();
-
-    }else{
-
-        statusBadge.className = "status-badge";
-        statusText.innerText = "CONNECTED";
-
-    }
+if(diff>30000){
+badge.className="status-badge status-offline";
+text.innerText="OFFLINE";
+}else{
+badge.className="status-badge";
+text.innerText="CONNECTED";
+}
 
 },5000);
 
+db.ref("live_data").on("value",snap=>{
 
-// ===== DATA LISTENER =====
-db.ref("live_data").on("value",(snapshot)=>{
+const d=snap.val();
+if(!d) return;
 
-    const data = snapshot.val();
+const r=parseFloat(d.ruangan||0).toFixed(1);
+const p=parseFloat(d.pac||0).toFixed(1);
+const h=parseFloat(d.humi||0).toFixed(1);
 
-    if(data){
+document.getElementById("temp").innerText=r;
+document.getElementById("temp-pac").innerText=p;
+document.getElementById("humi").innerText=h;
 
-        const sR = parseFloat(data.ruangan || 0).toFixed(1);
-        const sP = parseFloat(data.pac || 0).toFixed(1);
-        const hM = data.humi ? parseFloat(data.humi).toFixed(1) : "0";
+chart.data.labels.push(new Date().toLocaleTimeString('id-ID'));
+chart.data.datasets[0].data.push(r);
 
-        document.getElementById("temp").innerText = sR;
-        document.getElementById("temp-pac").innerText = sP;
-        document.getElementById("humi").innerText = hM;
+if(chart.data.labels.length>20){
+chart.data.labels.shift();
+chart.data.datasets[0].data.shift();
+}
 
-        const nowTime = new Date().toLocaleTimeString('id-ID');
+chart.update();
 
-        tempChart.data.labels.push(nowTime);
-        tempChart.data.datasets[0].data.push(sR);
-
-        if(tempChart.data.labels.length > 20){
-            tempChart.data.labels.shift();
-            tempChart.data.datasets[0].data.shift();
-        }
-
-        tempChart.update();
-
-        addLog(`Sinkron: R:${sR}°C | P:${sP}°C`);
-
-    }
-
-},(error)=>{
-
-    addLog("Firebase Error: "+error.message,"danger");
+safeLog("Sinkron "+r+"°C");
 
 });
+
 </script>
+
+</body>
+</html>
