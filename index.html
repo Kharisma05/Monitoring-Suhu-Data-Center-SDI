@@ -10,7 +10,6 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1"></script>
 
 <style>
-/* CSS KAMU TIDAK DIUBAH */
 :root{
 --bg-color:#0f172a;
 --card-bg:#1e293b;
@@ -141,7 +140,7 @@ const text=document.getElementById("status-text");
 
 if(diff>30000){
 badge.className="status-badge status-offline";
-text.innerText="OFFLINE";
+text.innerText="DISCONNECTED";
 }else{
 badge.className="status-badge";
 text.innerText="CONNECTED";
@@ -172,7 +171,7 @@ chart.data.datasets[0].data.shift();
 
 chart.update();
 
-safeLog("Sinkron "+r+"°C");
+safeLog("Data disinkronkan R : "+r+"°C P : "+p+"°C H : "+h+"%");
 
 });
 
