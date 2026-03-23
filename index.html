@@ -86,12 +86,12 @@
 
     <div class="grid-container">
         <div class="card">
-            <span class="label">Suhu Ruangan</span>
+            <span class="label">Suhu Ruangan (+2)</span>
             <div class="value"><span id="temp">--.-</span><span class="unit">°C</span></div>
         </div>
 
         <div class="card">
-            <span class="label">Suhu Output PAC (+2)</span>
+            <span class="label">Suhu Output PAC</span>
             <div class="value"><span id="temp-pac">--.-</span><span class="unit">°C</span></div>
         </div>
 
@@ -128,10 +128,8 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
-        // Variabel untuk Heartbeat
         let lastUpdateTimestamp = Date.now();
 
-        // Grafik Setup
         const ctx = document.getElementById('tempChart').getContext('2d');
         const tempChart = new Chart(ctx, {
             type: 'line',
@@ -159,22 +157,21 @@
             li.innerHTML = `<span>[${time}]</span> ${msg}`;
             logList.insertBefore(li, logList.firstChild);
             
-            // Batasi log agar tidak terlalu panjang (maks 20)
             if (logList.children.length > 20) logList.lastChild.remove();
         }
 
-        // --- FITUR HEARTBEAT: CEK APAKAH ARDUINO MATI ---
+        // --- TOLERANSI STATUS OFFLINE DITINGKATKAN (30 Detik) ---
         setInterval(() => {
             const timeDiff = Date.now() - lastUpdateTimestamp;
             const statusBadge = document.getElementById("status");
             const statusText = document.getElementById("status-text");
             const statusDot = document.getElementById("status-dot");
 
-            if (timeDiff > 15000) { // Jika lebih dari 15 detik tidak ada data baru
+            if (timeDiff > 30000) { // Toleransi ditingkatkan ke 30 detik agar tidak mudah 'merah'
                 statusBadge.className = "status-badge status-offline";
                 statusText.innerText = "OFFLINE (LOST POWER)";
                 statusDot.style.background = "#f43f5e";
-                if(timeDiff < 17000) addLog("⚠️ PERINGATAN: Koneksi ke Arduino terputus!", "danger");
+                if(timeDiff < 35000) addLog("⚠️ PERINGATAN: Koneksi ke Arduino terputus!", "danger");
             } else {
                 statusBadge.className = "status-badge status-online";
                 statusText.innerText = "CONNECTED";
@@ -182,11 +179,10 @@
             }
         }, 5000);
 
-        // Listener Data
         db.ref("live_data").on("value", (snapshot) => {
             const data = snapshot.val();
             if (data) {
-                lastUpdateTimestamp = Date.now(); // Reset waktu setiap data masuk
+                lastUpdateTimestamp = Date.now(); 
                 
                 const sR = parseFloat(data.ruangan || 0).toFixed(1);
                 const sP = parseFloat(data.pac || 0).toFixed(1);
@@ -196,7 +192,6 @@
                 document.getElementById("temp-pac").innerText = sP;
                 document.getElementById("humi").innerText = hM;
 
-                // Update Chart
                 if (tempChart.data.labels.length > 15) {
                     tempChart.data.labels.shift();
                     tempChart.data.datasets[0].data.shift();
