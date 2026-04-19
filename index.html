@@ -42,7 +42,9 @@
             display: flex; justify-content: center; align-items: center;
             box-shadow: 0 0 15px rgba(56, 189, 248, 0.4);
         }
+        /* Update Ikon ke Termometer */
         .icon-box i { color: white; font-size: 20px; }
+        
         .brand h1 { margin: 0; font-size: 22px; font-weight: 800; }
         .brand h1 span { color: var(--accent-blue); }
         .brand p { margin: 0; color: var(--text-dim); font-size: 10px; font-weight: 600; }
@@ -51,6 +53,7 @@
         .indicator {
             padding: 6px 14px; border-radius: 20px; font-size: 11px; font-weight: bold;
             background: rgba(16, 185, 129, 0.1); border: 1px solid var(--accent-green); color: var(--accent-green);
+            transition: all 0.3s ease;
         }
         .indicator.offline { border-color: var(--accent-red); color: var(--accent-red); background: rgba(239, 68, 68, 0.1); }
 
@@ -114,7 +117,7 @@
 
 <header>
     <div class="logo-container">
-        <div class="icon-box"><i class="fas fa-server"></i></div>
+        <div class="icon-box"><i class="fas fa-thermometer-half"></i></div>
         <div class="brand">
             <h1>DC-SDI <span>LIVE</span></h1>
             <p>THERMAL MONITORING SYSTEM • INFRASTRUCTURE</p>
@@ -122,7 +125,7 @@
     </div>
     <div class="indicators">
         <div id="ind1" class="indicator">• RACK 61 ONLINE</div>
-        <div id="ind2" class="indicator">• RACK 136 ONLINE</div>
+        <div id="ind2" class="indicator">• RACK 139 ONLINE</div>
     </div>
 </header>
 
@@ -141,12 +144,12 @@
 
         <div class="card">
             <span class="device-tag">DEVICE: ESP32</span>
-            <div class="card-label">SUHU RUANGAN RACK 136</div>
+            <div class="card-label">SUHU RUANGAN RACK 139</div>
             <div class="card-value"><span id="val2">0.0</span><span class="unit">°C</span></div>
         </div>
         <div class="card">
             <span class="device-tag">DEVICE: ESP32</span>
-            <div class="card-label">Humidity Rack 136</div>
+            <div class="card-label">Humidity Rack 139</div>
             <div class="card-value"><span id="hum2">0.0</span><span class="unit">%</span></div>
         </div>
     </div>
@@ -157,7 +160,7 @@
             <div id="logList1" class="log-list"></div>
         </div>
         <div class="card log-card">
-            <div class="card-label">LOG RACK 136</div>
+            <div class="card-label">LOG RACK 139</div>
             <div id="logList2" class="log-list"></div>
         </div>
     </div>
@@ -168,7 +171,7 @@
             <canvas id="chart1"></canvas>
         </div>
         <div class="card chart-card">
-            <div class="card-label">Riwayat Suhu Rack 136</div>
+            <div class="card-label">Riwayat Suhu Rack 139</div>
             <canvas id="chart2"></canvas>
         </div>
     </div>
@@ -215,45 +218,59 @@
         if (list.children.length > 5) list.lastElementChild.remove();
     }
 
-    // Mendengarkan data dari Firebase
-    // Asumsi: data diupdate ke path 'live_data' dengan sub-key 'ruangan' (Rack 61) dan 'pac' (Rack 136)
-    // Serta heartbeat untuk status online
+    // Variabel untuk melacak heartbeat masing-masing perangkat
+    let lastHB_61 = Date.now();
+    let lastHB_139 = Date.now();
+
     db.ref('live_data').on('value', (snap) => {
         const d = snap.val();
         if (d) {
-            // Update Teks Rack 61 (Sensor 1 ESP8266)
-            document.getElementById('val1').innerText = d.ruangan ? d.ruangan.toFixed(1) : "0.0";
-            document.getElementById('hum1').innerText = d.humi ? d.humi.toFixed(1) : "0.0";
+            // Update Teks Rack 61
+            if (d.ruangan !== undefined) {
+                document.getElementById('val1').innerText = d.ruangan.toFixed(1);
+                document.getElementById('hum1').innerText = d.humi ? d.humi.toFixed(1) : "0.0";
+                c1.data.datasets[0].data.push(d.ruangan); c1.data.datasets[0].data.shift(); c1.update('none');
+                pushLog('logList1', d.ruangan, d.humi || 0);
+            }
 
-            // Update Teks Rack 136 (Sensor 1 ESP32)
-            document.getElementById('val2').innerText = d.pac ? d.pac.toFixed(1) : "0.0";
-            document.getElementById('hum2').innerText = d.kelembaban ? d.kelembaban.toFixed(1) : "0.0";
+            // Update Teks Rack 139
+            if (d.pac !== undefined) {
+                document.getElementById('val2').innerText = d.pac.toFixed(1);
+                document.getElementById('hum2').innerText = d.kelembaban ? d.kelembaban.toFixed(1) : "0.0";
+                c2.data.datasets[0].data.push(d.pac); c2.data.datasets[0].data.shift(); c2.update('none');
+                pushLog('logList2', d.pac, d.kelembaban || 0);
+            }
 
-            // Update Chart
-            c1.data.datasets[0].data.push(d.ruangan); c1.data.datasets[0].data.shift(); c1.update('none');
-            c2.data.datasets[0].data.push(d.pac); c2.data.datasets[0].data.shift(); c2.update('none');
-            
-            // Push Log
-            pushLog('logList1', d.ruangan || 0, d.humi || 0);
-            pushLog('logList2', d.pac || 0, d.kelembaban || 0);
+            // Tangkap Heartbeat individual
+            // Pastikan di ESP8266 mengirim ke path 'heartbeat' 
+            // Dan di ESP32 mengirim ke path 'heartbeat_esp32'
+            if (d.heartbeat) lastHB_61 = d.heartbeat * 1000;
+            if (d.heartbeat_esp32) lastHB_139 = d.heartbeat_esp32 * 1000;
         }
     });
 
-    // Logika Heartbeat (Status Offline/Online)
-    let lastHB = Date.now();
-    db.ref('live_data/heartbeat').on('value', snap => { lastHB = snap.val() * 1000; });
-
+    // Fitur Deteksi Offline/Online per perangkat
     setInterval(() => {
-        const diff = Date.now() - lastHB;
+        const now = Date.now();
         const ind1 = document.getElementById('ind1');
         const ind2 = document.getElementById('ind2');
         
-        if (diff > 20000) { // Jika lebih dari 20 detik tidak ada update
-            ind1.classList.add('offline'); ind1.innerText = "• RACK 61 OFFLINE";
-            ind2.classList.add('offline'); ind2.innerText = "• RACK 136 OFFLINE";
+        // Cek Rack 61 (Toleransi 25 detik)
+        if (now - lastHB_61 > 25000) {
+            ind1.classList.add('offline');
+            ind1.innerText = "• RACK 61 OFFLINE";
         } else {
-            ind1.classList.remove('offline'); ind1.innerText = "• RACK 61 ONLINE";
-            ind2.classList.remove('offline'); ind2.innerText = "• RACK 136 ONLINE";
+            ind1.classList.remove('offline');
+            ind1.innerText = "• RACK 61 ONLINE";
+        }
+
+        // Cek Rack 139 (Toleransi 25 detik)
+        if (now - lastHB_139 > 25000) {
+            ind2.classList.add('offline');
+            ind2.innerText = "• RACK 139 OFFLINE";
+        } else {
+            ind2.classList.remove('offline');
+            ind2.innerText = "• RACK 139 ONLINE";
         }
     }, 5000);
 </script>
