@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>DC-SDI LIVE MONITORING | RACK 61 & 139</title>
+    
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -14,8 +15,8 @@
             --card-color: #111b27;
             --text-main: #ffffff;
             --text-dim: #94a3b8;
-            --accent-blue: #38bdf8;
-            --accent-green: #10b981;
+            --accent-blue: #38bdf8; 
+            --accent-green: #10b981; 
             --accent-red: #ef4444;
         }
 
@@ -35,25 +36,26 @@
             margin-bottom: 20px;
         }
 
-        .logo-container { display: flex; align-items: center; gap: 12px; }
-        .icon-box {
-            background-color: var(--accent-blue);
-            width: 42px; height: 42px; border-radius: 10px;
-            display: flex; justify-content: center; align-items: center;
-            box-shadow: 0 0 15px rgba(56, 189, 248, 0.4);
+        .logo-container {
+            display: flex;
+            align-items: center;
+            gap: 12px;
         }
-        /* Update Ikon ke Termometer */
-        .icon-box i { color: white; font-size: 20px; }
+
+        .site-logo {
+            width: 65px;
+            height: 65px;
+            filter: drop-shadow(0 0 10px rgba(56, 189, 248, 0.4));
+        }
         
-        .brand h1 { margin: 0; font-size: 22px; font-weight: 800; }
+        .brand h1 { margin: 0; font-size: 20px; font-weight: 800; line-height: 1; }
         .brand h1 span { color: var(--accent-blue); }
-        .brand p { margin: 0; color: var(--text-dim); font-size: 10px; font-weight: 600; }
+        .brand p { margin: 5px 0 0 0; color: var(--text-dim); font-size: 9px; font-weight: 600; letter-spacing: 0.5px; }
 
         .indicators { display: flex; gap: 8px; }
         .indicator {
-            padding: 6px 14px; border-radius: 20px; font-size: 11px; font-weight: bold;
+            padding: 6px 14px; border-radius: 20px; font-size: 10px; font-weight: bold;
             background: rgba(16, 185, 129, 0.1); border: 1px solid var(--accent-green); color: var(--accent-green);
-            transition: all 0.3s ease;
         }
         .indicator.offline { border-color: var(--accent-red); color: var(--accent-red); background: rgba(239, 68, 68, 0.1); }
 
@@ -77,9 +79,9 @@
             border: 1px solid rgba(255,255,255,0.05);
         }
 
-        .card-label { color: var(--accent-blue); font-size: 11px; font-weight: 700; text-transform: uppercase; margin-bottom: 5px; }
-        .card-value { font-size: 38px; font-weight: 700; margin: 0; display: flex; align-items: baseline; gap: 5px; }
-        .unit { font-size: 16px; color: var(--text-dim); font-weight: 400; }
+        .card-label { color: var(--accent-blue); font-size: 10px; font-weight: 700; text-transform: uppercase; margin-bottom: 5px; }
+        .card-value { font-size: 34px; font-weight: 700; margin: 0; display: flex; align-items: baseline; gap: 5px; }
+        .unit { font-size: 14px; color: var(--text-dim); font-weight: 400; }
 
         .logs-area { display: flex; flex-direction: column; gap: 15px; }
         .log-card { height: 135px; overflow: hidden; padding: 12px 15px; } 
@@ -87,7 +89,6 @@
         .log-list {
             font-family: 'Courier New', monospace;
             font-size: 10px;
-            line-height: 1.4;
             color: #60a5fa;
             margin-top: 5px;
         }
@@ -99,17 +100,18 @@
             gap: 15px;
             margin-top: 5px;
         }
-        .chart-card { padding: 15px; }
-        canvas { height: 150px !important; }
+        
+        .chart-card { min-height: 220px; padding: 15px; position: relative; }
+        canvas { width: 100% !important; height: 160px !important; }
 
-        .device-tag {
-            font-size: 9px;
-            background: rgba(255,255,255,0.1);
-            padding: 2px 6px;
-            border-radius: 4px;
-            color: var(--text-dim);
-            margin-bottom: 8px;
-            display: inline-block;
+        @media (max-width: 768px) {
+            header { flex-direction: column; align-items: flex-start; gap: 15px; }
+            .main-container { grid-template-columns: 1fr; }
+            .logs-area { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+            .charts-area { grid-column: span 1; grid-template-columns: 1fr; }
+            .card-value { font-size: 26px; }
+            .stats-grid { gap: 10px; }
+            .site-logo { width: 50px; height: 50px; }
         }
     </style>
 </head>
@@ -117,7 +119,17 @@
 
 <header>
     <div class="logo-container">
-        <div class="icon-box"><i class="fas fa-thermometer-half"></i></div>
+        <svg class="site-logo" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect x="10" y="15" width="80" height="70" rx="4" fill="#1e293b" stroke="#38bdf8" stroke-width="2.5"/>
+            <path d="M15 25H25M15 35H25M15 45H25M15 55H25M15 65H25M15 75H25" stroke="#38bdf8" stroke-width="1.5" stroke-opacity="0.4"/>
+            <path d="M75 25H85M75 35H85M75 45H85M75 55H85M75 65H85M75 75H85" stroke="#38bdf8" stroke-width="1.5" stroke-opacity="0.4"/>
+            <path d="M10 32H90M10 49H90M10 66H90" stroke="#38bdf8" stroke-width="1.2" stroke-opacity="0.2"/>
+            <path d="M50 25C47.8 25 46 26.8 46 29V50.5C43.5 51.8 42 54.5 42 57.5C42 61.9 45.6 65.5 50 65.5C54.4 65.5 58 61.9 58 57.5C58 54.5 56.5 51.8 54 50.5V29C54 26.8 52.2 25 50 25Z" fill="#38bdf8"/>
+            <rect x="49" y="30" width="2" height="15" rx="1" fill="#050a10"/>
+            <circle cx="50" cy="57.5" r="4" fill="#050a10"/>
+            <circle cx="18" cy="20" r="2" fill="#10b981" fill-opacity="0.8"/>
+            <circle cx="24" cy="20" r="2" fill="#ef4444" fill-opacity="0.8"/>
+        </svg>
         <div class="brand">
             <h1>DC-SDI <span>LIVE</span></h1>
             <p>THERMAL MONITORING SYSTEM • INFRASTRUCTURE</p>
@@ -132,25 +144,20 @@
 <div class="main-container">
     <div class="stats-grid">
         <div class="card">
-            <span class="device-tag">DEVICE: ESP8266</span>
-            <div class="card-label">SUHU RUANGAN RACK 61</div>
-            <div class="card-value"><span id="val1">0.0</span><span class="unit">°C</span></div>
+            <div class="card-label">SUHU RACK 61</div>
+            <div class="card-value"><span id="val1">--</span><span class="unit">°C</span></div>
         </div>
         <div class="card">
-            <span class="device-tag">DEVICE: ESP8266</span>
-            <div class="card-label">Humidity Rack 61</div>
-            <div class="card-value"><span id="hum1">0.0</span><span class="unit">%</span></div>
-        </div>
-
-        <div class="card">
-            <span class="device-tag">DEVICE: ESP32</span>
-            <div class="card-label">SUHU RUANGAN RACK 139</div>
-            <div class="card-value"><span id="val2">0.0</span><span class="unit">°C</span></div>
+            <div class="card-label">HUMIDITY RACK 61</div>
+            <div class="card-value"><span id="hum1">--</span><span class="unit">%</span></div>
         </div>
         <div class="card">
-            <span class="device-tag">DEVICE: ESP32</span>
-            <div class="card-label">Humidity Rack 139</div>
-            <div class="card-value"><span id="hum2">0.0</span><span class="unit">%</span></div>
+            <div class="card-label">SUHU RACK 139</div>
+            <div class="card-value"><span id="val2">--</span><span class="unit">°C</span></div>
+        </div>
+        <div class="card">
+            <div class="card-label">HUMIDITY RACK 139</div>
+            <div class="card-value"><span id="hum2">--</span><span class="unit">%</span></div>
         </div>
     </div>
 
@@ -190,7 +197,7 @@
                 datasets: [{
                     data: Array(25).fill(null),
                     borderColor: color,
-                    backgroundColor: color + '10',
+                    backgroundColor: color + '15',
                     fill: true, tension: 0.4, pointRadius: 0
                 }]
             },
@@ -200,77 +207,93 @@
                 plugins: { legend: { display: false } },
                 scales: {
                     x: { display: false },
-                    y: { grid: { color: '#1e293b' }, ticks: { color: '#64748b', font: { size: 10 } } }
+                    y: { 
+                        grid: { color: '#1e293b' }, 
+                        ticks: { color: '#64748b', font: { size: 10 } } 
+                    }
                 }
             }
         });
     }
 
     const c1 = buildChart('chart1', '#10b981');
-    const c2 = buildChart('chart2', '#10b981');
+    const c2 = buildChart('chart2', '#10b981'); 
 
-    function pushLog(id, val, h) {
+    function restoreHistory(chart, key) {
+        const saved = localStorage.getItem(key);
+        if(saved) {
+            chart.data.datasets[0].data = JSON.parse(saved);
+            chart.update('none');
+        }
+    }
+    restoreHistory(c1, 'hist_61');
+    restoreHistory(c2, 'hist_139');
+
+    function pushLog(id, msg, isAlert = false) {
         const now = new Date();
         const ts = now.getHours().toString().padStart(2, '0') + ":" + now.getMinutes().toString().padStart(2, '0') + ":" + now.getSeconds().toString().padStart(2, '0');
-        const entry = `<div style="margin-bottom:2px;">[${ts}] ${val.toFixed(1)}°C | H:${h.toFixed(0)}%</div>`;
+        const color = isAlert ? '#ef4444' : '#60a5fa';
+        const entry = <div style="margin-bottom:2px; color:${color}">[${ts}] ${msg}</div>;
         const list = document.getElementById(id);
         list.innerHTML = entry + list.innerHTML;
         if (list.children.length > 5) list.lastElementChild.remove();
     }
 
-    // Variabel untuk melacak heartbeat masing-masing perangkat
     let lastHB_61 = Date.now();
     let lastHB_139 = Date.now();
+    let is61Down = false;
+    let is139Down = false;
 
     db.ref('live_data').on('value', (snap) => {
         const d = snap.val();
         if (d) {
-            // Update Teks Rack 61
+            // RACK 61
             if (d.ruangan !== undefined) {
                 document.getElementById('val1').innerText = d.ruangan.toFixed(1);
-                document.getElementById('hum1').innerText = d.humi ? d.humi.toFixed(1) : "0.0";
-                c1.data.datasets[0].data.push(d.ruangan); c1.data.datasets[0].data.shift(); c1.update('none');
-                pushLog('logList1', d.ruangan, d.humi || 0);
+                document.getElementById('hum1').innerText = (d.humi || 0).toFixed(1);
+                c1.data.datasets[0].data.push(d.ruangan); c1.data.datasets[0].data.shift();
+                c1.update('none');
+                localStorage.setItem('hist_61', JSON.stringify(c1.data.datasets[0].data));
+                
+                if(is61Down) { pushLog('logList1', "SYSTEM RECONNECTED", false); is61Down = false; }
+                pushLog('logList1', Suhu Ruangan ${d.ruangan.toFixed(1)}°C | Humidity ${(d.humi || 0).toFixed(0)}%);
             }
 
-            // Update Teks Rack 139
+            // RACK 139
             if (d.pac !== undefined) {
-                document.getElementById('val2').innerText = d.pac.toFixed(1);
-                document.getElementById('hum2').innerText = d.kelembaban ? d.kelembaban.toFixed(1) : "0.0";
-                c2.data.datasets[0].data.push(d.pac); c2.data.datasets[0].data.shift(); c2.update('none');
-                pushLog('logList2', d.pac, d.kelembaban || 0);
+                const temp139 = d.pac + 1.0; 
+                document.getElementById('val2').innerText = temp139.toFixed(1);
+                document.getElementById('hum2').innerText = (d.kelembaban || 0).toFixed(1);
+                c2.data.datasets[0].data.push(temp139); c2.data.datasets[0].data.shift();
+                c2.update('none');
+                localStorage.setItem('hist_139', JSON.stringify(c2.data.datasets[0].data));
+                
+                if(is139Down) { pushLog('logList2', "SYSTEM RECONNECTED", false); is139Down = false; }
+                pushLog('logList2', Suhu Ruangan ${temp139.toFixed(1)}°C | Humidity ${(d.kelembaban || 0).toFixed(0)}%);
             }
 
-            // Tangkap Heartbeat individual
-            // Pastikan di ESP8266 mengirim ke path 'heartbeat' 
-            // Dan di ESP32 mengirim ke path 'heartbeat_esp32'
             if (d.heartbeat) lastHB_61 = d.heartbeat * 1000;
             if (d.heartbeat_esp32) lastHB_139 = d.heartbeat_esp32 * 1000;
         }
     });
 
-    // Fitur Deteksi Offline/Online per perangkat
     setInterval(() => {
         const now = Date.now();
         const ind1 = document.getElementById('ind1');
         const ind2 = document.getElementById('ind2');
-        
-        // Cek Rack 61 (Toleransi 25 detik)
-        if (now - lastHB_61 > 25000) {
-            ind1.classList.add('offline');
-            ind1.innerText = "• RACK 61 OFFLINE";
-        } else {
-            ind1.classList.remove('offline');
-            ind1.innerText = "• RACK 61 ONLINE";
-        }
 
-        // Cek Rack 139 (Toleransi 25 detik)
-        if (now - lastHB_139 > 25000) {
-            ind2.classList.add('offline');
-            ind2.innerText = "• RACK 139 OFFLINE";
+        if (now - lastHB_61 > 25000) {
+            ind1.classList.add('offline'); ind1.innerText = "• RACK 61 OFFLINE";
+            if (!is61Down) { pushLog('logList1', "SENSOR DISCONNECTED", true); is61Down = true; }
         } else {
-            ind2.classList.remove('offline');
-            ind2.innerText = "• RACK 139 ONLINE";
+            ind1.classList.remove('offline'); ind1.innerText = "• RACK 61 ONLINE";
+        }
+        
+        if (now - lastHB_139 > 25000) {
+            ind2.classList.add('offline'); ind2.innerText = "• RACK 139 OFFLINE";
+            if (!is139Down) { pushLog('logList2', "SENSOR DISCONNECTED", true); is139Down = true; }
+        } else {
+            ind2.classList.remove('offline'); ind2.innerText = "• RACK 139 ONLINE";
         }
     }, 5000);
 </script>
