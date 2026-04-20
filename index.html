@@ -83,10 +83,9 @@
             justify-content: flex-start;
             height: 155px; 
             box-sizing: border-box;
-            position: relative; /* DITAMBAHKAN UNTUK POSISI ABSOLUT ANAKNYA */
         }
 
-        /* STYLE DIREVISI UNTUK POJOK KANAN BAWAH */
+        /* STYLE DIREVISI MENGGUNAKAN FLEXBOX AGAR TIDAK TUMPANG TINDIH */
         .device-badge {
             background-color: rgba(255, 255, 255, 0.05);
             color: var(--text-dim);
@@ -94,10 +93,10 @@
             font-weight: 600;
             padding: 4px 8px;
             border-radius: 4px;
-            position: absolute; /* MENGUBAH POSISI JADI ABSOLUT */
-            bottom: 15px;       /* JARAK DARI BAWAH */
-            right: 15px;        /* JARAK DARI KANAN */
             letter-spacing: 0.5px;
+            /* Flexbox trick untuk mendorong ke pojok kanan bawah secara natural */
+            margin-top: auto; 
+            align-self: flex-end; 
         }
 
         .card-label { 
@@ -160,7 +159,8 @@
             .logs-area { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
             .charts-area { grid-column: span 1; grid-template-columns: 1fr; }
             .card-value { font-size: 38px; }
-            .card, .log-card { height: auto; }
+            /* Membiarkan height auto agar kotak memanjang menyesuaikan margin-top: auto pada badge */
+            .card, .log-card { height: auto; min-height: 130px; } 
         }
     </style>
 </head>
