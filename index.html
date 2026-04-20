@@ -233,7 +233,7 @@
         const now = new Date();
         const ts = now.getHours().toString().padStart(2, '0') + ":" + now.getMinutes().toString().padStart(2, '0') + ":" + now.getSeconds().toString().padStart(2, '0');
         const color = isAlert ? '#ef4444' : '#60a5fa';
-        const entry = <div style="margin-bottom:2px; color:${color}">[${ts}] ${msg}</div>;
+        const entry = `<div style="margin-bottom:2px; color:${color}">[${ts}] ${msg}</div>`;
         const list = document.getElementById(id);
         list.innerHTML = entry + list.innerHTML;
         if (list.children.length > 5) list.lastElementChild.remove();
@@ -256,7 +256,7 @@
                 localStorage.setItem('hist_61', JSON.stringify(c1.data.datasets[0].data));
                 
                 if(is61Down) { pushLog('logList1', "SYSTEM RECONNECTED", false); is61Down = false; }
-                pushLog('logList1', Suhu Ruangan ${d.ruangan.toFixed(1)}°C | Humidity ${(d.humi || 0).toFixed(0)}%);
+                pushLog('logList1', `Suhu Ruangan ${d.ruangan.toFixed(1)}°C | Humidity ${(d.humi || 0).toFixed(0)}%`);
             }
 
             // RACK 139
@@ -269,7 +269,7 @@
                 localStorage.setItem('hist_139', JSON.stringify(c2.data.datasets[0].data));
                 
                 if(is139Down) { pushLog('logList2', "SYSTEM RECONNECTED", false); is139Down = false; }
-                pushLog('logList2', Suhu Ruangan ${temp139.toFixed(1)}°C | Humidity ${(d.kelembaban || 0).toFixed(0)}%);
+                pushLog('logList2', `Suhu Ruangan ${temp139.toFixed(1)}°C | Humidity ${(d.kelembaban || 0).toFixed(0)}%`);
             }
 
             if (d.heartbeat) lastHB_61 = d.heartbeat * 1000;
