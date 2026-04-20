@@ -73,18 +73,33 @@
 
         .card {
             background-color: var(--card-color);
-            padding: 15px 20px;
+            padding: 20px 25px; /* Sedikit lebih lebar */
             border-radius: 12px;
             box-shadow: 0 4px 10px rgba(0,0,0,0.3);
             border: 1px solid rgba(255,255,255,0.05);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
         }
 
-        .card-label { color: var(--accent-blue); font-size: 10px; font-weight: 700; text-transform: uppercase; margin-bottom: 5px; }
-        .card-value { font-size: 34px; font-weight: 700; margin: 0; display: flex; align-items: baseline; gap: 5px; }
-        .unit { font-size: 14px; color: var(--text-dim); font-weight: 400; }
+        .card-label { color: var(--accent-blue); font-size: 11px; font-weight: 800; text-transform: uppercase; margin-bottom: 8px; letter-spacing: 0.5px; }
+        
+        /* UKURAN ANGKA DIPERBESAR DI SINI */
+        .card-value { 
+            font-size: 48px; /* Dari 34px ke 48px */
+            font-weight: 800; 
+            margin: 0; 
+            display: flex; 
+            align-items: baseline; 
+            gap: 8px; 
+            color: var(--text-main);
+            text-shadow: 0 0 15px rgba(56, 189, 248, 0.2);
+        }
+        
+        .unit { font-size: 18px; color: var(--text-dim); font-weight: 400; }
 
         .logs-area { display: flex; flex-direction: column; gap: 15px; }
-        .log-card { height: 135px; overflow: hidden; padding: 12px 15px; } 
+        .log-card { height: 160px; overflow: hidden; padding: 12px 15px; } 
         
         .log-list {
             font-family: 'Courier New', monospace;
@@ -109,7 +124,7 @@
             .main-container { grid-template-columns: 1fr; }
             .logs-area { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
             .charts-area { grid-column: span 1; grid-template-columns: 1fr; }
-            .card-value { font-size: 26px; }
+            .card-value { font-size: 38px; } /* Ukuran mobile juga diperbesar */
             .stats-grid { gap: 10px; }
             .site-logo { width: 50px; height: 50px; }
         }
@@ -124,7 +139,7 @@
             <path d="M15 25H25M15 35H25M15 45H25M15 55H25M15 65H25M15 75H25" stroke="#38bdf8" stroke-width="1.5" stroke-opacity="0.4"/>
             <path d="M75 25H85M75 35H85M75 45H85M75 55H85M75 65H85M75 75H85" stroke="#38bdf8" stroke-width="1.5" stroke-opacity="0.4"/>
             <path d="M10 32H90M10 49H90M10 66H90" stroke="#38bdf8" stroke-width="1.2" stroke-opacity="0.2"/>
-            <path d="M50 25C47.8 25 46 26.8 46 29V50.5C43.5 51.8 42 54.5 42 57.5C42 61.9 45.6 65.5 50 65.5C54.4 65.5 58 61.9 58 57.5C58 54.5 56.5 51.8 54 50.5V29C54 26.8 52.2 25 50 25Z" fill="#38bdf8"/>
+            <path d="M50 25C47.8 25 46 26.8 46 29V50.5C43.5 51.8 42 54.5 42 57.5C42 61.9 45.6 70.5 50 70.5C54.4 70.5 58 66.9 58 62.5C58 59.5 56.5 56.8 54 50.5V29C54 26.8 52.2 25 50 25Z" fill="#38bdf8"/>
             <rect x="49" y="30" width="2" height="15" rx="1" fill="#050a10"/>
             <circle cx="50" cy="57.5" r="4" fill="#050a10"/>
             <circle cx="18" cy="20" r="2" fill="#10b981" fill-opacity="0.8"/>
@@ -247,7 +262,6 @@
     db.ref('live_data').on('value', (snap) => {
         const d = snap.val();
         if (d) {
-            // RACK 61
             if (d.ruangan !== undefined) {
                 document.getElementById('val1').innerText = d.ruangan.toFixed(1);
                 document.getElementById('hum1').innerText = (d.humi || 0).toFixed(1);
@@ -259,7 +273,6 @@
                 pushLog('logList1', `Suhu Ruangan ${d.ruangan.toFixed(1)}°C | Humidity ${(d.humi || 0).toFixed(0)}%`);
             }
 
-            // RACK 139
             if (d.pac !== undefined) {
                 const temp139 = d.pac + 1.0; 
                 document.getElementById('val2').innerText = temp139.toFixed(1);
