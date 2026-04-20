@@ -81,8 +81,22 @@
             display: flex;
             flex-direction: column;
             justify-content: flex-start;
-            height: 140px; /* TINGGI DISAMAKAN AGAR PRESISI */
+            height: 155px; /* TINGGI DIPERBESAR SEDIKIT (Dari 140px ke 155px) */
             box-sizing: border-box;
+        }
+
+        /* STYLE BARU UNTUK NAMA DEVICE */
+        .device-badge {
+            background-color: rgba(255, 255, 255, 0.05);
+            color: var(--text-dim);
+            font-size: 9px;
+            font-weight: 600;
+            padding: 4px 8px;
+            border-radius: 4px;
+            display: inline-block;
+            margin-bottom: 8px;
+            align-self: flex-start; /* Posisi di kiri atas */
+            letter-spacing: 0.5px;
         }
 
         .card-label { 
@@ -90,7 +104,7 @@
             font-size: 11px; 
             font-weight: 800; 
             text-transform: uppercase; 
-            margin-bottom: 15px; 
+            margin-bottom: 10px; /* Disesuaikan agar tidak terlalu jauh ke angka */
             letter-spacing: 0.8px;
         }
         
@@ -114,9 +128,9 @@
             gap: 15px; 
         }
 
-        /* TINGGI LOG DISAMAKAN DENGAN STATS GRID */
+        /* TINGGI LOG MENGIKUTI PERUBAHAN STATS GRID */
         .log-card { 
-            height: 140px; /* SAMA DENGAN .card */
+            height: 155px; /* HARUS SAMA DENGAN .card */
             overflow: hidden; 
             padding: 15px; 
         } 
@@ -146,7 +160,7 @@
             .logs-area { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
             .charts-area { grid-column: span 1; grid-template-columns: 1fr; }
             .card-value { font-size: 38px; }
-            .card, .log-card { height: 130px; }
+            .card, .log-card { height: auto; } /* Biar menyesuaikan isi kalau di HP */
         }
     </style>
 </head>
@@ -179,18 +193,22 @@
 <div class="main-container">
     <div class="stats-grid">
         <div class="card">
+            <div class="device-badge">DEVICE: ESP8266</div>
             <div class="card-label">SUHU RUANGAN RACK 61</div>
             <div class="card-value"><span id="val1">--</span><span class="unit">°C</span></div>
         </div>
         <div class="card">
+            <div class="device-badge">DEVICE: ESP8266</div>
             <div class="card-label">HUMIDITY RACK 61</div>
             <div class="card-value"><span id="hum1">--</span><span class="unit">%</span></div>
         </div>
         <div class="card">
+            <div class="device-badge">DEVICE: ESP32</div>
             <div class="card-label">SUHU RUANGAN RACK 139</div>
             <div class="card-value"><span id="val2">--</span><span class="unit">°C</span></div>
         </div>
         <div class="card">
+            <div class="device-badge">DEVICE: ESP32</div>
             <div class="card-label">HUMIDITY RACK 139</div>
             <div class="card-value"><span id="hum2">--</span><span class="unit">%</span></div>
         </div>
