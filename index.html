@@ -73,20 +73,28 @@
 
         .card {
             background-color: var(--card-color);
-            padding: 20px 25px; /* Sedikit lebih lebar */
+            padding: 25px; 
             border-radius: 12px;
             box-shadow: 0 4px 10px rgba(0,0,0,0.3);
             border: 1px solid rgba(255,255,255,0.05);
             display: flex;
             flex-direction: column;
-            justify-content: center;
+            justify-content: flex-start; /* Label menempel ke atas */
+            height: 120px; /* Ukuran tinggi kartu seragam */
         }
 
-        .card-label { color: var(--accent-blue); font-size: 11px; font-weight: 800; text-transform: uppercase; margin-bottom: 8px; letter-spacing: 0.5px; }
+        /* TULISAN LABEL KE ATAS */
+        .card-label { 
+            color: var(--accent-blue); 
+            font-size: 11px; 
+            font-weight: 800; 
+            text-transform: uppercase; 
+            margin-bottom: 12px; /* Memberi jarak lebih lebar ke angka bawahnya */
+            letter-spacing: 0.8px;
+        }
         
-        /* UKURAN ANGKA DIPERBESAR DI SINI */
         .card-value { 
-            font-size: 48px; /* Dari 34px ke 48px */
+            font-size: 48px; 
             font-weight: 800; 
             margin: 0; 
             display: flex; 
@@ -94,6 +102,7 @@
             gap: 8px; 
             color: var(--text-main);
             text-shadow: 0 0 15px rgba(56, 189, 248, 0.2);
+            line-height: 1; /* Mencegah jarak baris yang berlebihan */
         }
         
         .unit { font-size: 18px; color: var(--text-dim); font-weight: 400; }
@@ -124,9 +133,10 @@
             .main-container { grid-template-columns: 1fr; }
             .logs-area { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
             .charts-area { grid-column: span 1; grid-template-columns: 1fr; }
-            .card-value { font-size: 38px; } /* Ukuran mobile juga diperbesar */
+            .card-value { font-size: 38px; }
             .stats-grid { gap: 10px; }
             .site-logo { width: 50px; height: 50px; }
+            .card { height: auto; padding: 15px; }
         }
     </style>
 </head>
