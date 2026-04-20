@@ -63,6 +63,7 @@
             display: grid;
             grid-template-columns: 2fr 1fr;
             gap: 15px;
+            align-items: start;
         }
 
         .stats-grid {
@@ -73,23 +74,23 @@
 
         .card {
             background-color: var(--card-color);
-            padding: 25px; 
+            padding: 20px 25px; 
             border-radius: 12px;
             box-shadow: 0 4px 10px rgba(0,0,0,0.3);
             border: 1px solid rgba(255,255,255,0.05);
             display: flex;
             flex-direction: column;
-            justify-content: flex-start; /* Label menempel ke atas */
-            height: 120px; /* Ukuran tinggi kartu seragam */
+            justify-content: flex-start;
+            height: 140px; /* TINGGI DISAMAKAN AGAR PRESISI */
+            box-sizing: border-box;
         }
 
-        /* TULISAN LABEL KE ATAS */
         .card-label { 
             color: var(--accent-blue); 
             font-size: 11px; 
             font-weight: 800; 
             text-transform: uppercase; 
-            margin-bottom: 12px; /* Memberi jarak lebih lebar ke angka bawahnya */
+            margin-bottom: 15px; 
             letter-spacing: 0.8px;
         }
         
@@ -102,19 +103,30 @@
             gap: 8px; 
             color: var(--text-main);
             text-shadow: 0 0 15px rgba(56, 189, 248, 0.2);
-            line-height: 1; /* Mencegah jarak baris yang berlebihan */
+            line-height: 1;
         }
         
         .unit { font-size: 18px; color: var(--text-dim); font-weight: 400; }
 
-        .logs-area { display: flex; flex-direction: column; gap: 15px; }
-        .log-card { height: 160px; overflow: hidden; padding: 12px 15px; } 
+        .logs-area { 
+            display: flex; 
+            flex-direction: column; 
+            gap: 15px; 
+        }
+
+        /* TINGGI LOG DISAMAKAN DENGAN STATS GRID */
+        .log-card { 
+            height: 140px; /* SAMA DENGAN .card */
+            overflow: hidden; 
+            padding: 15px; 
+        } 
         
         .log-list {
             font-family: 'Courier New', monospace;
             font-size: 10px;
             color: #60a5fa;
             margin-top: 5px;
+            line-height: 1.4;
         }
 
         .charts-area {
@@ -125,7 +137,7 @@
             margin-top: 5px;
         }
         
-        .chart-card { min-height: 220px; padding: 15px; position: relative; }
+        .chart-card { min-height: 220px; padding: 15px; position: relative; height: auto !important; }
         canvas { width: 100% !important; height: 160px !important; }
 
         @media (max-width: 768px) {
@@ -134,9 +146,7 @@
             .logs-area { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
             .charts-area { grid-column: span 1; grid-template-columns: 1fr; }
             .card-value { font-size: 38px; }
-            .stats-grid { gap: 10px; }
-            .site-logo { width: 50px; height: 50px; }
-            .card { height: auto; padding: 15px; }
+            .card, .log-card { height: 130px; }
         }
     </style>
 </head>
@@ -188,22 +198,22 @@
 
     <div class="logs-area">
         <div class="card log-card">
-            <div class="card-label">LOG RACK 61</div>
+            <div class="card-label">LOG AKTIVITAS RACK 61</div>
             <div id="logList1" class="log-list"></div>
         </div>
         <div class="card log-card">
-            <div class="card-label">LOG RACK 139</div>
+            <div class="card-label">LOG AKTIVITAS RACK 139</div>
             <div id="logList2" class="log-list"></div>
         </div>
     </div>
 
     <div class="charts-area">
         <div class="card chart-card">
-            <div class="card-label">Riwayat Suhu Rack 61</div>
+            <div class="card-label">Riwayat Suhu Ruangan Rack 61</div>
             <canvas id="chart1"></canvas>
         </div>
         <div class="card chart-card">
-            <div class="card-label">Riwayat Suhu Rack 139</div>
+            <div class="card-label">Riwayat Suhu Ruangan Rack 139</div>
             <canvas id="chart2"></canvas>
         </div>
     </div>
@@ -258,7 +268,7 @@
         const now = new Date();
         const ts = now.getHours().toString().padStart(2, '0') + ":" + now.getMinutes().toString().padStart(2, '0') + ":" + now.getSeconds().toString().padStart(2, '0');
         const color = isAlert ? '#ef4444' : '#60a5fa';
-        const entry = `<div style="margin-bottom:2px; color:${color}">[${ts}] ${msg}</div>`;
+        const entry = `<div style="margin-bottom:4px; color:${color}">[${ts}] ${msg}</div>`;
         const list = document.getElementById(id);
         list.innerHTML = entry + list.innerHTML;
         if (list.children.length > 5) list.lastElementChild.remove();
