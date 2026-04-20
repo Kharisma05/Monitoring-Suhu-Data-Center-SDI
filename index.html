@@ -81,11 +81,12 @@
             display: flex;
             flex-direction: column;
             justify-content: flex-start;
-            height: 155px; /* TINGGI DIPERBESAR SEDIKIT (Dari 140px ke 155px) */
+            height: 155px; 
             box-sizing: border-box;
+            position: relative; /* DITAMBAHKAN UNTUK POSISI ABSOLUT ANAKNYA */
         }
 
-        /* STYLE BARU UNTUK NAMA DEVICE */
+        /* STYLE DIREVISI UNTUK POJOK KANAN BAWAH */
         .device-badge {
             background-color: rgba(255, 255, 255, 0.05);
             color: var(--text-dim);
@@ -93,9 +94,9 @@
             font-weight: 600;
             padding: 4px 8px;
             border-radius: 4px;
-            display: inline-block;
-            margin-bottom: 8px;
-            align-self: flex-start; /* Posisi di kiri atas */
+            position: absolute; /* MENGUBAH POSISI JADI ABSOLUT */
+            bottom: 15px;       /* JARAK DARI BAWAH */
+            right: 15px;        /* JARAK DARI KANAN */
             letter-spacing: 0.5px;
         }
 
@@ -104,7 +105,7 @@
             font-size: 11px; 
             font-weight: 800; 
             text-transform: uppercase; 
-            margin-bottom: 10px; /* Disesuaikan agar tidak terlalu jauh ke angka */
+            margin-bottom: 10px; 
             letter-spacing: 0.8px;
         }
         
@@ -128,9 +129,8 @@
             gap: 15px; 
         }
 
-        /* TINGGI LOG MENGIKUTI PERUBAHAN STATS GRID */
         .log-card { 
-            height: 155px; /* HARUS SAMA DENGAN .card */
+            height: 155px; 
             overflow: hidden; 
             padding: 15px; 
         } 
@@ -160,7 +160,7 @@
             .logs-area { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
             .charts-area { grid-column: span 1; grid-template-columns: 1fr; }
             .card-value { font-size: 38px; }
-            .card, .log-card { height: auto; } /* Biar menyesuaikan isi kalau di HP */
+            .card, .log-card { height: auto; }
         }
     </style>
 </head>
@@ -193,24 +193,24 @@
 <div class="main-container">
     <div class="stats-grid">
         <div class="card">
-            <div class="device-badge">DEVICE: ESP8266</div>
             <div class="card-label">SUHU RUANGAN RACK 61</div>
             <div class="card-value"><span id="val1">--</span><span class="unit">°C</span></div>
+            <div class="device-badge">DEVICE: ESP8266</div>
         </div>
         <div class="card">
-            <div class="device-badge">DEVICE: ESP8266</div>
             <div class="card-label">HUMIDITY RACK 61</div>
             <div class="card-value"><span id="hum1">--</span><span class="unit">%</span></div>
+            <div class="device-badge">DEVICE: ESP8266</div>
         </div>
         <div class="card">
-            <div class="device-badge">DEVICE: ESP32</div>
             <div class="card-label">SUHU RUANGAN RACK 139</div>
             <div class="card-value"><span id="val2">--</span><span class="unit">°C</span></div>
+            <div class="device-badge">DEVICE: ESP32</div>
         </div>
         <div class="card">
-            <div class="device-badge">DEVICE: ESP32</div>
             <div class="card-label">HUMIDITY RACK 139</div>
             <div class="card-value"><span id="hum2">--</span><span class="unit">%</span></div>
+            <div class="device-badge">DEVICE: ESP32</div>
         </div>
     </div>
 
