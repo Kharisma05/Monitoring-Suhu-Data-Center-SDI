@@ -18,150 +18,72 @@
             --accent-blue: #38bdf8; 
             --accent-green: #10b981; 
             --accent-red: #ef4444;
+            --accent-orange: #f59e0b;
         }
 
-        body {
-            background-color: var(--bg-color);
-            color: var(--text-main);
-            font-family: 'Segoe UI', sans-serif;
-            margin: 0;
-            padding: 15px;
-            overflow-x: hidden;
-        }
+        body { background-color: var(--bg-color); color: var(--text-main); font-family: 'Segoe UI', sans-serif; margin: 0; padding: 15px; }
 
-        header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-        }
-
-        .logo-container {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .site-logo {
-            width: 65px;
-            height: 65px;
-            filter: drop-shadow(0 0 10px rgba(56, 189, 248, 0.4));
-        }
-        
-        .brand h1 { margin: 0; font-size: 20px; font-weight: 800; line-height: 1; }
+        header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; border-bottom: 1px solid rgba(56, 189, 248, 0.1); padding-bottom: 10px; }
+        .logo-container { display: flex; align-items: center; gap: 12px; }
+        .site-logo { width: 55px; height: 55px; filter: drop-shadow(0 0 10px rgba(56, 189, 248, 0.4)); }
+        .brand h1 { margin: 0; font-size: 18px; font-weight: 800; }
         .brand h1 span { color: var(--accent-blue); }
-        .brand p { margin: 5px 0 0 0; color: var(--text-dim); font-size: 9px; font-weight: 600; letter-spacing: 0.5px; }
+        .brand p { margin: 2px 0 0 0; color: var(--text-dim); font-size: 8px; font-weight: 600; letter-spacing: 0.5px; }
 
         .indicators { display: flex; gap: 8px; }
-        .indicator {
-            padding: 6px 14px; border-radius: 20px; font-size: 10px; font-weight: bold;
-            background: rgba(16, 185, 129, 0.1); border: 1px solid var(--accent-green); color: var(--accent-green);
-        }
+        .indicator { padding: 4px 12px; border-radius: 20px; font-size: 9px; font-weight: bold; background: rgba(16, 185, 129, 0.1); border: 1px solid var(--accent-green); color: var(--accent-green); }
         .indicator.offline { border-color: var(--accent-red); color: var(--accent-red); background: rgba(239, 68, 68, 0.1); }
 
-        .main-container {
-            display: grid;
-            grid-template-columns: 2fr 1fr;
-            gap: 15px;
-            align-items: start;
-        }
-
-        .stats-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 15px;
-        }
+        .dashboard-grid { display: grid; grid-template-columns: 1fr 1fr 1.2fr; gap: 12px; }
+        .full-width { grid-column: span 3; margin: 5px 0; }
 
         .card {
-            background-color: var(--card-color);
-            padding: 20px 25px; 
-            border-radius: 12px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-            border: 1px solid rgba(255,255,255,0.05);
-            display: flex;
-            flex-direction: column;
-            justify-content: flex-start;
-            height: 155px; 
-            box-sizing: border-box;
+            background-color: var(--card-color); padding: 12px 18px; border-radius: 10px;
+            border: 1px solid rgba(255,255,255,0.05); display: flex; flex-direction: column;
+            min-height: 120px; box-sizing: border-box; transition: all 0.3s ease; position: relative;
         }
 
-        /* STYLE DIREVISI MENGGUNAKAN FLEXBOX AGAR TIDAK TUMPANG TINDIH */
-        .device-badge {
-            background-color: rgba(255, 255, 255, 0.05);
-            color: var(--text-dim);
-            font-size: 9px;
-            font-weight: 600;
-            padding: 4px 8px;
-            border-radius: 4px;
-            letter-spacing: 0.5px;
-            /* Flexbox trick untuk mendorong ke pojok kanan bawah secara natural */
-            margin-top: auto; 
-            align-self: flex-end; 
-        }
+        .card-label { color: var(--accent-blue); font-size: 12px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.8px; }
 
-        .card-label { 
-            color: var(--accent-blue); 
-            font-size: 11px; 
-            font-weight: 800; 
-            text-transform: uppercase; 
-            margin-bottom: 10px; 
-            letter-spacing: 0.8px;
-        }
-        
+        /* ANGKA DIPERBESAR AGAR JELAS DILIHAT DARI JAUH */
         .card-value { 
-            font-size: 48px; 
+            font-size: 48px; /* Diperbesar dari 36px */
             font-weight: 800; 
-            margin: 0; 
+            margin: 5px 0; 
             display: flex; 
             align-items: baseline; 
-            gap: 8px; 
-            color: var(--text-main);
+            color: var(--text-main); 
+            line-height: 1; 
             text-shadow: 0 0 15px rgba(56, 189, 248, 0.2);
-            line-height: 1;
         }
-        
-        .unit { font-size: 18px; color: var(--text-dim); font-weight: 400; }
+        .unit { font-size: 18px; color: var(--text-dim); font-weight: 400; margin-left: 5px; }
 
-        .logs-area { 
-            display: flex; 
-            flex-direction: column; 
-            gap: 15px; 
-        }
-
-        .log-card { 
-            height: 155px; 
-            overflow: hidden; 
-            padding: 15px; 
-        } 
-        
-        .log-list {
-            font-family: 'Courier New', monospace;
-            font-size: 10px;
-            color: #60a5fa;
-            margin-top: 5px;
-            line-height: 1.4;
+        .device-badge {
+            position: absolute; bottom: 8px; right: 10px;
+            background: rgba(255, 255, 255, 0.05); color: var(--text-dim);
+            font-size: 8px; font-weight: 700; padding: 2px 6px; border-radius: 4px;
+            letter-spacing: 0.5px; pointer-events: none;
         }
 
-        .charts-area {
-            grid-column: span 2;
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 15px;
-            margin-top: 5px;
-        }
-        
-        .chart-card { min-height: 220px; padding: 15px; position: relative; height: auto !important; }
-        canvas { width: 100% !important; height: 160px !important; }
+        .status-tag { font-size: 9px; font-weight: 900; padding: 2px 6px; border-radius: 4px; margin-left: auto; text-transform: uppercase; }
+        .trend-icon { font-size: 16px; margin-left: 8px; font-weight: bold; }
+        .card-label-row { display: flex; align-items: center; width: 100%; margin-bottom: 5px; }
 
-        @media (max-width: 768px) {
-            header { flex-direction: column; align-items: flex-start; gap: 15px; }
-            .main-container { grid-template-columns: 1fr; }
-            .logs-area { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-            .charts-area { grid-column: span 1; grid-template-columns: 1fr; }
-            .card-value { font-size: 38px; }
-            /* Membiarkan height auto agar kotak memanjang menyesuaikan margin-top: auto pada badge */
-            .card, .log-card { height: auto; min-height: 130px; } 
+        @keyframes pulse-red {
+            0% { border-color: var(--accent-red); box-shadow: 0 0 0px var(--accent-red); }
+            50% { border-color: var(--accent-red); box-shadow: 0 0 20px var(--accent-red); background: rgba(239, 68, 68, 0.15); }
+            100% { border-color: var(--accent-red); box-shadow: 0 0 0px var(--accent-red); }
         }
+        .warning-pulse { animation: pulse-red 0.8s infinite; border-width: 2px !important; }
+
+        .alert-panel {
+            background: rgba(245, 158, 11, 0.03); border-left: 3px solid var(--accent-orange);
+            padding: 8px 20px; min-height: 45px; flex-direction: row; align-items: center; gap: 15px;
+        }
+
+        .log-list { font-family: 'Courier New', monospace; font-size: 10px; color: #60a5fa; line-height: 1.4; }
+        .chart-container { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; width: 100%; }
+        canvas { width: 100% !important; height: 120px !important; }
     </style>
 </head>
 <body>
@@ -190,49 +112,66 @@
     </div>
 </header>
 
-<div class="main-container">
-    <div class="stats-grid">
-        <div class="card">
-            <div class="card-label">SUHU RUANGAN RACK 61</div>
-            <div class="card-value"><span id="val1">--</span><span class="unit">°C</span></div>
-            <div class="device-badge">DEVICE: ESP8266</div>
+<div class="dashboard-grid">
+    <div class="card" id="card-temp-61">
+        <div class="card-label-row">
+            <span class="card-label">SUHU RUANGAN RACK 61</span>
+            <span id="trend-61" class="trend-icon">—</span>
+            <span id="status-61" class="status-tag">STABLE</span>
         </div>
-        <div class="card">
-            <div class="card-label">HUMIDITY RACK 61</div>
-            <div class="card-value"><span id="hum1">--</span><span class="unit">%</span></div>
-            <div class="device-badge">DEVICE: ESP8266</div>
+        <div class="card-value"><span id="val1">--</span><span class="unit">°C</span></div>
+        <div class="device-badge">DEVICE: ESP8266</div>
+    </div>
+    <div class="card">
+        <div class="card-label-row"><span class="card-label">HUMIDITY RACK 61</span></div>
+        <div class="card-value"><span id="hum1">--</span><span class="unit">%</span></div>
+        <div class="device-badge">DEVICE: ESP8266</div>
+    </div>
+    <div class="card">
+        <span class="card-label" style="margin-bottom: 8px;">LOG AKTIVITAS RACK 61</span>
+        <div id="logList1" class="log-list"></div>
+    </div>
+
+    <div class="card" id="card-temp-139">
+        <div class="card-label-row">
+            <span class="card-label">SUHU RUANGAN RACK 139</span>
+            <span id="trend-139" class="trend-icon">—</span>
+            <span id="status-139" class="status-tag">STABLE</span>
         </div>
-        <div class="card">
-            <div class="card-label">SUHU RUANGAN RACK 139</div>
-            <div class="card-value"><span id="val2">--</span><span class="unit">°C</span></div>
-            <div class="device-badge">DEVICE: ESP32</div>
-        </div>
-        <div class="card">
-            <div class="card-label">HUMIDITY RACK 139</div>
-            <div class="card-value"><span id="hum2">--</span><span class="unit">%</span></div>
-            <div class="device-badge">DEVICE: ESP32</div>
+        <div class="card-value"><span id="val2">--</span><span class="unit">°C</span></div>
+        <div class="device-badge">DEVICE: ESP32</div>
+    </div>
+    <div class="card">
+        <div class="card-label-row"><span class="card-label">HUMIDITY RACK 139</span></div>
+        <div class="card-value"><span id="hum2">--</span><span class="unit">%</span></div>
+        <div class="device-badge">DEVICE: ESP32</div>
+    </div>
+    <div class="card">
+        <span class="card-label" style="margin-bottom: 8px;">LOG AKTIVITAS RACK 139</span>
+        <div id="logList2" class="log-list"></div>
+    </div>
+
+    <div class="full-width">
+        <div class="card alert-panel">
+            <div class="card-label" style="color: var(--accent-orange); margin-bottom: 0; white-space: nowrap; font-size: 11px;">
+                <i class="fa-solid fa-bell"></i> TELEGRAM ALARM NOTIFICATION
+            </div>
+            <div id="lastAlert" style="font-size: 11px; color: var(--text-dim); font-weight: 600;">
+                <i class="fa-solid fa-circle-check" style="color: var(--accent-green);"></i> System standby.
+            </div>
         </div>
     </div>
 
-    <div class="logs-area">
-        <div class="card log-card">
-            <div class="card-label">LOG AKTIVITAS RACK 61</div>
-            <div id="logList1" class="log-list"></div>
-        </div>
-        <div class="card log-card">
-            <div class="card-label">LOG AKTIVITAS RACK 139</div>
-            <div id="logList2" class="log-list"></div>
-        </div>
-    </div>
-
-    <div class="charts-area">
-        <div class="card chart-card">
-            <div class="card-label">Riwayat Suhu Sensor Rack 61</div>
-            <canvas id="chart1"></canvas>
-        </div>
-        <div class="card chart-card">
-            <div class="card-label">Riwayat Suhu Sensor Rack 139</div>
-            <canvas id="chart2"></canvas>
+    <div class="full-width">
+        <div class="chart-container">
+            <div class="card">
+                <div class="card-label" style="margin-bottom: 10px;">Riwayat Suhu Sensor Rack 61</div>
+                <canvas id="chart1"></canvas>
+            </div>
+            <div class="card">
+                <div class="card-label" style="margin-bottom: 10px;">Riwayat Suhu Sensor Rack 139</div>
+                <canvas id="chart2"></canvas>
+            </div>
         </div>
     </div>
 </div>
@@ -242,111 +181,86 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
+    let history61 = [0,0,0,0,0];
+    let history139 = [0,0,0,0,0];
+
     function buildChart(ctxId, color) {
         return new Chart(document.getElementById(ctxId), {
             type: 'line',
-            data: {
-                labels: Array(25).fill(''),
-                datasets: [{
-                    data: Array(25).fill(null),
-                    borderColor: color,
-                    backgroundColor: color + '15',
-                    fill: true, tension: 0.4, pointRadius: 0
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: { legend: { display: false } },
-                scales: {
-                    x: { display: false },
-                    y: { 
-                        grid: { color: '#1e293b' }, 
-                        ticks: { color: '#64748b', font: { size: 10 } } 
-                    }
-                }
-            }
+            data: { labels: Array(25).fill(''), datasets: [{ data: Array(25).fill(null), borderColor: color, backgroundColor: color + '15', fill: true, tension: 0.4, pointRadius: 0 }] },
+            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { display: false }, y: { grid: { color: '#1e293b' }, ticks: { color: '#64748b', font: { size: 10 } } } } }
         });
     }
 
     const c1 = buildChart('chart1', '#10b981');
-    const c2 = buildChart('chart2', '#10b981'); 
+    const c2 = buildChart('chart2', '#38bdf8');
 
-    function restoreHistory(chart, key) {
-        const saved = localStorage.getItem(key);
-        if(saved) {
-            chart.data.datasets[0].data = JSON.parse(saved);
-            chart.update('none');
-        }
-    }
-    restoreHistory(c1, 'hist_61');
-    restoreHistory(c2, 'hist_139');
-
-    function pushLog(id, msg, isAlert = false) {
+    function pushLog(id, temp, humi) {
         const now = new Date();
         const ts = now.getHours().toString().padStart(2, '0') + ":" + now.getMinutes().toString().padStart(2, '0') + ":" + now.getSeconds().toString().padStart(2, '0');
-        const color = isAlert ? '#ef4444' : '#60a5fa';
-        const entry = `<div style="margin-bottom:4px; color:${color}">[${ts}] ${msg}</div>`;
+        const entry = `<div style="margin-bottom:2px;">[${ts}] Suhu Ruangan ${temp.toFixed(1)}°C | Humidity ${humi.toFixed(0)}%</div>`;
         const list = document.getElementById(id);
         list.innerHTML = entry + list.innerHTML;
         if (list.children.length > 5) list.lastElementChild.remove();
     }
 
-    let lastHB_61 = Date.now();
-    let lastHB_139 = Date.now();
-    let is61Down = false;
-    let is139Down = false;
+    function updateAnalytic(rackId, temp, historyArr) {
+        historyArr.push(temp);
+        historyArr.shift();
+
+        const card = document.getElementById(`card-temp-${rackId}`);
+        const statusEl = document.getElementById(`status-${rackId}`);
+        const trendEl = document.getElementById(`trend-${rackId}`);
+
+        if (temp < 24) {
+            statusEl.innerText = "STABLE"; statusEl.style.color = "var(--accent-green)"; statusEl.style.background = "rgba(16, 185, 129, 0.1)";
+        } else if (temp >= 24 && temp <= 25) {
+            statusEl.innerText = "WARNING"; statusEl.style.color = "var(--accent-orange)"; statusEl.style.background = "rgba(245, 158, 11, 0.1)";
+        } else {
+            statusEl.innerText = "CRITICAL"; statusEl.style.color = "var(--accent-red)"; statusEl.style.background = "rgba(239, 68, 68, 0.1)";
+        }
+
+        const diff = temp - historyArr[0];
+        if (diff > 0.1) { trendEl.innerText = "↑"; trendEl.style.color = "var(--accent-red)"; }
+        else if (diff < -0.1) { trendEl.innerText = "↓"; trendEl.style.color = "var(--accent-blue)"; }
+        else { trendEl.innerText = "—"; trendEl.style.color = "var(--text-dim)"; }
+
+        if (diff >= 1.0) card.classList.add('warning-pulse');
+        else card.classList.remove('warning-pulse');
+    }
+
+    function checkTelegramTrigger(rack, temp) {
+        const targets = [24, 25, 26];
+        if (targets.includes(Math.floor(temp))) {
+            const now = new Date();
+            const ts = now.getHours().toString().padStart(2, '0') + ":" + now.getMinutes().toString().padStart(2, '0');
+            document.getElementById('lastAlert').innerHTML = `<span style="color: var(--accent-red)">[${ts}] ${rack}: suhu mencapai ${temp.toFixed(1)}°C mengirim notifikasi telegram</span>`;
+        }
+    }
 
     db.ref('live_data').on('value', (snap) => {
         const d = snap.val();
         if (d) {
             if (d.ruangan !== undefined) {
-                document.getElementById('val1').innerText = d.ruangan.toFixed(1);
+                const t = d.ruangan;
+                document.getElementById('val1').innerText = t.toFixed(1);
                 document.getElementById('hum1').innerText = (d.humi || 0).toFixed(1);
-                c1.data.datasets[0].data.push(d.ruangan); c1.data.datasets[0].data.shift();
-                c1.update('none');
-                localStorage.setItem('hist_61', JSON.stringify(c1.data.datasets[0].data));
-                
-                if(is61Down) { pushLog('logList1', "SYSTEM RECONNECTED", false); is61Down = false; }
-                pushLog('logList1', `Suhu Ruangan ${d.ruangan.toFixed(1)}°C | Humidity ${(d.humi || 0).toFixed(0)}%`);
+                updateAnalytic('61', t, history61);
+                const data = c1.data.datasets[0].data; data.push(t); data.shift(); c1.update('none');
+                pushLog('logList1', t, d.humi || 0);
+                checkTelegramTrigger('RACK 61', t);
             }
-
             if (d.pac !== undefined) {
-                const temp139 = d.pac + 1.0; 
-                document.getElementById('val2').innerText = temp139.toFixed(1);
+                const t = d.pac + 1.0;
+                document.getElementById('val2').innerText = t.toFixed(1);
                 document.getElementById('hum2').innerText = (d.kelembaban || 0).toFixed(1);
-                c2.data.datasets[0].data.push(temp139); c2.data.datasets[0].data.shift();
-                c2.update('none');
-                localStorage.setItem('hist_139', JSON.stringify(c2.data.datasets[0].data));
-                
-                if(is139Down) { pushLog('logList2', "SYSTEM RECONNECTED", false); is139Down = false; }
-                pushLog('logList2', `Suhu Ruangan ${temp139.toFixed(1)}°C | Humidity ${(d.kelembaban || 0).toFixed(0)}%`);
+                updateAnalytic('139', t, history139);
+                const data = c2.data.datasets[0].data; data.push(t); data.shift(); c2.update('none');
+                pushLog('logList2', t, d.kelembaban || 0);
+                checkTelegramTrigger('RACK 139', t);
             }
-
-            if (d.heartbeat) lastHB_61 = d.heartbeat * 1000;
-            if (d.heartbeat_esp32) lastHB_139 = d.heartbeat_esp32 * 1000;
         }
     });
-
-    setInterval(() => {
-        const now = Date.now();
-        const ind1 = document.getElementById('ind1');
-        const ind2 = document.getElementById('ind2');
-
-        if (now - lastHB_61 > 25000) {
-            ind1.classList.add('offline'); ind1.innerText = "• RACK 61 OFFLINE";
-            if (!is61Down) { pushLog('logList1', "SENSOR DISCONNECTED", true); is61Down = true; }
-        } else {
-            ind1.classList.remove('offline'); ind1.innerText = "• RACK 61 ONLINE";
-        }
-        
-        if (now - lastHB_139 > 25000) {
-            ind2.classList.add('offline'); ind2.innerText = "• RACK 139 OFFLINE";
-            if (!is139Down) { pushLog('logList2', "SENSOR DISCONNECTED", true); is139Down = true; }
-        } else {
-            ind2.classList.remove('offline'); ind2.innerText = "• RACK 139 ONLINE";
-        }
-    }, 5000);
 </script>
 </body>
 </html>
