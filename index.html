@@ -202,22 +202,27 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
-    let history61 = [0,0,0,0,0];
-    let history139 = [0,0,0,0,0];
+    // 1. MEMUAT DATA LAMA DARI LOCAL STORAGE (Mencegah Reset Saat Refresh)
+    let history61 = JSON.parse(localStorage.getItem('hist61')) || [0,0,0,0,0];
+    let history139 = JSON.parse(localStorage.getItem('hist139')) || [0,0,0,0,0];
 
-    // Variabel untuk melacak status Telegram agar bisa auto-clear (Hilang sendiri)
     let isAlertActive = { 'RACK 61': false, 'RACK 139': false };
 
-    function buildChart(ctxId, color) {
+    // 2. MEMBANGUN GRAFIK DENGAN DATA DARI LOCAL STORAGE
+    function buildChart(ctxId, color, storageKey) {
+        let savedData = JSON.parse(localStorage.getItem(storageKey));
+        // Validasi agar array selalu berisi 25 item
+        let initialData = (savedData && savedData.length === 25) ? savedData : Array(25).fill(null);
+
         return new Chart(document.getElementById(ctxId), {
             type: 'line',
-            data: { labels: Array(25).fill(''), datasets: [{ data: Array(25).fill(null), borderColor: color, backgroundColor: color + '15', fill: true, tension: 0.4, pointRadius: 0 }] },
+            data: { labels: Array(25).fill(''), datasets: [{ data: initialData, borderColor: color, backgroundColor: color + '15', fill: true, tension: 0.4, pointRadius: 0 }] },
             options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { display: false }, y: { grid: { color: '#1e293b' }, ticks: { color: '#64748b', font: { size: 10 } } } } }
         });
     }
 
-    const c1 = buildChart('chart1', '#10b981');
-    const c2 = buildChart('chart2', '#10b981');
+    const c1 = buildChart('chart1', '#10b981', 'chartData61');
+    const c2 = buildChart('chart2', '#10b981', 'chartData139'); // Rack 139 menggunakan warna Hijau juga
 
     function pushLog(id, temp, humi) {
         const now = new Date();
@@ -236,7 +241,6 @@
         const statusEl = document.getElementById(`status-${rackId}`);
         const trendEl = document.getElementById(`trend-${rackId}`);
 
-        // 1. Status Warna Biasa
         if (temp < 24) {
             statusEl.innerText = "STABLE"; statusEl.style.color = "var(--accent-green)"; statusEl.style.background = "rgba(16, 185, 129, 0.1)";
         } else if (temp >= 24 && temp <= 25) {
@@ -245,7 +249,6 @@
             statusEl.innerText = "CRITICAL"; statusEl.style.color = "var(--accent-red)"; statusEl.style.background = "rgba(239, 68, 68, 0.1)";
         }
 
-        // 2. Sensitivitas Panah Tren (Sangat sensitif: Bandingkan data sekarang [4] dengan data detik sebelumnya [3])
         const diffPanah = temp - historyArr[3];
         if (diffPanah >= 0.1) { 
             trendEl.innerText = "↑"; trendEl.style.color = "var(--accent-red)"; 
@@ -255,7 +258,6 @@
             trendEl.innerText = "—"; trendEl.style.color = "var(--text-dim)"; 
         }
 
-        // 3. Sensitivitas Peringatan Dini (Kedip Merah: Butuh lonjakan 1.0 derajat dalam 5 siklus data)
         const diffPulse = temp - historyArr[0];
         if (diffPulse >= 1.0) { 
             card.classList.add('warning-pulse');
@@ -266,21 +268,15 @@
 
     function checkTelegramTrigger(rack, temp) {
         const tgContainer = document.getElementById('lastAlert');
-        
-        // Cek jika suhu sudah menyentuh 24 derajat atau lebih
         if (temp >= 24) {
-            isAlertActive[rack] = true; // Tandai rak sedang berbahaya
+            isAlertActive[rack] = true;
             const now = new Date();
             const ts = now.getHours().toString().padStart(2, '0') + ":" + now.getMinutes().toString().padStart(2, '0');
             
-            // Format Peringatan Telegram yang lebih jelas & tegas
             tgContainer.innerHTML = `<span style="color: var(--accent-red); font-weight: 800;">[${ts}] ⚠️ ALARM ${rack}: Suhu mencapai ${temp.toFixed(1)}°C mengirim notifikasi telegram</span>`;
         } 
-        // Jika suhu kembali dingin di bawah 24 derajat
         else if (temp < 24) {
-            isAlertActive[rack] = false; // Tandai rak sudah aman
-            
-            // Auto-clear: Kalau kedua rak sudah aman, kembalikan teks ke standby
+            isAlertActive[rack] = false;
             if (!isAlertActive['RACK 61'] && !isAlertActive['RACK 139']) {
                 tgContainer.innerHTML = `<i class="fa-solid fa-circle-check" style="color: var(--accent-green);"></i> System standby.`;
             }
@@ -293,22 +289,37 @@
     db.ref('live_data').on('value', (snap) => {
         const d = snap.val();
         if (d) {
+            // Proses Rack 61
             if (d.ruangan !== undefined) {
                 const t = d.ruangan;
                 document.getElementById('val1').innerText = t.toFixed(1);
                 document.getElementById('hum1').innerText = (d.humi || 0).toFixed(1);
+                
                 updateAnalytic('61', t, history61);
-                const data = c1.data.datasets[0].data; data.push(t); data.shift(); c1.update('none');
+                c1.data.datasets[0].data.push(t); c1.data.datasets[0].data.shift(); c1.update('none');
+                
+                // 3. MENYIMPAN DATA BARU KE LOCAL STORAGE
+                localStorage.setItem('hist61', JSON.stringify(history61));
+                localStorage.setItem('chartData61', JSON.stringify(c1.data.datasets[0].data));
+
                 pushLog('logList1', t, d.humi || 0);
                 checkTelegramTrigger('RACK 61', t);
                 lastHB_61 = Date.now();
             }
+
+            // Proses Rack 139
             if (d.pac !== undefined) {
                 const t = d.pac + 1.0;
                 document.getElementById('val2').innerText = t.toFixed(1);
                 document.getElementById('hum2').innerText = (d.kelembaban || 0).toFixed(1);
+                
                 updateAnalytic('139', t, history139);
-                const data = c2.data.datasets[0].data; data.push(t); data.shift(); c2.update('none');
+                c2.data.datasets[0].data.push(t); c2.data.datasets[0].data.shift(); c2.update('none');
+                
+                // 3. MENYIMPAN DATA BARU KE LOCAL STORAGE
+                localStorage.setItem('hist139', JSON.stringify(history139));
+                localStorage.setItem('chartData139', JSON.stringify(c2.data.datasets[0].data));
+
                 pushLog('logList2', t, d.kelembaban || 0);
                 checkTelegramTrigger('RACK 139', t);
                 lastHB_139 = Date.now();
