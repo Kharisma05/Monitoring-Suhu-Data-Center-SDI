@@ -295,14 +295,27 @@
         }
     }
 
+    // FUNGSI DOWNLOAD CSV DENGAN PERBAIKAN FORMAT EXCEL
     function downloadRiwayat(rack) {
-        db.ref('history_suhu/'+rack).once('value').then((snap) => {
-            if(!snap.exists()) { alert("Data belum tersedia."); return; }
+        db.ref('history_suhu/' + rack).once('value').then((snap) => {
+            if (!snap.exists()) { alert("Data belum tersedia."); return; }
+
             let csv = "Timestamp,Temperature,Humidity\n";
-            snap.forEach(c => { csv += `${c.key},${c.val().suhu},${c.val().kelembaban}\n`; });
-            const blob = new Blob([csv], {type: 'text/csv'});
+            snap.forEach(c => { 
+                let t = c.val().suhu ? c.val().suhu.toFixed(2) : "0.00";
+                let h = c.val().kelembaban || "0";
+                csv += `${c.key},${t},${h}\n`; 
+            });
+
+            // TRIK: Tambahkan BOM \ufeff agar Excel otomatis mengenali kolom UTF-8
+            const blob = new Blob(["\ufeff" + csv], { type: 'text/csv;charset=utf-8;' });
             const url = window.URL.createObjectURL(blob);
-            const a = document.createElement('a'); a.href = url; a.download = `Log_${rack}.csv`; a.click();
+            const a = document.createElement('a');
+            const date = new Date().toISOString().split('T')[0];
+            a.href = url;
+            a.download = `Log_${rack}_${date}.csv`;
+            a.click();
+            window.URL.revokeObjectURL(url);
         });
     }
 
