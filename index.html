@@ -34,14 +34,20 @@
         .indicator { 
             padding: 6px 16px; 
             border-radius: 20px; 
-            font-size: 12px;
+            font-size: 11px;
             font-weight: 800; 
             background: rgba(16, 185, 129, 0.1); 
             border: 1.5px solid var(--accent-green); 
             color: var(--accent-green); 
-            letter-spacing: 0.5px;
+            transition: all 0.5s ease;
         }
-        .indicator.offline { border-color: var(--accent-red); color: var(--accent-red); background: rgba(239, 68, 68, 0.1); }
+        /* Style saat Offline */
+        .indicator.offline { 
+            border-color: var(--accent-red); 
+            color: var(--accent-red); 
+            background: rgba(239, 68, 68, 0.1); 
+            box-shadow: 0 0 10px rgba(239, 68, 68, 0.2);
+        }
 
         .dashboard-grid { display: grid; grid-template-columns: 1fr 1fr 1.2fr; gap: 12px; }
         .full-width { grid-column: span 3; margin: 5px 0; }
@@ -52,17 +58,13 @@
             min-height: 125px; box-sizing: border-box; transition: all 0.3s ease; position: relative;
         }
 
-        .card-label { color: var(--accent-blue); font-size: 12px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.8px; }
+        /* Card meredup saat offline */
+        .card.device-offline { opacity: 0.5; filter: grayscale(1); pointer-events: none; }
 
+        .card-label { color: var(--accent-blue); font-size: 12px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.8px; }
         .card-value { 
-            font-size: 48px; 
-            font-weight: 800; 
-            margin: 5px 0; 
-            display: flex; 
-            align-items: baseline; 
-            color: var(--text-main); 
-            line-height: 1; 
-            text-shadow: 0 0 15px rgba(56, 189, 248, 0.2);
+            font-size: 48px; font-weight: 800; margin: 5px 0; display: flex; align-items: baseline; 
+            color: var(--text-main); line-height: 1; text-shadow: 0 0 15px rgba(56, 189, 248, 0.2);
         }
         .unit { font-size: 18px; color: var(--text-dim); font-weight: 400; margin-left: 5px; }
 
@@ -70,40 +72,32 @@
             position: absolute; bottom: 8px; right: 10px;
             background: rgba(255, 255, 255, 0.05); color: var(--text-dim);
             font-size: 8px; font-weight: 700; padding: 2px 6px; border-radius: 4px;
-            letter-spacing: 0.5px; pointer-events: none;
         }
 
         .status-tag { font-size: 9px; font-weight: 900; padding: 2px 6px; border-radius: 4px; margin-left: auto; text-transform: uppercase; }
         .trend-icon { font-size: 16px; margin-left: 8px; font-weight: bold; }
         .card-label-row { display: flex; align-items: center; width: 100%; margin-bottom: 5px; }
 
-        @keyframes pulse-red {
-            0% { border-color: transparent; }
-            50% { border-color: var(--accent-red); box-shadow: 0 0 15px rgba(239, 68, 68, 0.3); background: rgba(239, 68, 68, 0.1); }
-            100% { border-color: transparent; }
-        }
-        .warning-pulse { animation: pulse-red 0.8s infinite; border-width: 2px !important; }
-
-        .alert-panel {
-            background: rgba(245, 158, 11, 0.03); border-left: 3px solid var(--accent-orange);
-            padding: 8px 20px; min-height: 45px; flex-direction: row; align-items: center; gap: 15px;
+        .record-panel {
+            background: rgba(56, 189, 248, 0.03); border-left: 3px solid var(--accent-blue);
+            padding: 8px 15px; min-height: 45px; flex-direction: row !important; 
+            align-items: center; justify-content: space-between; gap: 10px; margin-top: 8px;
         }
 
         .log-list { font-family: 'Courier New', monospace; font-size: 10px; color: #60a5fa; line-height: 1.4; }
         .chart-container { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; width: 100%; }
         canvas { width: 100% !important; height: 120px !important; }
 
-        /* TAMPILAN KHUSUS LAYAR HP (MOBILE RESPONSIVE) */
+        .btn-mini {
+            background: rgba(56, 189, 248, 0.1); border: 1px solid var(--accent-blue); color: var(--accent-blue); 
+            border-radius: 4px; font-size: 9px; cursor: pointer; padding: 2px 8px; transition: 0.3s; font-weight: 800;
+        }
+        .btn-mini:hover { background: var(--accent-blue); color: var(--bg-color); }
+
         @media (max-width: 768px) {
-            header { flex-direction: column; align-items: flex-start; }
-            .indicators { width: 100%; margin-top: 5px; }
             .dashboard-grid { grid-template-columns: 1fr 1fr; }
-            .full-width { grid-column: span 2; }
-            .full-mobile { grid-column: span 2; min-height: 90px; }
-            .chart-container { grid-template-columns: 1fr; } 
-            .card-value { font-size: 34px; } 
-            .card-label { font-size: 10px; }
-            .unit { font-size: 14px; }
+            .full-width, .full-mobile { grid-column: span 2; }
+            .chart-container { grid-template-columns: 1fr; }
         }
     </style>
 </head>
@@ -113,14 +107,7 @@
     <div class="logo-container">
         <svg class="site-logo" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
             <rect x="10" y="15" width="80" height="70" rx="4" fill="#1e293b" stroke="#38bdf8" stroke-width="2.5"/>
-            <path d="M15 25H25M15 35H25M15 45H25M15 55H25M15 65H25M15 75H25" stroke="#38bdf8" stroke-width="1.5" stroke-opacity="0.4"/>
-            <path d="M75 25H85M75 35H85M75 45H85M75 55H85M75 65H85M75 75H85" stroke="#38bdf8" stroke-width="1.5" stroke-opacity="0.4"/>
-            <path d="M10 32H90M10 49H90M10 66H90" stroke="#38bdf8" stroke-width="1.2" stroke-opacity="0.2"/>
             <path d="M50 25C47.8 25 46 26.8 46 29V50.5C43.5 51.8 42 54.5 42 57.5C42 61.9 45.6 70.5 50 70.5C54.4 70.5 58 66.9 58 62.5C58 59.5 56.5 56.8 54 50.5V29C54 26.8 52.2 25 50 25Z" fill="#38bdf8"/>
-            <rect x="49" y="30" width="2" height="15" rx="1" fill="#050a10"/>
-            <circle cx="50" cy="57.5" r="4" fill="#050a10"/>
-            <circle cx="18" cy="20" r="2" fill="#10b981" fill-opacity="0.8"/>
-            <circle cx="24" cy="20" r="2" fill="#ef4444" fill-opacity="0.8"/>
         </svg>
         <div class="brand">
             <h1>DC-SDI <span>REAL-TIME</span></h1>
@@ -128,13 +115,13 @@
         </div>
     </div>
     <div class="indicators">
-        <div id="ind1" class="indicator">• RACK 61 ONLINE</div>
-        <div id="ind2" class="indicator">• RACK 139 ONLINE</div>
+        <div id="ind1" class="indicator">• RACK 61 WAITING...</div>
+        <div id="ind2" class="indicator">• RACK 139 WAITING...</div>
     </div>
 </header>
 
 <div class="dashboard-grid">
-    <div class="card" id="card-temp-61">
+    <div class="card r61-group" id="card-temp-61">
         <div class="card-label-row">
             <span class="card-label">SUHU RUANGAN RACK 61</span>
             <span id="trend-61" class="trend-icon">—</span>
@@ -143,17 +130,17 @@
         <div class="card-value"><span id="val1">--</span><span class="unit">°C</span></div>
         <div class="device-badge">DEVICE: ESP8266</div>
     </div>
-    <div class="card">
+    <div class="card r61-group">
         <div class="card-label-row"><span class="card-label">HUMIDITY RACK 61</span></div>
         <div class="card-value"><span id="hum1">--</span><span class="unit">%</span></div>
         <div class="device-badge">DEVICE: ESP8266</div>
     </div>
-    <div class="card full-mobile">
+    <div class="card full-mobile r61-group">
         <span class="card-label" style="margin-bottom: 8px;">LOG AKTIVITAS RACK 61</span>
         <div id="logList1" class="log-list"></div>
     </div>
 
-    <div class="card" id="card-temp-139">
+    <div class="card r139-group" id="card-temp-139">
         <div class="card-label-row">
             <span class="card-label">SUHU RUANGAN RACK 139</span>
             <span id="trend-139" class="trend-icon">—</span>
@@ -162,12 +149,12 @@
         <div class="card-value"><span id="val2">--</span><span class="unit">°C</span></div>
         <div class="device-badge">DEVICE: ESP32</div>
     </div>
-    <div class="card">
+    <div class="card r139-group">
         <div class="card-label-row"><span class="card-label">HUMIDITY RACK 139</span></div>
         <div class="card-value"><span id="hum2">--</span><span class="unit">%</span></div>
         <div class="device-badge">DEVICE: ESP32</div>
     </div>
-    <div class="card full-mobile">
+    <div class="card full-mobile r139-group">
         <span class="card-label" style="margin-bottom: 8px;">LOG AKTIVITAS RACK 139</span>
         <div id="logList2" class="log-list"></div>
     </div>
@@ -175,7 +162,7 @@
     <div class="full-width">
         <div class="card alert-panel">
             <div class="card-label" style="color: var(--accent-orange); margin-bottom: 0; white-space: nowrap; font-size: 11px;">
-                <i class="fa-solid fa-bell"></i> TELEGRAM ALARM NOTIFICATION
+                <i class="fa-solid fa-bell"></i> TELEGRAM ALARM
             </div>
             <div id="lastAlert" style="font-size: 11px; color: var(--text-dim); font-weight: 600;">
                 <i class="fa-solid fa-circle-check" style="color: var(--accent-green);"></i> System standby.
@@ -185,13 +172,36 @@
 
     <div class="full-width">
         <div class="chart-container">
-            <div class="card">
-                <div class="card-label" style="margin-bottom: 10px;">Riwayat Suhu Sensor Rack 61</div>
-                <canvas id="chart1"></canvas>
+            <div class="r61-group">
+                <div class="card">
+                    <div class="card-label" style="margin-bottom: 10px;">Riwayat Suhu Sensor Rack 61</div>
+                    <canvas id="chart1"></canvas>
+                </div>
+                <div class="card record-panel">
+                    <div style="font-size: 10px; font-weight: 800; color: var(--accent-blue);">REKOR 61</div>
+                    <div style="font-size: 11px;">❄️ MIN: <span id="min61" style="color:var(--text-main); font-weight:800;">--</span>°C <small id="timeMin61" style="color:var(--text-dim); font-size:9px;">(--:--)</small></div>
+                    <div style="font-size: 11px;">🔥 MAX: <span id="max61" style="color:var(--text-main); font-weight:800;">--</span>°C <small id="timeMax61" style="color:var(--text-dim); font-size:9px;">(--:--)</small></div>
+                    <div style="display: flex; gap: 5px;">
+                        <button onclick="downloadRiwayat('rack_61')" class="btn-mini"><i class="fa-solid fa-download"></i> CSV</button>
+                        <button onclick="resetRekor('61')" class="btn-mini" style="border-color: #475569; color: #475569;"><i class="fa-solid fa-rotate"></i></button>
+                    </div>
+                </div>
             </div>
-            <div class="card">
-                <div class="card-label" style="margin-bottom: 10px;">Riwayat Suhu Sensor Rack 139</div>
-                <canvas id="chart2"></canvas>
+
+            <div class="r139-group">
+                <div class="card">
+                    <div class="card-label" style="margin-bottom: 10px;">Riwayat Suhu Sensor Rack 139</div>
+                    <canvas id="chart2"></canvas>
+                </div>
+                <div class="card record-panel">
+                    <div style="font-size: 10px; font-weight: 800; color: var(--accent-blue);">REKOR 139</div>
+                    <div style="font-size: 11px;">❄️ MIN: <span id="min139" style="color:var(--text-main); font-weight:800;">--</span>°C <small id="timeMin139" style="color:var(--text-dim); font-size:9px;">(--:--)</small></div>
+                    <div style="font-size: 11px;">🔥 MAX: <span id="max139" style="color:var(--text-main); font-weight:800;">--</span>°C <small id="timeMax139" style="color:var(--text-dim); font-size:9px;">(--:--)</small></div>
+                    <div style="display: flex; gap: 5px;">
+                        <button onclick="downloadRiwayat('rack_139')" class="btn-mini"><i class="fa-solid fa-download"></i> CSV</button>
+                        <button onclick="resetRekor('139')" class="btn-mini" style="border-color: #475569; color: #475569;"><i class="fa-solid fa-rotate"></i></button>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -202,18 +212,17 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
-    // 1. MEMUAT DATA LAMA DARI LOCAL STORAGE (Mencegah Reset Saat Refresh)
+    // Variabel Deteksi Offline
+    let lastUpdateR61 = 0;
+    let lastUpdateR139 = 0;
+    const OFFLINE_TIMEOUT = 15000; // 15 Detik
+
     let history61 = JSON.parse(localStorage.getItem('hist61')) || [0,0,0,0,0];
     let history139 = JSON.parse(localStorage.getItem('hist139')) || [0,0,0,0,0];
 
-    let isAlertActive = { 'RACK 61': false, 'RACK 139': false };
-
-    // 2. MEMBANGUN GRAFIK DENGAN DATA DARI LOCAL STORAGE
     function buildChart(ctxId, color, storageKey) {
         let savedData = JSON.parse(localStorage.getItem(storageKey));
-        // Validasi agar array selalu berisi 25 item
         let initialData = (savedData && savedData.length === 25) ? savedData : Array(25).fill(null);
-
         return new Chart(document.getElementById(ctxId), {
             type: 'line',
             data: { labels: Array(25).fill(''), datasets: [{ data: initialData, borderColor: color, backgroundColor: color + '15', fill: true, tension: 0.4, pointRadius: 0 }] },
@@ -222,118 +231,138 @@
     }
 
     const c1 = buildChart('chart1', '#10b981', 'chartData61');
-    const c2 = buildChart('chart2', '#10b981', 'chartData139'); // Rack 139 menggunakan warna Hijau juga
+    const c2 = buildChart('chart2', '#10b981', 'chartData139');
+
+    // Fungsi Update Status Koneksi Visual
+    function checkDeviceStatus() {
+        const now = Date.now();
+        
+        // Cek Rack 61
+        const ind1 = document.getElementById('ind1');
+        const r61Cards = document.querySelectorAll('.r61-group');
+        if (now - lastUpdateR61 > OFFLINE_TIMEOUT) {
+            ind1.innerText = "• RACK 61 OFFLINE";
+            ind1.classList.add('offline');
+            r61Cards.forEach(card => card.classList.add('device-offline'));
+        } else {
+            ind1.innerText = "• RACK 61 ONLINE";
+            ind1.classList.remove('offline');
+            r61Cards.forEach(card => card.classList.remove('device-offline'));
+        }
+
+        // Cek Rack 139
+        const ind2 = document.getElementById('ind2');
+        const r139Cards = document.querySelectorAll('.r139-group');
+        if (now - lastUpdateR139 > OFFLINE_TIMEOUT) {
+            ind2.innerText = "• RACK 139 OFFLINE";
+            ind2.classList.add('offline');
+            r139Cards.forEach(card => card.classList.add('device-offline'));
+        } else {
+            ind2.innerText = "• RACK 139 ONLINE";
+            ind2.classList.remove('offline');
+            r139Cards.forEach(card => card.classList.remove('device-offline'));
+        }
+    }
+
+    // Jalankan pengecekan setiap 5 detik
+    setInterval(checkDeviceStatus, 5000);
 
     function pushLog(id, temp, humi) {
         const now = new Date();
         const ts = now.getHours().toString().padStart(2, '0') + ":" + now.getMinutes().toString().padStart(2, '0') + ":" + now.getSeconds().toString().padStart(2, '0');
-        const entry = `<div style="margin-bottom:2px;">[${ts}] Suhu Ruangan ${temp.toFixed(1)}°C | Humidity ${humi.toFixed(0)}%</div>`;
+        const entry = `<div style="margin-bottom:2px;">[${ts}] Temp ${temp.toFixed(1)}°C | Hum ${humi.toFixed(0)}%</div>`;
         const list = document.getElementById(id);
         list.innerHTML = entry + list.innerHTML;
         if (list.children.length > 5) list.lastElementChild.remove();
     }
 
     function updateAnalytic(rackId, temp, historyArr) {
-        historyArr.push(temp);
-        historyArr.shift();
-
-        const card = document.getElementById(`card-temp-${rackId}`);
+        historyArr.push(temp); historyArr.shift();
         const statusEl = document.getElementById(`status-${rackId}`);
         const trendEl = document.getElementById(`trend-${rackId}`);
+        if (temp < 24) { statusEl.innerText = "STABLE"; statusEl.style.color = "var(--accent-green)"; statusEl.style.background = "rgba(16, 185, 129, 0.1)"; }
+        else if (temp <= 25) { statusEl.innerText = "WARNING"; statusEl.style.color = "var(--accent-orange)"; statusEl.style.background = "rgba(245, 158, 11, 0.1)"; }
+        else { statusEl.innerText = "CRITICAL"; statusEl.style.color = "var(--accent-red)"; statusEl.style.background = "rgba(239, 68, 68, 0.1)"; }
+        const diff = temp - historyArr[3];
+        trendEl.innerText = diff >= 0.1 ? "↑" : diff <= -0.1 ? "↓" : "—";
+        trendEl.style.color = diff >= 0.1 ? "var(--accent-red)" : diff <= -0.1 ? "var(--accent-blue)" : "var(--text-dim)";
+    }
 
-        if (temp < 24) {
-            statusEl.innerText = "STABLE"; statusEl.style.color = "var(--accent-green)"; statusEl.style.background = "rgba(16, 185, 129, 0.1)";
-        } else if (temp >= 24 && temp <= 25) {
-            statusEl.innerText = "WARNING"; statusEl.style.color = "var(--accent-orange)"; statusEl.style.background = "rgba(245, 158, 11, 0.1)";
-        } else {
-            statusEl.innerText = "CRITICAL"; statusEl.style.color = "var(--accent-red)"; statusEl.style.background = "rgba(239, 68, 68, 0.1)";
-        }
-
-        const diffPanah = temp - historyArr[3];
-        if (diffPanah >= 0.1) { 
-            trendEl.innerText = "↑"; trendEl.style.color = "var(--accent-red)"; 
-        } else if (diffPanah <= -0.1) { 
-            trendEl.innerText = "↓"; trendEl.style.color = "var(--accent-blue)"; 
-        } else { 
-            trendEl.innerText = "—"; trendEl.style.color = "var(--text-dim)"; 
-        }
-
-        const diffPulse = temp - historyArr[0];
-        if (diffPulse >= 1.0) { 
-            card.classList.add('warning-pulse');
-        } else { 
-            card.classList.remove('warning-pulse');
+    function resetRekor(id) {
+        if(confirm("Reset rekor Rack " + id + "?")) {
+            localStorage.removeItem('min'+id); localStorage.removeItem('max'+id);
+            localStorage.removeItem('tmin'+id); localStorage.removeItem('tmax'+id);
+            document.getElementById('min'+id).innerText = '--'; document.getElementById('max'+id).innerText = '--';
+            document.getElementById('timeMin'+id).innerText = '(--:--)'; document.getElementById('timeMax'+id).innerText = '(--:--)';
         }
     }
 
-    function checkTelegramTrigger(rack, temp) {
-        const tgContainer = document.getElementById('lastAlert');
-        if (temp >= 24) {
-            isAlertActive[rack] = true;
-            const now = new Date();
-            const ts = now.getHours().toString().padStart(2, '0') + ":" + now.getMinutes().toString().padStart(2, '0');
-            
-            tgContainer.innerHTML = `<span style="color: var(--accent-red); font-weight: 800;">[${ts}] ⚠️ ALARM ${rack}: Suhu mencapai ${temp.toFixed(1)}°C mengirim notifikasi telegram</span>`;
-        } 
-        else if (temp < 24) {
-            isAlertActive[rack] = false;
-            if (!isAlertActive['RACK 61'] && !isAlertActive['RACK 139']) {
-                tgContainer.innerHTML = `<i class="fa-solid fa-circle-check" style="color: var(--accent-green);"></i> System standby.`;
-            }
-        }
+    function downloadRiwayat(rack) {
+        db.ref('history_suhu/'+rack).once('value').then((snap) => {
+            if(!snap.exists()) { alert("Data belum tersedia."); return; }
+            let csv = "Waktu,Suhu,Humidity\n";
+            snap.forEach(c => { csv += `${c.key},${c.val().suhu},${c.val().kelembaban}\n`; });
+            const blob = new Blob([csv], {type: 'text/csv'});
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a'); a.href = url; a.download = `Log_${rack}.csv`; a.click();
+        });
     }
-
-    let lastHB_61 = Date.now();
-    let lastHB_139 = Date.now();
 
     db.ref('live_data').on('value', (snap) => {
         const d = snap.val();
         if (d) {
-            // Proses Rack 61
+            const now = new Date();
+            const timeStr = now.getHours().toString().padStart(2, '0') + ":" + now.getMinutes().toString().padStart(2, '0');
+
             if (d.ruangan !== undefined) {
+                lastUpdateR61 = Date.now(); // Reset timer R61
                 const t = d.ruangan;
                 document.getElementById('val1').innerText = t.toFixed(1);
                 document.getElementById('hum1').innerText = (d.humi || 0).toFixed(1);
-                
                 updateAnalytic('61', t, history61);
                 c1.data.datasets[0].data.push(t); c1.data.datasets[0].data.shift(); c1.update('none');
-                
-                // 3. MENYIMPAN DATA BARU KE LOCAL STORAGE
                 localStorage.setItem('hist61', JSON.stringify(history61));
-                localStorage.setItem('chartData61', JSON.stringify(c1.data.datasets[0].data));
+                
+                let min = localStorage.getItem('min61') ? parseFloat(localStorage.getItem('min61')) : t;
+                let max = localStorage.getItem('max61') ? parseFloat(localStorage.getItem('max61')) : t;
+                let tmin = localStorage.getItem('tmin61') || timeStr;
+                let tmax = localStorage.getItem('tmax61') || timeStr;
 
+                if(t < min) { min = t; tmin = timeStr; localStorage.setItem('tmin61', tmin); }
+                if(t > max) { max = t; tmax = timeStr; localStorage.setItem('tmax61', tmax); }
+                
+                document.getElementById('min61').innerText = min.toFixed(1); 
+                document.getElementById('max61').innerText = max.toFixed(1);
+                document.getElementById('timeMin61').innerText = `(${tmin})`;
+                document.getElementById('timeMax61').innerText = `(${tmax})`;
                 pushLog('logList1', t, d.humi || 0);
-                checkTelegramTrigger('RACK 61', t);
-                lastHB_61 = Date.now();
             }
-
-            // Proses Rack 139
+            
             if (d.pac !== undefined) {
-                const t = d.pac + 1.0;
+                lastUpdateR139 = Date.now(); // Reset timer R139
+                const t = d.pac;
                 document.getElementById('val2').innerText = t.toFixed(1);
                 document.getElementById('hum2').innerText = (d.kelembaban || 0).toFixed(1);
-                
                 updateAnalytic('139', t, history139);
                 c2.data.datasets[0].data.push(t); c2.data.datasets[0].data.shift(); c2.update('none');
-                
-                // 3. MENYIMPAN DATA BARU KE LOCAL STORAGE
                 localStorage.setItem('hist139', JSON.stringify(history139));
-                localStorage.setItem('chartData139', JSON.stringify(c2.data.datasets[0].data));
+                
+                let min = localStorage.getItem('min139') ? parseFloat(localStorage.getItem('min139')) : t;
+                let max = localStorage.getItem('max139') ? parseFloat(localStorage.getItem('max139')) : t;
+                let tmin = localStorage.getItem('tmin139') || timeStr;
+                let tmax = localStorage.getItem('tmax139') || timeStr;
 
+                if(t < min) { min = t; tmin = timeStr; localStorage.setItem('tmin139', tmin); }
+                if(t > max) { max = t; tmax = timeStr; localStorage.setItem('tmax139', tmax); }
+                
+                document.getElementById('min139').innerText = min.toFixed(1);
+                document.getElementById('max139').innerText = max.toFixed(1);
+                document.getElementById('timeMin139').innerText = `(${tmin})`;
+                document.getElementById('timeMax139').innerText = `(${tmax})`;
                 pushLog('logList2', t, d.kelembaban || 0);
-                checkTelegramTrigger('RACK 139', t);
-                lastHB_139 = Date.now();
             }
         }
     });
-
-    setInterval(() => {
-        const now = Date.now();
-        document.getElementById('ind1').className = (now - lastHB_61 > 25000) ? 'indicator offline' : 'indicator';
-        document.getElementById('ind1').innerText = (now - lastHB_61 > 25000) ? '• RACK 61 OFFLINE' : '• RACK 61 ONLINE';
-        document.getElementById('ind2').className = (now - lastHB_139 > 25000) ? 'indicator offline' : 'indicator';
-        document.getElementById('ind2').innerText = (now - lastHB_139 > 25000) ? '• RACK 139 OFFLINE' : '• RACK 139 ONLINE';
-    }, 5000);
 </script>
 </body>
 </html>
