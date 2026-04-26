@@ -32,20 +32,13 @@
 
         .indicators { display: flex; gap: 10px; }
         .indicator { 
-            padding: 6px 16px; 
-            border-radius: 20px; 
-            font-size: 11px;
-            font-weight: 800; 
-            background: rgba(16, 185, 129, 0.1); 
-            border: 1.5px solid var(--accent-green); 
-            color: var(--accent-green); 
-            transition: all 0.5s ease;
+            padding: 6px 16px; border-radius: 20px; font-size: 11px; font-weight: 800; 
+            background: rgba(16, 185, 129, 0.1); border: 1.5px solid var(--accent-green); 
+            color: var(--accent-green); transition: all 0.5s ease;
         }
         .indicator.offline { 
-            border-color: var(--accent-red); 
-            color: var(--accent-red); 
-            background: rgba(239, 68, 68, 0.1); 
-            box-shadow: 0 0 10px rgba(239, 68, 68, 0.2);
+            border-color: var(--accent-red); color: var(--accent-red); 
+            background: rgba(239, 68, 68, 0.1); box-shadow: 0 0 10px rgba(239, 68, 68, 0.2);
         }
 
         .dashboard-grid { display: grid; grid-template-columns: 1fr 1fr 1.2fr; gap: 12px; }
@@ -57,7 +50,7 @@
             min-height: 125px; box-sizing: border-box; transition: all 0.3s ease; position: relative;
         }
 
-        .card.device-offline { opacity: 0.5; filter: grayscale(1); pointer-events: none; }
+        .card.device-offline { opacity: 0.4; filter: grayscale(1); pointer-events: none; }
 
         .card-label { color: var(--accent-blue); font-size: 12px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.8px; }
         .card-value { 
@@ -76,6 +69,14 @@
         .trend-icon { font-size: 16px; margin-left: 8px; font-weight: bold; }
         .card-label-row { display: flex; align-items: center; width: 100%; margin-bottom: 5px; }
 
+        .alert-panel {
+            background: rgba(245, 158, 11, 0.03); border-left: 3px solid var(--accent-orange);
+            padding: 2px 15px; min-height: 32px; height: 32px; flex-direction: row !important;
+            align-items: center; gap: 10px; margin-top: 5px; border-radius: 6px;
+        }
+        .alert-panel .card-label { margin-bottom: 0 !important; font-size: 10px !important; white-space: nowrap; }
+        #lastAlert { font-size: 10px !important; margin-top: 0 !important; display: flex; align-items: center; gap: 5px; }
+
         .record-panel {
             background: rgba(56, 189, 248, 0.03); border-left: 3px solid var(--accent-blue);
             padding: 8px 15px; min-height: 45px; flex-direction: row !important; 
@@ -87,18 +88,10 @@
         canvas { width: 100% !important; height: 120px !important; }
 
         .btn-mini {
-            background: rgba(56, 189, 248, 0.05); 
-            border: 1px solid rgba(56, 189, 248, 0.4); 
-            color: var(--accent-blue); 
-            border-radius: 6px; 
-            padding: 4px 10px; 
-            font-size: 10px; 
-            font-weight: 800; 
-            cursor: pointer; 
-            transition: 0.2s;
-            display: flex;
-            align-items: center;
-            gap: 6px;
+            background: rgba(56, 189, 248, 0.05); border: 1px solid rgba(56, 189, 248, 0.4); 
+            color: var(--accent-blue); border-radius: 6px; padding: 4px 10px; 
+            font-size: 9px; font-weight: 800; cursor: pointer; transition: 0.2s;
+            display: flex; align-items: center; gap: 5px;
         }
         .btn-mini:hover { background: rgba(56, 189, 248, 0.2); border-color: var(--accent-blue); color: #fff; }
 
@@ -106,6 +99,7 @@
             .dashboard-grid { grid-template-columns: 1fr 1fr; }
             .full-width, .full-mobile { grid-column: span 2; }
             .chart-container { grid-template-columns: 1fr; }
+            .card-value { font-size: 34px; }
         }
     </style>
 </head>
@@ -115,7 +109,14 @@
     <div class="logo-container">
         <svg class="site-logo" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
             <rect x="10" y="15" width="80" height="70" rx="4" fill="#1e293b" stroke="#38bdf8" stroke-width="2.5"/>
+            <path d="M15 25H25M15 35H25M15 45H25M15 55H25M15 65H25M15 75H25" stroke="#38bdf8" stroke-width="1.5" stroke-opacity="0.4"/>
+            <path d="M75 25H85M75 35H85M75 45H85M75 55H85M75 65H85M75 75H85" stroke="#38bdf8" stroke-width="1.5" stroke-opacity="0.4"/>
+            <path d="M10 32H90M10 49H90M10 66H90" stroke="#38bdf8" stroke-width="1.2" stroke-opacity="0.2"/>
             <path d="M50 25C47.8 25 46 26.8 46 29V50.5C43.5 51.8 42 54.5 42 57.5C42 61.9 45.6 70.5 50 70.5C54.4 70.5 58 66.9 58 62.5C58 59.5 56.5 56.8 54 50.5V29C54 26.8 52.2 25 50 25Z" fill="#38bdf8"/>
+            <rect x="49" y="30" width="2" height="15" rx="1" fill="#050a10"/>
+            <circle cx="50" cy="57.5" r="4" fill="#050a10"/>
+            <circle cx="18" cy="20" r="2" fill="#10b981" fill-opacity="0.8"/>
+            <circle cx="24" cy="20" r="2" fill="#ef4444" fill-opacity="0.8"/>
         </svg>
         <div class="brand">
             <h1>DC-SDI <span>REAL-TIME</span></h1>
@@ -131,7 +132,7 @@
 <div class="dashboard-grid">
     <div class="card r61-group" id="card-temp-61">
         <div class="card-label-row">
-            <span class="card-label">SUHU RUANGAN RACK 61</span>
+            <span class="card-label">TEMPERATURE RACK 61</span>
             <span id="trend-61" class="trend-icon">—</span>
             <span id="status-61" class="status-tag">STABLE</span>
         </div>
@@ -145,7 +146,7 @@
     </div>
     <div class="card full-mobile r61-group">
         <div class="card-label-row" style="justify-content: space-between; margin-bottom: 8px;">
-            <span class="card-label">LOG AKTIVITAS RACK 61</span>
+            <span class="card-label">ACTIVITY LOG RACK 61</span>
             <button onclick="downloadRiwayat('rack_61')" class="btn-mini"><i class="fa-solid fa-download"></i> CSV</button>
         </div>
         <div id="logList1" class="log-list"></div>
@@ -153,7 +154,7 @@
 
     <div class="card r139-group" id="card-temp-139">
         <div class="card-label-row">
-            <span class="card-label">SUHU RUANGAN RACK 139</span>
+            <span class="card-label">TEMPERATURE RACK 139</span>
             <span id="trend-139" class="trend-icon">—</span>
             <span id="status-139" class="status-tag">STABLE</span>
         </div>
@@ -167,7 +168,7 @@
     </div>
     <div class="card full-mobile r139-group">
         <div class="card-label-row" style="justify-content: space-between; margin-bottom: 8px;">
-            <span class="card-label">LOG AKTIVITAS RACK 139</span>
+            <span class="card-label">ACTIVITY LOG RACK 139</span>
             <button onclick="downloadRiwayat('rack_139')" class="btn-mini"><i class="fa-solid fa-download"></i> CSV</button>
         </div>
         <div id="logList2" class="log-list"></div>
@@ -175,10 +176,10 @@
 
     <div class="full-width">
         <div class="card alert-panel">
-            <div class="card-label" style="color: var(--accent-orange); margin-bottom: 0; white-space: nowrap; font-size: 11px;">
-                <i class="fa-solid fa-bell"></i> TELEGRAM ALARM
+            <div class="card-label" style="color: var(--accent-orange);">
+                <i class="fa-solid fa-bell"></i> TELEGRAM ALARM NOTIFICATION
             </div>
-            <div id="lastAlert" style="font-size: 11px; color: var(--text-dim); font-weight: 600;">
+            <div id="lastAlert" style="color: var(--text-dim); font-weight: 600;">
                 <i class="fa-solid fa-circle-check" style="color: var(--accent-green);"></i> System standby.
             </div>
         </div>
@@ -188,11 +189,11 @@
         <div class="chart-container">
             <div class="r61-group">
                 <div class="card">
-                    <div class="card-label" style="margin-bottom: 10px;">Riwayat Suhu Sensor Rack 61</div>
+                    <div class="card-label" style="margin-bottom: 10px;">RACK 61 TEMPERATURE HISTORY</div>
                     <canvas id="chart1"></canvas>
                 </div>
                 <div class="card record-panel">
-                    <div style="font-size: 10px; font-weight: 800; color: var(--accent-blue);">REKOR 61</div>
+                    <div style="font-size: 10px; font-weight: 800; color: var(--accent-blue);">RECORDS 61</div>
                     <div style="font-size: 11px;">❄️ MIN: <span id="min61" style="color:var(--text-main); font-weight:800;">--</span>°C <small id="timeMin61" style="color:var(--text-dim); font-size:9px;">(--:--)</small></div>
                     <div style="font-size: 11px;">🔥 MAX: <span id="max61" style="color:var(--text-main); font-weight:800;">--</span>°C <small id="timeMax61" style="color:var(--text-dim); font-size:9px;">(--:--)</small></div>
                     <button onclick="resetRekor('61')" class="btn-mini" style="border-color: #475569; color: #475569;"><i class="fa-solid fa-rotate"></i></button>
@@ -201,11 +202,11 @@
 
             <div class="r139-group">
                 <div class="card">
-                    <div class="card-label" style="margin-bottom: 10px;">Riwayat Suhu Sensor Rack 139</div>
+                    <div class="card-label" style="margin-bottom: 10px;">RACK 139 TEMPERATURE HISTORY</div>
                     <canvas id="chart2"></canvas>
                 </div>
                 <div class="card record-panel">
-                    <div style="font-size: 10px; font-weight: 800; color: var(--accent-blue);">REKOR 139</div>
+                    <div style="font-size: 10px; font-weight: 800; color: var(--accent-blue);">RECORDS 139</div>
                     <div style="font-size: 11px;">❄️ MIN: <span id="min139" style="color:var(--text-main); font-weight:800;">--</span>°C <small id="timeMin139" style="color:var(--text-dim); font-size:9px;">(--:--)</small></div>
                     <div style="font-size: 11px;">🔥 MAX: <span id="max139" style="color:var(--text-main); font-weight:800;">--</span>°C <small id="timeMax139" style="color:var(--text-dim); font-size:9px;">(--:--)</small></div>
                     <button onclick="resetRekor('139')" class="btn-mini" style="border-color: #475569; color: #475569;"><i class="fa-solid fa-rotate"></i></button>
@@ -262,13 +263,12 @@
             r139Cards.forEach(card => card.classList.remove('device-offline'));
         }
     }
-
     setInterval(checkDeviceStatus, 5000);
 
     function pushLog(id, temp, humi) {
         const now = new Date();
         const ts = now.getHours().toString().padStart(2, '0') + ":" + now.getMinutes().toString().padStart(2, '0') + ":" + now.getSeconds().toString().padStart(2, '0');
-        const entry = `<div style="margin-bottom:2px;">[${ts}] Temp ${temp.toFixed(1)}°C | Hum ${humi.toFixed(0)}%</div>`;
+        const entry = `<div style="margin-bottom:2px;">[${ts}] Temperature ${temp.toFixed(1)}°C | Humidity ${humi.toFixed(0)}%</div>`;
         const list = document.getElementById(id);
         list.innerHTML = entry + list.innerHTML;
         if (list.children.length > 5) list.lastElementChild.remove();
@@ -298,7 +298,7 @@
     function downloadRiwayat(rack) {
         db.ref('history_suhu/'+rack).once('value').then((snap) => {
             if(!snap.exists()) { alert("Data belum tersedia."); return; }
-            let csv = "Waktu,Suhu,Humidity\n";
+            let csv = "Timestamp,Temperature,Humidity\n";
             snap.forEach(c => { csv += `${c.key},${c.val().suhu},${c.val().kelembaban}\n`; });
             const blob = new Blob([csv], {type: 'text/csv'});
             const url = window.URL.createObjectURL(blob);
