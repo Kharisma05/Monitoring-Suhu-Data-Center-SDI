@@ -69,6 +69,7 @@
         .trend-icon { font-size: 16px; margin-left: 8px; font-weight: bold; }
         .card-label-row { display: flex; align-items: center; width: 100%; margin-bottom: 5px; }
 
+        /* TELEGRAM SLIM PANEL */
         .alert-panel {
             background: rgba(245, 158, 11, 0.03); border-left: 3px solid var(--accent-orange);
             padding: 2px 15px; min-height: 32px; height: 32px; flex-direction: row !important;
@@ -295,25 +296,38 @@
         }
     }
 
-    // FUNGSI DOWNLOAD CSV DENGAN PERBAIKAN FORMAT EXCEL
+    // FUNGSI DOWNLOAD CSV DENGAN PEMISAH DATE, TIME, DAN SPASI SETELAH KOMA
     function downloadRiwayat(rack) {
         db.ref('history_suhu/' + rack).once('value').then((snap) => {
             if (!snap.exists()) { alert("Data belum tersedia."); return; }
 
-            let csv = "Timestamp,Temperature,Humidity\n";
+            // Header dengan spasi setelah koma
+            let csv = "Date, Time, Temperature, Humidity\n";
+            
             snap.forEach(c => { 
+                let fullKey = c.key; // Example: "2026-04-27 14:30"
+                let datePart = "-";
+                let timePart = fullKey;
+
+                if (fullKey.includes(' ')) {
+                    let parts = fullKey.split(' ');
+                    datePart = parts[0];
+                    timePart = parts[1];
+                }
+
                 let t = c.val().suhu ? c.val().suhu.toFixed(2) : "0.00";
                 let h = c.val().kelembaban || "0";
-                csv += `${c.key},${t},${h}\n`; 
+                
+                // Data dengan spasi setelah koma sesuai permintaan
+                csv += `${datePart}, ${timePart}, ${t}, ${h}\n`; 
             });
 
-            // TRIK: Tambahkan BOM \ufeff agar Excel otomatis mengenali kolom UTF-8
+            // BOM (\ufeff) agar Excel rapi otomatis mengenali kolom
             const blob = new Blob(["\ufeff" + csv], { type: 'text/csv;charset=utf-8;' });
             const url = window.URL.createObjectURL(blob);
             const a = document.createElement('a');
-            const date = new Date().toISOString().split('T')[0];
             a.href = url;
-            a.download = `Log_${rack}_${date}.csv`;
+            a.download = `Log_${rack}_Export.csv`;
             a.click();
             window.URL.revokeObjectURL(url);
         });
