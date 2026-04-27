@@ -104,12 +104,16 @@
         }
         .modal-content {
             background: var(--card-color); border: 1px solid var(--accent-blue);
-            border-radius: 12px; padding: 20px; width: 320px; max-width: 90%;
+            border-radius: 12px; padding: 20px; width: 340px; max-width: 90%;
             box-shadow: 0 10px 30px rgba(0,0,0,0.5);
         }
         .month-grid-ui {
             display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-top: 15px;
         }
+        .day-grid-ui {
+            display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; margin-top: 10px;
+        }
+        .day-grid-ui .btn-mini { padding: 6px 0; font-size: 10px; }
 
         @media (max-width: 768px) {
             .dashboard-grid { grid-template-columns: 1fr 1fr; }
@@ -234,28 +238,77 @@
 
 <div id="monthModal" class="modal-overlay">
     <div class="modal-content">
-        <div style="display: flex; justify-content: space-between; align-items: center;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
             <span style="color: var(--accent-blue); font-size: 13px; font-weight: 800;">
-                <i class="fa-solid fa-calendar-days"></i> PILIH BULAN (<span id="modalTargetRack"></span>)
+                <i class="fa-solid fa-download"></i> EXPORT DATA (<span id="modalTargetRack"></span>)
             </span>
             <i class="fa-solid fa-xmark" onclick="closeModal()" style="cursor: pointer; color: var(--accent-red); font-size: 18px;"></i>
         </div>
-        <div style="color: var(--text-dim); font-size: 10px; margin-top: 5px; margin-bottom: 10px;">
-            Pilih bulan untuk mengekspor dokumen riwayat berformat CSV (Excel).
+
+        <div id="viewBulan">
+            <div style="color: var(--text-dim); font-size: 10px; margin-bottom: 10px;">Langkah 1: Pilih bulan riwayat yang ingin diunduh</div>
+            <div class="month-grid-ui">
+                <button class="btn-mini" onclick="selectMonth('01', 'JANUARI')" style="padding: 10px 0;">JAN</button>
+                <button class="btn-mini" onclick="selectMonth('02', 'FEBRUARI')" style="padding: 10px 0;">FEB</button>
+                <button class="btn-mini" onclick="selectMonth('03', 'MARET')" style="padding: 10px 0;">MAR</button>
+                <button class="btn-mini" onclick="selectMonth('04', 'APRIL')" style="padding: 10px 0;">APR</button>
+                <button class="btn-mini" onclick="selectMonth('05', 'MEI')" style="padding: 10px 0;">MEI</button>
+                <button class="btn-mini" onclick="selectMonth('06', 'JUNI')" style="padding: 10px 0;">JUN</button>
+                <button class="btn-mini" onclick="selectMonth('07', 'JULI')" style="padding: 10px 0;">JUL</button>
+                <button class="btn-mini" onclick="selectMonth('08', 'AGUSTUS')" style="padding: 10px 0;">AGU</button>
+                <button class="btn-mini" onclick="selectMonth('09', 'SEPTEMBER')" style="padding: 10px 0;">SEP</button>
+                <button class="btn-mini" onclick="selectMonth('10', 'OKTOBER')" style="padding: 10px 0;">OKT</button>
+                <button class="btn-mini" onclick="selectMonth('11', 'NOVEMBER')" style="padding: 10px 0;">NOV</button>
+                <button class="btn-mini" onclick="selectMonth('12', 'DESEMBER')" style="padding: 10px 0;">DES</button>
+            </div>
         </div>
-        <div class="month-grid-ui">
-            <button class="btn-mini" onclick="executeDownload('01')" style="padding: 10px 0;">JAN</button>
-            <button class="btn-mini" onclick="executeDownload('02')" style="padding: 10px 0;">FEB</button>
-            <button class="btn-mini" onclick="executeDownload('03')" style="padding: 10px 0;">MAR</button>
-            <button class="btn-mini" onclick="executeDownload('04')" style="padding: 10px 0;">APR</button>
-            <button class="btn-mini" onclick="executeDownload('05')" style="padding: 10px 0;">MEI</button>
-            <button class="btn-mini" onclick="executeDownload('06')" style="padding: 10px 0;">JUN</button>
-            <button class="btn-mini" onclick="executeDownload('07')" style="padding: 10px 0;">JUL</button>
-            <button class="btn-mini" onclick="executeDownload('08')" style="padding: 10px 0;">AGU</button>
-            <button class="btn-mini" onclick="executeDownload('09')" style="padding: 10px 0;">SEP</button>
-            <button class="btn-mini" onclick="executeDownload('10')" style="padding: 10px 0;">OKT</button>
-            <button class="btn-mini" onclick="executeDownload('11')" style="padding: 10px 0;">NOV</button>
-            <button class="btn-mini" onclick="executeDownload('12')" style="padding: 10px 0;">DES</button>
+
+        <div id="viewHari" style="display: none;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                <span style="color: var(--accent-green); font-size: 12px; font-weight: bold;">🗓️ <span id="labelBulanTerpilih"></span></span>
+                <button class="btn-mini" onclick="backToBulan()" style="padding: 4px 8px; font-size: 9px; border-color: var(--text-dim); color: var(--text-dim);"><i class="fa-solid fa-arrow-left"></i> KEMBALI</button>
+            </div>
+            
+            <button class="btn-mini" onclick="executeDownloadMonthFull()" style="width: 100%; margin-bottom: 15px; padding: 10px; background: rgba(56, 189, 248, 0.1); font-size: 11px;">
+                <i class="fa-solid fa-file-excel"></i> UNDUH FULL 1 BULAN
+            </button>
+
+            <div style="background: rgba(255,255,255,0.02); padding: 10px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);">
+                <div style="color: var(--text-dim); font-size: 10px; margin-bottom: 5px;">Atau pilih unduh per tanggal:</div>
+                <div class="day-grid-ui">
+                    <button class="btn-mini" onclick="executeDownloadDailyNum('01')">1</button>
+                    <button class="btn-mini" onclick="executeDownloadDailyNum('02')">2</button>
+                    <button class="btn-mini" onclick="executeDownloadDailyNum('03')">3</button>
+                    <button class="btn-mini" onclick="executeDownloadDailyNum('04')">4</button>
+                    <button class="btn-mini" onclick="executeDownloadDailyNum('05')">5</button>
+                    <button class="btn-mini" onclick="executeDownloadDailyNum('06')">6</button>
+                    <button class="btn-mini" onclick="executeDownloadDailyNum('07')">7</button>
+                    <button class="btn-mini" onclick="executeDownloadDailyNum('08')">8</button>
+                    <button class="btn-mini" onclick="executeDownloadDailyNum('09')">9</button>
+                    <button class="btn-mini" onclick="executeDownloadDailyNum('10')">10</button>
+                    <button class="btn-mini" onclick="executeDownloadDailyNum('11')">11</button>
+                    <button class="btn-mini" onclick="executeDownloadDailyNum('12')">12</button>
+                    <button class="btn-mini" onclick="executeDownloadDailyNum('13')">13</button>
+                    <button class="btn-mini" onclick="executeDownloadDailyNum('14')">14</button>
+                    <button class="btn-mini" onclick="executeDownloadDailyNum('15')">15</button>
+                    <button class="btn-mini" onclick="executeDownloadDailyNum('16')">16</button>
+                    <button class="btn-mini" onclick="executeDownloadDailyNum('17')">17</button>
+                    <button class="btn-mini" onclick="executeDownloadDailyNum('18')">18</button>
+                    <button class="btn-mini" onclick="executeDownloadDailyNum('19')">19</button>
+                    <button class="btn-mini" onclick="executeDownloadDailyNum('20')">20</button>
+                    <button class="btn-mini" onclick="executeDownloadDailyNum('21')">21</button>
+                    <button class="btn-mini" onclick="executeDownloadDailyNum('22')">22</button>
+                    <button class="btn-mini" onclick="executeDownloadDailyNum('23')">23</button>
+                    <button class="btn-mini" onclick="executeDownloadDailyNum('24')">24</button>
+                    <button class="btn-mini" onclick="executeDownloadDailyNum('25')">25</button>
+                    <button class="btn-mini" onclick="executeDownloadDailyNum('26')">26</button>
+                    <button class="btn-mini" onclick="executeDownloadDailyNum('27')">27</button>
+                    <button class="btn-mini" onclick="executeDownloadDailyNum('28')">28</button>
+                    <button class="btn-mini" onclick="executeDownloadDailyNum('29')">29</button>
+                    <button class="btn-mini" onclick="executeDownloadDailyNum('30')">30</button>
+                    <button class="btn-mini" onclick="executeDownloadDailyNum('31')">31</button>
+                </div>
+            </div>
         </div>
     </div>
 </div>
@@ -269,6 +322,10 @@
     let lastUpdateR139 = 0;
     const OFFLINE_TIMEOUT = 15000;
     let targetRackExport = "";
+    
+    // Variabel state untuk Modal
+    let currentSelectedYear = new Date().getFullYear();
+    let currentSelectedMonthNum = "";
 
     let history61 = JSON.parse(localStorage.getItem('hist61')) || [0,0,0,0,0];
     let history139 = JSON.parse(localStorage.getItem('hist139')) || [0,0,0,0,0];
@@ -340,10 +397,12 @@
         }
     }
 
-    // --- FITUR MODAL & FILTER BULAN CSV ---
+    // --- LOGIKA MODAL 2 LANGKAH ---
     function openModal(rack) {
         targetRackExport = rack;
         document.getElementById('modalTargetRack').innerText = rack.toUpperCase().replace('_', ' ');
+        document.getElementById('viewBulan').style.display = 'block';
+        document.getElementById('viewHari').style.display = 'none';
         document.getElementById('monthModal').style.display = 'flex';
     }
 
@@ -351,17 +410,29 @@
         document.getElementById('monthModal').style.display = 'none';
     }
 
-    function executeDownload(monthNum) {
-        let year = new Date().getFullYear();
-        let prefix = `${year}-${monthNum}`; // Cth: "2026-04"
+    function selectMonth(monthNum, monthName) {
+        currentSelectedMonthNum = monthNum;
+        document.getElementById('labelBulanTerpilih').innerText = `${monthName} ${currentSelectedYear}`;
+        document.getElementById('viewBulan').style.display = 'none';
+        document.getElementById('viewHari').style.display = 'block';
+    }
+
+    function backToBulan() {
+        document.getElementById('viewHari').style.display = 'none';
+        document.getElementById('viewBulan').style.display = 'block';
+    }
+
+    // --- LOGIKA PENARIKAN DATA FIREBASE ---
+    function tarikDataFirebase(prefixKeyword, fileNameSuffix) {
         let btnText = event.target;
         let originalText = btnText.innerText;
-        btnText.innerText = "...";
+        btnText.innerText = "Loading...";
 
         db.ref('history_suhu/' + targetRackExport).once('value').then((snap) => {
+            btnText.innerText = originalText;
+            
             if (!snap.exists()) { 
                 alert(`Data riwayat untuk rak ini belum tersedia.`); 
-                btnText.innerText = originalText;
                 return; 
             }
 
@@ -370,7 +441,7 @@
             
             snap.forEach(c => { 
                 let fullKey = c.key; 
-                if (fullKey.startsWith(prefix)) {
+                if (fullKey.startsWith(prefixKeyword)) {
                     hasData = true;
                     let datePart = "-";
                     let timePart = fullKey;
@@ -393,10 +464,8 @@
                 }
             });
 
-            btnText.innerText = originalText;
-
             if(!hasData) {
-                alert(`Tidak ditemukan data pada bulan ${monthNum}-${year}.`);
+                alert(`Tidak ditemukan data pada periode: ${prefixKeyword}`);
                 return;
             }
 
@@ -404,7 +473,7 @@
             const url = window.URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = `Log_${targetRackExport}_${year}-${monthNum}.csv`;
+            a.download = `Log_${targetRackExport}_${fileNameSuffix}.csv`;
             a.click();
             window.URL.revokeObjectURL(url);
             
@@ -412,7 +481,17 @@
         });
     }
 
-    // --- LISTENER LIVE DATA & PERBAIKAN LOGIKA MIN/MAX ---
+    function executeDownloadMonthFull() {
+        let prefix = `${currentSelectedYear}-${currentSelectedMonthNum}`; 
+        tarikDataFirebase(prefix, `Bulan_${prefix}`);
+    }
+
+    function executeDownloadDailyNum(dayStr) {
+        let prefix = `${currentSelectedYear}-${currentSelectedMonthNum}-${dayStr}`; 
+        tarikDataFirebase(prefix, `Tanggal_${prefix}`);
+    }
+
+    // --- LISTENER LIVE DATA ---
     db.ref('live_data').on('value', (snap) => {
         const d = snap.val();
         if (d) {
@@ -428,17 +507,14 @@
                 c1.data.datasets[0].data.push(t); c1.data.datasets[0].data.shift(); c1.update('none');
                 localStorage.setItem('hist61', JSON.stringify(history61));
                 
-                // --- PERBAIKAN LOGIKA MIN/MAX 61 ---
                 let min61 = localStorage.getItem('min61');
                 let max61 = localStorage.getItem('max61');
                 let tmin61 = localStorage.getItem('tmin61') || timeStr;
                 let tmax61 = localStorage.getItem('tmax61') || timeStr;
 
-                // Jika memori kosong (baru pertama kali / reset)
                 if (min61 === null) { min61 = t; localStorage.setItem('min61', t); localStorage.setItem('tmin61', timeStr); } else { min61 = parseFloat(min61); }
                 if (max61 === null) { max61 = t; localStorage.setItem('max61', t); localStorage.setItem('tmax61', timeStr); } else { max61 = parseFloat(max61); }
 
-                // Evaluasi suhu baru
                 if(t < min61) { min61 = t; tmin61 = timeStr; localStorage.setItem('min61', min61); localStorage.setItem('tmin61', tmin61); }
                 if(t > max61) { max61 = t; tmax61 = timeStr; localStorage.setItem('max61', max61); localStorage.setItem('tmax61', tmax61); }
                 
@@ -456,7 +532,6 @@
                 c2.data.datasets[0].data.push(t); c2.data.datasets[0].data.shift(); c2.update('none');
                 localStorage.setItem('hist139', JSON.stringify(history139));
                 
-                // --- PERBAIKAN LOGIKA MIN/MAX 139 ---
                 let min139 = localStorage.getItem('min139');
                 let max139 = localStorage.getItem('max139');
                 let tmin139 = localStorage.getItem('tmin139') || timeStr;
