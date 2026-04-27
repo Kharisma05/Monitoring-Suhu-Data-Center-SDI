@@ -331,6 +331,7 @@
         <div style="display: flex; gap: 8px; margin-bottom: 15px;">
             <input type="date" id="graphDatePicker" style="flex: 1; background: #0f172a; color: white; border: 1px solid #38bdf8; border-radius: 6px; padding: 5px; font-family: inherit; font-size: 11px;">
             <button class="btn-mini" onclick="renderGraphData()" id="btnRenderGraph" style="background: var(--accent-blue); color: #000; padding: 0 15px;">TAMPILKAN</button>
+            <button class="btn-mini" onclick="downloadGraphImage()" style="background: var(--accent-green); color: #000; padding: 0 15px;" title="Unduh sebagai PNG"><i class="fa-solid fa-camera"></i> GAMBAR</button>
         </div>
 
         <div style="background: rgba(0,0,0,0.2); padding: 10px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05); height: 300px; width: 100%;">
@@ -358,6 +359,19 @@
 
     let history61 = JSON.parse(localStorage.getItem('hist61')) || [0,0,0,0,0];
     let history139 = JSON.parse(localStorage.getItem('hist139')) || [0,0,0,0,0];
+
+    // --- PLUGIN UNTUK BACKGROUND GAMBAR SAAT DIUNDUH ---
+    const pluginBackground = {
+        id: 'customCanvasBackgroundColor',
+        beforeDraw: (chart, args, options) => {
+            const {ctx} = chart;
+            ctx.save();
+            ctx.globalCompositeOperation = 'destination-over';
+            ctx.fillStyle = '#050a10'; // Warna dasar gelap
+            ctx.fillRect(0, 0, chart.width, chart.height);
+            ctx.restore();
+        }
+    };
 
     function buildChart(ctxId, color, storageKey) {
         let savedData = JSON.parse(localStorage.getItem(storageKey));
@@ -554,6 +568,7 @@
             const ctxBig = document.getElementById('bigHistoryChart').getContext('2d');
             bigChartInstance = new Chart(ctxBig, {
                 type: 'line',
+                plugins: [pluginBackground], // Menerapkan plugin background gelap
                 data: {
                     labels: labelsTime,
                     datasets: [{
@@ -578,6 +593,23 @@
                 }
             });
         });
+    }
+
+    // --- FUNGSI UNDUH GAMBAR GRAFIK ---
+    function downloadGraphImage() {
+        const canvas = document.getElementById('bigHistoryChart');
+        
+        if(!bigChartInstance || bigChartInstance.data.labels.length === 0) {
+            alert("Silakan tekan tombol TAMPILKAN terlebih dahulu sebelum mengunduh gambar.");
+            return;
+        }
+
+        const imageURL = canvas.toDataURL('image/png');
+        const link = document.createElement('a');
+        let tanggal = document.getElementById('graphDatePicker').value;
+        link.download = `Grafik_Suhu_${targetRackGraph}_${tanggal}.png`;
+        link.href = imageURL;
+        link.click();
     }
 
     // --- LISTENER LIVE DATA (Dengan Format Tanggal di Rekor) ---
