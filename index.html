@@ -69,7 +69,6 @@
         .trend-icon { font-size: 16px; margin-left: 8px; font-weight: bold; }
         .card-label-row { display: flex; align-items: center; width: 100%; margin-bottom: 5px; }
 
-        /* TELEGRAM SLIM PANEL */
         .alert-panel {
             background: rgba(245, 158, 11, 0.03); border-left: 3px solid var(--accent-orange);
             padding: 2px 15px; min-height: 32px; height: 32px; flex-direction: row !important;
@@ -107,13 +106,10 @@
             border-radius: 12px; padding: 20px; width: 340px; max-width: 90%;
             box-shadow: 0 10px 30px rgba(0,0,0,0.5);
         }
-        .month-grid-ui {
-            display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-top: 15px;
-        }
-        .day-grid-ui {
-            display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; margin-top: 10px;
-        }
+        .month-grid-ui { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-top: 15px; }
+        .day-grid-ui { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; margin-top: 10px; }
         .day-grid-ui .btn-mini { padding: 6px 0; font-size: 10px; }
+        .action-buttons { display: flex; gap: 5px; }
 
         @media (max-width: 768px) {
             .dashboard-grid { grid-template-columns: 1fr 1fr; }
@@ -167,7 +163,10 @@
     <div class="card full-mobile r61-group">
         <div class="card-label-row" style="justify-content: space-between; margin-bottom: 8px;">
             <span class="card-label">ACTIVITY LOG RACK 61</span>
-            <button onclick="openModal('rack_61')" class="btn-mini"><i class="fa-solid fa-download"></i> EXPORT CSV</button>
+            <div class="action-buttons">
+                <button onclick="openGraphModal('rack_61')" class="btn-mini"><i class="fa-solid fa-chart-line"></i> GRAFIK RIWAYAT</button>
+                <button onclick="openModal('rack_61')" class="btn-mini"><i class="fa-solid fa-download"></i> EXPORT CSV</button>
+            </div>
         </div>
         <div id="logList1" class="log-list"></div>
     </div>
@@ -189,7 +188,10 @@
     <div class="card full-mobile r139-group">
         <div class="card-label-row" style="justify-content: space-between; margin-bottom: 8px;">
             <span class="card-label">ACTIVITY LOG RACK 139</span>
-            <button onclick="openModal('rack_139')" class="btn-mini"><i class="fa-solid fa-download"></i> EXPORT CSV</button>
+            <div class="action-buttons">
+                <button onclick="openGraphModal('rack_139')" class="btn-mini"><i class="fa-solid fa-chart-line"></i> GRAFIK RIWAYAT</button>
+                <button onclick="openModal('rack_139')" class="btn-mini"><i class="fa-solid fa-download"></i> EXPORT CSV</button>
+            </div>
         </div>
         <div id="logList2" class="log-list"></div>
     </div>
@@ -313,6 +315,26 @@
     </div>
 </div>
 
+<div id="graphModal" class="modal-overlay">
+    <div class="modal-content" style="width: 700px; max-width: 95%;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+            <span style="color: var(--accent-blue); font-size: 13px; font-weight: 800;">
+                <i class="fa-solid fa-chart-line"></i> GRAFIK RIWAYAT (<span id="graphModalTargetRack"></span>)
+            </span>
+            <i class="fa-solid fa-xmark" onclick="closeGraphModal()" style="cursor: pointer; color: var(--accent-red); font-size: 18px;"></i>
+        </div>
+        
+        <div style="display: flex; gap: 8px; margin-bottom: 15px;">
+            <input type="date" id="graphDatePicker" style="flex: 1; background: #0f172a; color: white; border: 1px solid #38bdf8; border-radius: 6px; padding: 5px; font-family: inherit; font-size: 11px;">
+            <button class="btn-mini" onclick="renderGraphData()" id="btnRenderGraph" style="background: var(--accent-blue); color: #000; padding: 0 15px;">TAMPILKAN</button>
+        </div>
+
+        <div style="background: rgba(0,0,0,0.2); padding: 10px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05); height: 300px; width: 100%;">
+            <canvas id="bigHistoryChart"></canvas>
+        </div>
+    </div>
+</div>
+
 <script>
     const firebaseConfig = { databaseURL: "https://monitoring-suhu-dc---sdi-default-rtdb.asia-southeast1.firebasedatabase.app" };
     firebase.initializeApp(firebaseConfig);
@@ -323,9 +345,12 @@
     const OFFLINE_TIMEOUT = 15000;
     let targetRackExport = "";
     
-    // Variabel state untuk Modal
     let currentSelectedYear = new Date().getFullYear();
     let currentSelectedMonthNum = "";
+
+    // Variabel untuk Grafik Besar
+    let targetRackGraph = "";
+    let bigChartInstance = null;
 
     let history61 = JSON.parse(localStorage.getItem('hist61')) || [0,0,0,0,0];
     let history139 = JSON.parse(localStorage.getItem('hist139')) || [0,0,0,0,0];
@@ -397,7 +422,7 @@
         }
     }
 
-    // --- LOGIKA MODAL 2 LANGKAH ---
+    // --- LOGIKA MODAL CSV EXPORT ---
     function openModal(rack) {
         targetRackExport = rack;
         document.getElementById('modalTargetRack').innerText = rack.toUpperCase().replace('_', ' ');
@@ -405,24 +430,18 @@
         document.getElementById('viewHari').style.display = 'none';
         document.getElementById('monthModal').style.display = 'flex';
     }
-
-    function closeModal() {
-        document.getElementById('monthModal').style.display = 'none';
-    }
-
+    function closeModal() { document.getElementById('monthModal').style.display = 'none'; }
     function selectMonth(monthNum, monthName) {
         currentSelectedMonthNum = monthNum;
         document.getElementById('labelBulanTerpilih').innerText = `${monthName} ${currentSelectedYear}`;
         document.getElementById('viewBulan').style.display = 'none';
         document.getElementById('viewHari').style.display = 'block';
     }
-
     function backToBulan() {
         document.getElementById('viewHari').style.display = 'none';
         document.getElementById('viewBulan').style.display = 'block';
     }
 
-    // --- LOGIKA PENARIKAN DATA FIREBASE ---
     function tarikDataFirebase(prefixKeyword, fileNameSuffix) {
         let btnText = event.target;
         let originalText = btnText.innerText;
@@ -430,12 +449,7 @@
 
         db.ref('history_suhu/' + targetRackExport).once('value').then((snap) => {
             btnText.innerText = originalText;
-            
-            if (!snap.exists()) { 
-                alert(`Data riwayat untuk rak ini belum tersedia.`); 
-                return; 
-            }
-
+            if (!snap.exists()) { alert(`Data riwayat untuk rak ini belum tersedia.`); return; }
             let csv = "Date, Time, Temperature, Humidity\n";
             let hasData = false;
             
@@ -445,38 +459,26 @@
                     hasData = true;
                     let datePart = "-";
                     let timePart = fullKey;
-
-                    // Mengakomodasi format _ maupun spasi dari ESP
                     if (fullKey.includes('_')) {
                         let parts = fullKey.split('_');
-                        datePart = parts[0];
-                        timePart = parts[1].replace('-', ':'); 
+                        datePart = parts[0]; timePart = parts[1].replace('-', ':'); 
                     } else if (fullKey.includes(' ')) {
                         let parts = fullKey.split(' ');
-                        datePart = parts[0];
-                        timePart = parts[1];
+                        datePart = parts[0]; timePart = parts[1];
                     }
-
                     let t = c.val().suhu ? c.val().suhu.toFixed(2) : "0.00";
                     let h = c.val().kelembaban || "0";
-                    
                     csv += `${datePart}, ${timePart}, ${t}, ${h}\n`; 
                 }
             });
 
-            if(!hasData) {
-                alert(`Tidak ditemukan data pada periode: ${prefixKeyword}`);
-                return;
-            }
+            if(!hasData) { alert(`Tidak ditemukan data pada periode: ${prefixKeyword}`); return; }
 
             const blob = new Blob(["\ufeff" + csv], { type: 'text/csv;charset=utf-8;' });
             const url = window.URL.createObjectURL(blob);
             const a = document.createElement('a');
-            a.href = url;
-            a.download = `Log_${targetRackExport}_${fileNameSuffix}.csv`;
-            a.click();
-            window.URL.revokeObjectURL(url);
-            
+            a.href = url; a.download = `Log_${targetRackExport}_${fileNameSuffix}.csv`;
+            a.click(); window.URL.revokeObjectURL(url);
             closeModal();
         });
     }
@@ -485,10 +487,97 @@
         let prefix = `${currentSelectedYear}-${currentSelectedMonthNum}`; 
         tarikDataFirebase(prefix, `Bulan_${prefix}`);
     }
-
     function executeDownloadDailyNum(dayStr) {
         let prefix = `${currentSelectedYear}-${currentSelectedMonthNum}-${dayStr}`; 
         tarikDataFirebase(prefix, `Tanggal_${prefix}`);
+    }
+
+    // --- LOGIKA MODAL GRAFIK BESAR ---
+    function openGraphModal(rack) {
+        targetRackGraph = rack;
+        document.getElementById('graphModalTargetRack').innerText = rack.toUpperCase().replace('_', ' ');
+        
+        // Set tanggal default ke hari ini
+        const today = new Date().toISOString().split('T')[0];
+        document.getElementById('graphDatePicker').value = today;
+        
+        document.getElementById('graphModal').style.display = 'flex';
+        
+        // Kosongkan grafik jika masih ada sisa
+        if (bigChartInstance) {
+            bigChartInstance.destroy();
+            bigChartInstance = null;
+        }
+    }
+
+    function closeGraphModal() {
+        document.getElementById('graphModal').style.display = 'none';
+    }
+
+    function renderGraphData() {
+        let dateVal = document.getElementById('graphDatePicker').value; // Format: YYYY-MM-DD
+        if (!dateVal) { alert("Silakan pilih tanggal terlebih dahulu."); return; }
+
+        let btnRender = document.getElementById('btnRenderGraph');
+        btnRender.innerText = "MEMUAT...";
+
+        db.ref('history_suhu/' + targetRackGraph).once('value').then((snap) => {
+            btnRender.innerText = "TAMPILKAN";
+            if (!snap.exists()) { alert("Data belum tersedia di sistem."); return; }
+
+            let labelsTime = [];
+            let dataTemp = [];
+
+            snap.forEach(c => {
+                let fullKey = c.key;
+                if (fullKey.startsWith(dateVal)) {
+                    let timePart = fullKey;
+                    if (fullKey.includes('_')) {
+                        timePart = fullKey.split('_')[1].replace('-', ':');
+                    } else if (fullKey.includes(' ')) {
+                        timePart = fullKey.split(' ')[1];
+                    }
+                    labelsTime.push(timePart);
+                    dataTemp.push(c.val().suhu);
+                }
+            });
+
+            if (labelsTime.length === 0) {
+                alert("Tidak ada riwayat data yang tersimpan pada tanggal " + dateVal);
+                return;
+            }
+
+            // Hapus grafik lama jika ada
+            if (bigChartInstance) { bigChartInstance.destroy(); }
+
+            // Render grafik baru
+            const ctxBig = document.getElementById('bigHistoryChart').getContext('2d');
+            bigChartInstance = new Chart(ctxBig, {
+                type: 'line',
+                data: {
+                    labels: labelsTime,
+                    datasets: [{
+                        label: 'Suhu (°C)',
+                        data: dataTemp,
+                        borderColor: '#38bdf8',
+                        backgroundColor: 'rgba(56, 189, 248, 0.1)',
+                        borderWidth: 2,
+                        fill: true,
+                        tension: 0.3,
+                        pointRadius: 2,
+                        pointBackgroundColor: '#10b981'
+                    }]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    plugins: { legend: { display: false }, tooltip: { mode: 'index', intersect: false } },
+                    scales: { 
+                        x: { ticks: { color: '#94a3b8', font: { size: 10 }, maxTicksLimit: 12 }, grid: { color: 'rgba(255,255,255,0.05)' } },
+                        y: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#ffffff', font: { size: 12, weight: 'bold' } } }
+                    }
+                }
+            });
+        });
     }
 
     // --- LISTENER LIVE DATA ---
@@ -507,10 +596,8 @@
                 c1.data.datasets[0].data.push(t); c1.data.datasets[0].data.shift(); c1.update('none');
                 localStorage.setItem('hist61', JSON.stringify(history61));
                 
-                let min61 = localStorage.getItem('min61');
-                let max61 = localStorage.getItem('max61');
-                let tmin61 = localStorage.getItem('tmin61') || timeStr;
-                let tmax61 = localStorage.getItem('tmax61') || timeStr;
+                let min61 = localStorage.getItem('min61'); let max61 = localStorage.getItem('max61');
+                let tmin61 = localStorage.getItem('tmin61') || timeStr; let tmax61 = localStorage.getItem('tmax61') || timeStr;
 
                 if (min61 === null) { min61 = t; localStorage.setItem('min61', t); localStorage.setItem('tmin61', timeStr); } else { min61 = parseFloat(min61); }
                 if (max61 === null) { max61 = t; localStorage.setItem('max61', t); localStorage.setItem('tmax61', timeStr); } else { max61 = parseFloat(max61); }
@@ -532,10 +619,8 @@
                 c2.data.datasets[0].data.push(t); c2.data.datasets[0].data.shift(); c2.update('none');
                 localStorage.setItem('hist139', JSON.stringify(history139));
                 
-                let min139 = localStorage.getItem('min139');
-                let max139 = localStorage.getItem('max139');
-                let tmin139 = localStorage.getItem('tmin139') || timeStr;
-                let tmax139 = localStorage.getItem('tmax139') || timeStr;
+                let min139 = localStorage.getItem('min139'); let max139 = localStorage.getItem('max139');
+                let tmin139 = localStorage.getItem('tmin139') || timeStr; let tmax139 = localStorage.getItem('tmax139') || timeStr;
 
                 if (min139 === null) { min139 = t; localStorage.setItem('min139', t); localStorage.setItem('tmin139', timeStr); } else { min139 = parseFloat(min139); }
                 if (max139 === null) { max139 = t; localStorage.setItem('max139', t); localStorage.setItem('tmax139', timeStr); } else { max139 = parseFloat(max139); }
