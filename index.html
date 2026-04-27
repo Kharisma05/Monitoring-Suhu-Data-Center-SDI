@@ -92,9 +92,24 @@
             background: rgba(56, 189, 248, 0.05); border: 1px solid rgba(56, 189, 248, 0.4); 
             color: var(--accent-blue); border-radius: 6px; padding: 4px 10px; 
             font-size: 9px; font-weight: 800; cursor: pointer; transition: 0.2s;
-            display: flex; align-items: center; gap: 5px;
+            display: flex; align-items: center; gap: 5px; justify-content: center;
         }
         .btn-mini:hover { background: rgba(56, 189, 248, 0.2); border-color: var(--accent-blue); color: #fff; }
+
+        /* MODAL STYLING */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(5, 10, 16, 0.85); backdrop-filter: blur(4px);
+            display: none; align-items: center; justify-content: center; z-index: 1000;
+        }
+        .modal-content {
+            background: var(--card-color); border: 1px solid var(--accent-blue);
+            border-radius: 12px; padding: 20px; width: 320px; max-width: 90%;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+        .month-grid-ui {
+            display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-top: 15px;
+        }
 
         @media (max-width: 768px) {
             .dashboard-grid { grid-template-columns: 1fr 1fr; }
@@ -148,7 +163,7 @@
     <div class="card full-mobile r61-group">
         <div class="card-label-row" style="justify-content: space-between; margin-bottom: 8px;">
             <span class="card-label">ACTIVITY LOG RACK 61</span>
-            <button onclick="downloadRiwayat('rack_61')" class="btn-mini"><i class="fa-solid fa-download"></i> CSV</button>
+            <button onclick="openModal('rack_61')" class="btn-mini"><i class="fa-solid fa-download"></i> EXPORT CSV</button>
         </div>
         <div id="logList1" class="log-list"></div>
     </div>
@@ -170,7 +185,7 @@
     <div class="card full-mobile r139-group">
         <div class="card-label-row" style="justify-content: space-between; margin-bottom: 8px;">
             <span class="card-label">ACTIVITY LOG RACK 139</span>
-            <button onclick="downloadRiwayat('rack_139')" class="btn-mini"><i class="fa-solid fa-download"></i> CSV</button>
+            <button onclick="openModal('rack_139')" class="btn-mini"><i class="fa-solid fa-download"></i> EXPORT CSV</button>
         </div>
         <div id="logList2" class="log-list"></div>
     </div>
@@ -197,7 +212,7 @@
                     <div style="font-size: 10px; font-weight: 800; color: var(--accent-blue);">RECORDS 61</div>
                     <div style="font-size: 11px;">❄️ MIN: <span id="min61" style="color:var(--text-main); font-weight:800;">--</span>°C <small id="timeMin61" style="color:var(--text-dim); font-size:9px;">(--:--)</small></div>
                     <div style="font-size: 11px;">🔥 MAX: <span id="max61" style="color:var(--text-main); font-weight:800;">--</span>°C <small id="timeMax61" style="color:var(--text-dim); font-size:9px;">(--:--)</small></div>
-                    <button onclick="resetRekor('61')" class="btn-mini" style="border-color: #475569; color: #475569;"><i class="fa-solid fa-rotate"></i></button>
+                    <button onclick="resetRekor('61')" class="btn-mini" style="border-color: #475569; color: #475569; width:25px; height:25px;"><i class="fa-solid fa-rotate"></i></button>
                 </div>
             </div>
 
@@ -210,9 +225,37 @@
                     <div style="font-size: 10px; font-weight: 800; color: var(--accent-blue);">RECORDS 139</div>
                     <div style="font-size: 11px;">❄️ MIN: <span id="min139" style="color:var(--text-main); font-weight:800;">--</span>°C <small id="timeMin139" style="color:var(--text-dim); font-size:9px;">(--:--)</small></div>
                     <div style="font-size: 11px;">🔥 MAX: <span id="max139" style="color:var(--text-main); font-weight:800;">--</span>°C <small id="timeMax139" style="color:var(--text-dim); font-size:9px;">(--:--)</small></div>
-                    <button onclick="resetRekor('139')" class="btn-mini" style="border-color: #475569; color: #475569;"><i class="fa-solid fa-rotate"></i></button>
+                    <button onclick="resetRekor('139')" class="btn-mini" style="border-color: #475569; color: #475569; width:25px; height:25px;"><i class="fa-solid fa-rotate"></i></button>
                 </div>
             </div>
+        </div>
+    </div>
+</div>
+
+<div id="monthModal" class="modal-overlay">
+    <div class="modal-content">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <span style="color: var(--accent-blue); font-size: 13px; font-weight: 800;">
+                <i class="fa-solid fa-calendar-days"></i> PILIH BULAN (<span id="modalTargetRack"></span>)
+            </span>
+            <i class="fa-solid fa-xmark" onclick="closeModal()" style="cursor: pointer; color: var(--accent-red); font-size: 18px;"></i>
+        </div>
+        <div style="color: var(--text-dim); font-size: 10px; margin-top: 5px; margin-bottom: 10px;">
+            Pilih bulan untuk mengekspor dokumen riwayat berformat CSV (Excel).
+        </div>
+        <div class="month-grid-ui">
+            <button class="btn-mini" onclick="executeDownload('01')" style="padding: 10px 0;">JAN</button>
+            <button class="btn-mini" onclick="executeDownload('02')" style="padding: 10px 0;">FEB</button>
+            <button class="btn-mini" onclick="executeDownload('03')" style="padding: 10px 0;">MAR</button>
+            <button class="btn-mini" onclick="executeDownload('04')" style="padding: 10px 0;">APR</button>
+            <button class="btn-mini" onclick="executeDownload('05')" style="padding: 10px 0;">MEI</button>
+            <button class="btn-mini" onclick="executeDownload('06')" style="padding: 10px 0;">JUN</button>
+            <button class="btn-mini" onclick="executeDownload('07')" style="padding: 10px 0;">JUL</button>
+            <button class="btn-mini" onclick="executeDownload('08')" style="padding: 10px 0;">AGU</button>
+            <button class="btn-mini" onclick="executeDownload('09')" style="padding: 10px 0;">SEP</button>
+            <button class="btn-mini" onclick="executeDownload('10')" style="padding: 10px 0;">OKT</button>
+            <button class="btn-mini" onclick="executeDownload('11')" style="padding: 10px 0;">NOV</button>
+            <button class="btn-mini" onclick="executeDownload('12')" style="padding: 10px 0;">DES</button>
         </div>
     </div>
 </div>
@@ -225,6 +268,7 @@
     let lastUpdateR61 = 0;
     let lastUpdateR139 = 0;
     const OFFLINE_TIMEOUT = 15000;
+    let targetRackExport = "";
 
     let history61 = JSON.parse(localStorage.getItem('hist61')) || [0,0,0,0,0];
     let history139 = JSON.parse(localStorage.getItem('hist139')) || [0,0,0,0,0];
@@ -296,43 +340,79 @@
         }
     }
 
-    // FUNGSI DOWNLOAD CSV DENGAN PEMISAH DATE, TIME, DAN SPASI SETELAH KOMA
-    function downloadRiwayat(rack) {
-        db.ref('history_suhu/' + rack).once('value').then((snap) => {
-            if (!snap.exists()) { alert("Data belum tersedia."); return; }
+    // --- FITUR MODAL & FILTER BULAN CSV ---
+    function openModal(rack) {
+        targetRackExport = rack;
+        document.getElementById('modalTargetRack').innerText = rack.toUpperCase().replace('_', ' ');
+        document.getElementById('monthModal').style.display = 'flex';
+    }
 
-            // Header dengan spasi setelah koma
+    function closeModal() {
+        document.getElementById('monthModal').style.display = 'none';
+    }
+
+    function executeDownload(monthNum) {
+        let year = new Date().getFullYear();
+        let prefix = `${year}-${monthNum}`; // Cth: "2026-04"
+        let btnText = event.target;
+        let originalText = btnText.innerText;
+        btnText.innerText = "...";
+
+        db.ref('history_suhu/' + targetRackExport).once('value').then((snap) => {
+            if (!snap.exists()) { 
+                alert(`Data riwayat untuk rak ini belum tersedia.`); 
+                btnText.innerText = originalText;
+                return; 
+            }
+
             let csv = "Date, Time, Temperature, Humidity\n";
+            let hasData = false;
             
             snap.forEach(c => { 
-                let fullKey = c.key; // Example: "2026-04-27 14:30"
-                let datePart = "-";
-                let timePart = fullKey;
+                let fullKey = c.key; 
+                if (fullKey.startsWith(prefix)) {
+                    hasData = true;
+                    let datePart = "-";
+                    let timePart = fullKey;
 
-                if (fullKey.includes(' ')) {
-                    let parts = fullKey.split(' ');
-                    datePart = parts[0];
-                    timePart = parts[1];
+                    // Mengakomodasi format _ maupun spasi dari ESP
+                    if (fullKey.includes('_')) {
+                        let parts = fullKey.split('_');
+                        datePart = parts[0];
+                        timePart = parts[1].replace('-', ':'); 
+                    } else if (fullKey.includes(' ')) {
+                        let parts = fullKey.split(' ');
+                        datePart = parts[0];
+                        timePart = parts[1];
+                    }
+
+                    let t = c.val().suhu ? c.val().suhu.toFixed(2) : "0.00";
+                    let h = c.val().kelembaban || "0";
+                    
+                    csv += `${datePart}, ${timePart}, ${t}, ${h}\n`; 
                 }
-
-                let t = c.val().suhu ? c.val().suhu.toFixed(2) : "0.00";
-                let h = c.val().kelembaban || "0";
-                
-                // Data dengan spasi setelah koma sesuai permintaan
-                csv += `${datePart}, ${timePart}, ${t}, ${h}\n`; 
             });
 
-            // BOM (\ufeff) agar Excel rapi otomatis mengenali kolom
+            btnText.innerText = originalText;
+
+            if(!hasData) {
+                alert(`Tidak ditemukan data pada bulan ${monthNum}-${year}.`);
+                return;
+            }
+
             const blob = new Blob(["\ufeff" + csv], { type: 'text/csv;charset=utf-8;' });
             const url = window.URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = `Log_${rack}_Export.csv`;
+            a.download = `Log_${targetRackExport}_${year}-${monthNum}.csv`;
             a.click();
             window.URL.revokeObjectURL(url);
+            
+            closeModal();
         });
     }
 
+    // --- LISTENER LIVE DATA & PERBAIKAN LOGIKA MIN/MAX ---
     db.ref('live_data').on('value', (snap) => {
         const d = snap.val();
         if (d) {
@@ -348,16 +428,22 @@
                 c1.data.datasets[0].data.push(t); c1.data.datasets[0].data.shift(); c1.update('none');
                 localStorage.setItem('hist61', JSON.stringify(history61));
                 
-                let min = localStorage.getItem('min61') ? parseFloat(localStorage.getItem('min61')) : t;
-                let max = localStorage.getItem('max61') ? parseFloat(localStorage.getItem('max61')) : t;
-                let tmin = localStorage.getItem('tmin61') || timeStr;
-                let tmax = localStorage.getItem('tmax61') || timeStr;
+                // --- PERBAIKAN LOGIKA MIN/MAX 61 ---
+                let min61 = localStorage.getItem('min61');
+                let max61 = localStorage.getItem('max61');
+                let tmin61 = localStorage.getItem('tmin61') || timeStr;
+                let tmax61 = localStorage.getItem('tmax61') || timeStr;
 
-                if(t < min) { min = t; tmin = timeStr; localStorage.setItem('tmin61', tmin); }
-                if(t > max) { max = t; tmax = timeStr; localStorage.setItem('tmax61', tmax); }
+                // Jika memori kosong (baru pertama kali / reset)
+                if (min61 === null) { min61 = t; localStorage.setItem('min61', t); localStorage.setItem('tmin61', timeStr); } else { min61 = parseFloat(min61); }
+                if (max61 === null) { max61 = t; localStorage.setItem('max61', t); localStorage.setItem('tmax61', timeStr); } else { max61 = parseFloat(max61); }
+
+                // Evaluasi suhu baru
+                if(t < min61) { min61 = t; tmin61 = timeStr; localStorage.setItem('min61', min61); localStorage.setItem('tmin61', tmin61); }
+                if(t > max61) { max61 = t; tmax61 = timeStr; localStorage.setItem('max61', max61); localStorage.setItem('tmax61', tmax61); }
                 
-                document.getElementById('min61').innerText = min.toFixed(1); document.getElementById('max61').innerText = max.toFixed(1);
-                document.getElementById('timeMin61').innerText = `(${tmin})`; document.getElementById('timeMax61').innerText = `(${tmax})`;
+                document.getElementById('min61').innerText = min61.toFixed(1); document.getElementById('max61').innerText = max61.toFixed(1);
+                document.getElementById('timeMin61').innerText = `(${tmin61})`; document.getElementById('timeMax61').innerText = `(${tmax61})`;
                 pushLog('logList1', t, d.humi || 0);
             }
             
@@ -370,16 +456,20 @@
                 c2.data.datasets[0].data.push(t); c2.data.datasets[0].data.shift(); c2.update('none');
                 localStorage.setItem('hist139', JSON.stringify(history139));
                 
-                let min = localStorage.getItem('min139') ? parseFloat(localStorage.getItem('min139')) : t;
-                let max = localStorage.getItem('max139') ? parseFloat(localStorage.getItem('max139')) : t;
-                let tmin = localStorage.getItem('tmin139') || timeStr;
-                let tmax = localStorage.getItem('tmax139') || timeStr;
+                // --- PERBAIKAN LOGIKA MIN/MAX 139 ---
+                let min139 = localStorage.getItem('min139');
+                let max139 = localStorage.getItem('max139');
+                let tmin139 = localStorage.getItem('tmin139') || timeStr;
+                let tmax139 = localStorage.getItem('tmax139') || timeStr;
 
-                if(t < min) { min = t; tmin = timeStr; localStorage.setItem('tmin139', tmin); }
-                if(t > max) { max = t; tmax = timeStr; localStorage.setItem('tmax139', tmax); }
+                if (min139 === null) { min139 = t; localStorage.setItem('min139', t); localStorage.setItem('tmin139', timeStr); } else { min139 = parseFloat(min139); }
+                if (max139 === null) { max139 = t; localStorage.setItem('max139', t); localStorage.setItem('tmax139', timeStr); } else { max139 = parseFloat(max139); }
+
+                if(t < min139) { min139 = t; tmin139 = timeStr; localStorage.setItem('min139', min139); localStorage.setItem('tmin139', tmin139); }
+                if(t > max139) { max139 = t; tmax139 = timeStr; localStorage.setItem('max139', max139); localStorage.setItem('tmax139', tmax139); }
                 
-                document.getElementById('min139').innerText = min.toFixed(1); document.getElementById('max139').innerText = max.toFixed(1);
-                document.getElementById('timeMin139').innerText = `(${tmin})`; document.getElementById('timeMax139').innerText = `(${tmax})`;
+                document.getElementById('min139').innerText = min139.toFixed(1); document.getElementById('max139').innerText = max139.toFixed(1);
+                document.getElementById('timeMin139').innerText = `(${tmin139})`; document.getElementById('timeMax139').innerText = `(${tmax139})`;
                 pushLog('logList2', t, d.kelembaban || 0);
             }
         }
