@@ -217,8 +217,8 @@
                 </div>
                 <div class="card record-panel">
                     <div style="font-size: 10px; font-weight: 800; color: var(--accent-blue);">RECORDS 61</div>
-                    <div style="font-size: 11px;">❄️ MIN: <span id="min61" style="color:var(--text-main); font-weight:800;">--</span>°C <small id="timeMin61" style="color:var(--text-dim); font-size:9px;">(--/-- --:--)</small></div>
-                    <div style="font-size: 11px;">🔥 MAX: <span id="max61" style="color:var(--text-main); font-weight:800;">--</span>°C <small id="timeMax61" style="color:var(--text-dim); font-size:9px;">(--/-- --:--)</small></div>
+                    <div style="font-size: 11px;">❄️ MIN: <span id="min61" style="color:var(--text-main); font-weight:800;">--</span>°C <small id="timeMin61" style="color:var(--text-dim); font-size:9px;">--:-- (--/--/--)</small></div>
+                    <div style="font-size: 11px;">🔥 MAX: <span id="max61" style="color:var(--text-main); font-weight:800;">--</span>°C <small id="timeMax61" style="color:var(--text-dim); font-size:9px;">--:-- (--/--/--)</small></div>
                     <button onclick="resetRekor('61')" class="btn-mini" style="border-color: #475569; color: #475569; width:25px; height:25px;"><i class="fa-solid fa-rotate"></i></button>
                 </div>
             </div>
@@ -233,8 +233,8 @@
                 </div>
                 <div class="card record-panel">
                     <div style="font-size: 10px; font-weight: 800; color: var(--accent-blue);">RECORDS 139</div>
-                    <div style="font-size: 11px;">❄️ MIN: <span id="min139" style="color:var(--text-main); font-weight:800;">--</span>°C <small id="timeMin139" style="color:var(--text-dim); font-size:9px;">(--/-- --:--)</small></div>
-                    <div style="font-size: 11px;">🔥 MAX: <span id="max139" style="color:var(--text-main); font-weight:800;">--</span>°C <small id="timeMax139" style="color:var(--text-dim); font-size:9px;">(--/-- --:--)</small></div>
+                    <div style="font-size: 11px;">❄️ MIN: <span id="min139" style="color:var(--text-main); font-weight:800;">--</span>°C <small id="timeMin139" style="color:var(--text-dim); font-size:9px;">--:-- (--/--/--)</small></div>
+                    <div style="font-size: 11px;">🔥 MAX: <span id="max139" style="color:var(--text-main); font-weight:800;">--</span>°C <small id="timeMax139" style="color:var(--text-dim); font-size:9px;">--:-- (--/--/--)</small></div>
                     <button onclick="resetRekor('139')" class="btn-mini" style="border-color: #475569; color: #475569; width:25px; height:25px;"><i class="fa-solid fa-rotate"></i></button>
                 </div>
             </div>
@@ -426,7 +426,9 @@
         if (temp < 24) { statusEl.innerText = "STABLE"; statusEl.style.color = "var(--accent-green)"; statusEl.style.background = "rgba(16, 185, 129, 0.1)"; }
         else if (temp <= 25) { statusEl.innerText = "WARNING"; statusEl.style.color = "var(--accent-orange)"; statusEl.style.background = "rgba(245, 158, 11, 0.1)"; }
         else { statusEl.innerText = "CRITICAL"; statusEl.style.color = "var(--accent-red)"; statusEl.style.background = "rgba(239, 68, 68, 0.1)"; }
-        const diff = temp - historyArr[3];
+        
+        // --- LOGIKA TREND SUHU YANG DIPERBAIKI ---
+        const diff = Number((temp - historyArr[0]).toFixed(2));
         trendEl.innerText = diff >= 0.1 ? "↑" : diff <= -0.1 ? "↓" : "—";
         trendEl.style.color = diff >= 0.1 ? "var(--accent-red)" : diff <= -0.1 ? "var(--accent-blue)" : "var(--text-dim)";
     }
@@ -436,7 +438,7 @@
             localStorage.removeItem('min'+id); localStorage.removeItem('max'+id);
             localStorage.removeItem('tmin'+id); localStorage.removeItem('tmax'+id);
             document.getElementById('min'+id).innerText = '--'; document.getElementById('max'+id).innerText = '--';
-            document.getElementById('timeMin'+id).innerText = '(--/-- --:--)'; document.getElementById('timeMax'+id).innerText = '(--/-- --:--)';
+            document.getElementById('timeMin'+id).innerText = '--:-- (--/--/--)'; document.getElementById('timeMax'+id).innerText = '--:-- (--/--/--)';
         }
     }
 
@@ -617,12 +619,17 @@
         const d = snap.val();
         if (d) {
             const now = new Date();
+            
             // Format Jam (HH:MM)
             const timeStr = now.getHours().toString().padStart(2, '0') + ":" + now.getMinutes().toString().padStart(2, '0');
-            // Format Tanggal (DD/MM)
-            const dateStr = now.getDate().toString().padStart(2, '0') + "/" + (now.getMonth() + 1).toString().padStart(2, '0');
-            // Gabungan (DD/MM HH:MM) untuk Rekor
-            const stampStr = `${dateStr} ${timeStr}`;
+            
+            // Format Tanggal (DD/MM/YY) dengan 2 digit tahun
+            const dateStr = now.getDate().toString().padStart(2, '0') + "/" + 
+                            (now.getMonth() + 1).toString().padStart(2, '0') + "/" + 
+                            now.getFullYear().toString().slice(-2);
+                            
+            // Gabungan -> HH:MM (DD/MM/YY)
+            const stampStr = `${timeStr} (${dateStr})`;
 
             if (d.ruangan !== undefined) {
                 lastUpdateR61 = Date.now();
@@ -643,7 +650,7 @@
                 if(t > max61) { max61 = t; tmax61 = stampStr; localStorage.setItem('max61', max61); localStorage.setItem('tmax61', tmax61); }
                 
                 document.getElementById('min61').innerText = min61.toFixed(1); document.getElementById('max61').innerText = max61.toFixed(1);
-                document.getElementById('timeMin61').innerText = `(${tmin61})`; document.getElementById('timeMax61').innerText = `(${tmax61})`;
+                document.getElementById('timeMin61').innerText = tmin61; document.getElementById('timeMax61').innerText = tmax61;
                 pushLog('logList1', t, d.humi || 0);
             }
             
@@ -666,7 +673,7 @@
                 if(t > max139) { max139 = t; tmax139 = stampStr; localStorage.setItem('max139', max139); localStorage.setItem('tmax139', tmax139); }
                 
                 document.getElementById('min139').innerText = min139.toFixed(1); document.getElementById('max139').innerText = max139.toFixed(1);
-                document.getElementById('timeMin139').innerText = `(${tmin139})`; document.getElementById('timeMax139').innerText = `(${tmax139})`;
+                document.getElementById('timeMin139').innerText = tmin139; document.getElementById('timeMax139').innerText = tmax139;
                 pushLog('logList2', t, d.kelembaban || 0);
             }
         }
