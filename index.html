@@ -245,8 +245,8 @@
                 </div>
                 <div class="card record-panel">
                     <div style="font-size: 10px; font-weight: 800; color: var(--accent-blue);">RECORDS 61</div>
-                    <div style="font-size: 11px;">❄️ MIN: <span id="min61" style="color:var(--text-main); font-weight:800;">--</span>°C <small id="timeMin61" style="color:var(--text-dim); font-size:9px;">--:-- (--/--/--)</small></div>
-                    <div style="font-size: 11px;">🔥 MAX: <span id="max61" style="color:var(--text-main); font-weight:800;">--</span>°C <small id="timeMax61" style="color:var(--text-dim); font-size:9px;">--:-- (--/--/--)</small></div>
+                    <div style="font-size: 11px;">❄️ MIN: <span id="min61" style="color:var(--text-main); font-weight:800;">--</span>°C <small id="timeMin61" style="color:var(--text-dim); font-size:9px;">--:--</small></div>
+                    <div style="font-size: 11px;">🔥 MAX: <span id="max61" style="color:var(--text-main); font-weight:800;">--</span>°C <small id="timeMax61" style="color:var(--text-dim); font-size:9px;">--:--</small></div>
                     <button onclick="resetRekor('61')" class="btn-mini" style="border-color: #475569; color: #475569; width:25px; height:25px;"><i class="fa-solid fa-rotate"></i></button>
                 </div>
             </div>
@@ -261,8 +261,8 @@
                 </div>
                 <div class="card record-panel">
                     <div style="font-size: 10px; font-weight: 800; color: var(--accent-blue);">RECORDS 139</div>
-                    <div style="font-size: 11px;">❄️ MIN: <span id="min139" style="color:var(--text-main); font-weight:800;">--</span>°C <small id="timeMin139" style="color:var(--text-dim); font-size:9px;">--:-- (--/--/--)</small></div>
-                    <div style="font-size: 11px;">🔥 MAX: <span id="max139" style="color:var(--text-main); font-weight:800;">--</span>°C <small id="timeMax139" style="color:var(--text-dim); font-size:9px;">--:-- (--/--/--)</small></div>
+                    <div style="font-size: 11px;">❄️ MIN: <span id="min139" style="color:var(--text-main); font-weight:800;">--</span>°C <small id="timeMin139" style="color:var(--text-dim); font-size:9px;">--:--</small></div>
+                    <div style="font-size: 11px;">🔥 MAX: <span id="max139" style="color:var(--text-main); font-weight:800;">--</span>°C <small id="timeMax139" style="color:var(--text-dim); font-size:9px;">--:--</small></div>
                     <button onclick="resetRekor('139')" class="btn-mini" style="border-color: #475569; color: #475569; width:25px; height:25px;"><i class="fa-solid fa-rotate"></i></button>
                 </div>
             </div>
@@ -535,10 +535,13 @@
 
     function resetRekor(id) {
         if(confirm("Reset rekor Rack " + id + "?")) {
-            localStorage.removeItem('min'+id); localStorage.removeItem('max'+id);
-            localStorage.removeItem('tmin'+id); localStorage.removeItem('tmax'+id);
-            document.getElementById('min'+id).innerText = '--'; document.getElementById('max'+id).innerText = '--';
-            document.getElementById('timeMin'+id).innerText = '--:-- (--/--/--)'; document.getElementById('timeMax'+id).innerText = '--:-- (--/--/--)';
+            // Menghapus data dari Firebase agar tersinkron di semua perangkat
+            db.ref('/rekor/rack_' + id).remove();
+            
+            document.getElementById('min'+id).innerText = '--'; 
+            document.getElementById('max'+id).innerText = '--';
+            document.getElementById('timeMin'+id).innerText = '--:--'; 
+            document.getElementById('timeMax'+id).innerText = '--:--';
         }
     }
 
@@ -714,17 +717,10 @@
         link.click();
     }
 
-    // --- LISTENER LIVE DATA ---
+    // --- LISTENER LIVE DATA (SUDAH DIBERSIHKAN DARI LOCALSTORAGE UNTUK REKOR) ---
     db.ref('live_data').on('value', (snap) => {
         const d = snap.val();
         if (d) {
-            const now = new Date();
-            const timeStr = now.getHours().toString().padStart(2, '0') + ":" + now.getMinutes().toString().padStart(2, '0');
-            const dateStr = now.getDate().toString().padStart(2, '0') + "/" + 
-                            (now.getMonth() + 1).toString().padStart(2, '0') + "/" + 
-                            now.getFullYear().toString().slice(-2);
-            const stampStr = `${timeStr} (${dateStr})`;
-
             if (d.ruangan !== undefined) {
                 lastUpdateR61 = Date.now();
                 const t = d.ruangan;
@@ -732,19 +728,7 @@
                 document.getElementById('hum1').innerText = (d.humi || 0).toFixed(1);
                 updateAnalytic('61', t, history61);
                 c1.data.datasets[0].data.push(t); c1.data.datasets[0].data.shift(); c1.update('none');
-                localStorage.setItem('hist61', JSON.stringify(history61));
-                
-                let min61 = localStorage.getItem('min61'); let max61 = localStorage.getItem('max61');
-                let tmin61 = localStorage.getItem('tmin61') || stampStr; let tmax61 = localStorage.getItem('tmax61') || stampStr;
-
-                if (min61 === null) { min61 = t; localStorage.setItem('min61', t); localStorage.setItem('tmin61', stampStr); tmin61 = stampStr; } else { min61 = parseFloat(min61); }
-                if (max61 === null) { max61 = t; localStorage.setItem('max61', t); localStorage.setItem('tmax61', stampStr); tmax61 = stampStr; } else { max61 = parseFloat(max61); }
-
-                if(t < min61) { min61 = t; tmin61 = stampStr; localStorage.setItem('min61', min61); localStorage.setItem('tmin61', tmin61); }
-                if(t > max61) { max61 = t; tmax61 = stampStr; localStorage.setItem('max61', max61); localStorage.setItem('tmax61', tmax61); }
-                
-                document.getElementById('min61').innerText = min61.toFixed(1); document.getElementById('max61').innerText = max61.toFixed(1);
-                document.getElementById('timeMin61').innerText = tmin61; document.getElementById('timeMax61').innerText = tmax61;
+                localStorage.setItem('hist61', JSON.stringify(history61)); // Hanya simpan riwayat grafik
                 pushLog('logList1', t, d.humi || 0);
             }
             
@@ -755,21 +739,39 @@
                 document.getElementById('hum2').innerText = (d.kelembaban || 0).toFixed(1);
                 updateAnalytic('139', t, history139);
                 c2.data.datasets[0].data.push(t); c2.data.datasets[0].data.shift(); c2.update('none');
-                localStorage.setItem('hist139', JSON.stringify(history139));
-                
-                let min139 = localStorage.getItem('min139'); let max139 = localStorage.getItem('max139');
-                let tmin139 = localStorage.getItem('tmin139') || stampStr; let tmax139 = localStorage.getItem('tmax139') || stampStr;
-
-                if (min139 === null) { min139 = t; localStorage.setItem('min139', t); localStorage.setItem('tmin139', stampStr); tmin139 = stampStr; } else { min139 = parseFloat(min139); }
-                if (max139 === null) { max139 = t; localStorage.setItem('max139', t); localStorage.setItem('tmax139', stampStr); tmax139 = stampStr; } else { max139 = parseFloat(max139); }
-
-                if(t < min139) { min139 = t; tmin139 = stampStr; localStorage.setItem('min139', min139); localStorage.setItem('tmin139', tmin139); }
-                if(t > max139) { max139 = t; tmax139 = stampStr; localStorage.setItem('max139', max139); localStorage.setItem('tmax139', tmax139); }
-                
-                document.getElementById('min139').innerText = min139.toFixed(1); document.getElementById('max139').innerText = max139.toFixed(1);
-                document.getElementById('timeMin139').innerText = tmin139; document.getElementById('timeMax139').innerText = tmax139;
+                localStorage.setItem('hist139', JSON.stringify(history139)); // Hanya simpan riwayat grafik
                 pushLog('logList2', t, d.kelembaban || 0);
             }
+        }
+    });
+
+    // --- LISTENER REKOR FIREBASE (AGAR SINKRON SEMUA PERANGKAT) ---
+    db.ref('rekor').on('value', (snap) => {
+        const r = snap.val();
+        if (r) {
+            if (r.rack_61) {
+                document.getElementById('min61').innerText = r.rack_61.min !== undefined ? r.rack_61.min.toFixed(1) : '--';
+                document.getElementById('max61').innerText = r.rack_61.max !== undefined ? r.rack_61.max.toFixed(1) : '--';
+                document.getElementById('timeMin61').innerText = r.rack_61.tmin || '--:--';
+                document.getElementById('timeMax61').innerText = r.rack_61.tmax || '--:--';
+            }
+            if (r.rack_139) {
+                document.getElementById('min139').innerText = r.rack_139.min !== undefined ? r.rack_139.min.toFixed(1) : '--';
+                document.getElementById('max139').innerText = r.rack_139.max !== undefined ? r.rack_139.max.toFixed(1) : '--';
+                document.getElementById('timeMin139').innerText = r.rack_139.tmin || '--:--';
+                document.getElementById('timeMax139').innerText = r.rack_139.tmax || '--:--';
+            }
+        } else {
+            // Jika rekor direset/kosong
+            document.getElementById('min61').innerText = '--';
+            document.getElementById('max61').innerText = '--';
+            document.getElementById('timeMin61').innerText = '--:--';
+            document.getElementById('timeMax61').innerText = '--:--';
+            
+            document.getElementById('min139').innerText = '--';
+            document.getElementById('max139').innerText = '--';
+            document.getElementById('timeMin139').innerText = '--:--';
+            document.getElementById('timeMax139').innerText = '--:--';
         }
     });
 </script>
