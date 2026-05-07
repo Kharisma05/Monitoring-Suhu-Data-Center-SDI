@@ -347,11 +347,12 @@
 
 <div id="graphModal" class="modal-overlay">
     <div class="modal-content" style="width: 700px; max-width: 95%;">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+        
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; border-bottom: 1px solid rgba(56, 189, 248, 0.2); padding-bottom: 10px;">
             <span style="color: var(--accent-blue); font-size: 13px; font-weight: 800;">
                 <i class="fa-solid fa-chart-line"></i> GRAFIK RIWAYAT (<span id="graphModalTargetRack"></span>)
             </span>
-            <i class="fa-solid fa-xmark" onclick="closeGraphModal()" style="cursor: pointer; color: var(--accent-red); font-size: 18px;"></i>
+            <i class="fa-solid fa-xmark" onclick="closeGraphModal()" style="cursor: pointer; color: var(--accent-red); font-size: 20px; padding: 0 5px;" title="Tutup Modal"></i>
         </div>
         
         <div id="graphViewBulan">
@@ -375,7 +376,15 @@
         <div id="graphViewHari" style="display: none;">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
                 <span style="color: var(--accent-green); font-size: 12px; font-weight: bold;">🗓️ <span id="graphLabelBulanTerpilih"></span></span>
-                <button class="btn-mini" onclick="backToGraphBulan()" style="padding: 4px 8px; font-size: 9px; border-color: var(--text-dim); color: var(--text-dim);"><i class="fa-solid fa-arrow-left"></i> GANTI BULAN</button>
+                
+                <div style="display: flex; gap: 8px;">
+                    <button class="btn-mini" onclick="backToGraphBulan()" style="padding: 4px 8px; font-size: 9px; border-color: var(--text-dim); color: var(--text-dim);">
+                        <i class="fa-solid fa-arrow-left"></i> GANTI BULAN
+                    </button>
+                    <button class="btn-mini" onclick="closeGraphModal()" style="padding: 4px 8px; font-size: 9px; border-color: rgba(239, 68, 68, 0.4); color: var(--accent-red);">
+                        <i class="fa-solid fa-xmark"></i> TUTUP
+                    </button>
+                </div>
             </div>
             
             <div style="background: rgba(255,255,255,0.02); padding: 10px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05); margin-bottom: 15px;">
