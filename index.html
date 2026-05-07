@@ -511,23 +511,23 @@
         trendEl.innerText = diff >= 0.1 ? "↑" : diff <= -0.1 ? "↓" : "—";
         trendEl.style.color = diff >= 0.1 ? "var(--accent-red)" : diff <= -0.1 ? "var(--accent-blue)" : "var(--text-dim)";
 
-        // Logika Audio Alarm (Berbunyi 1x siklus di suhu >= 28°C)
+        // Logika Audio Alarm (Berbunyi 1x siklus di suhu >= 26.9°C)
         if (isAudioEnabled) {
-            if (temp >= 28.0) {
+            if (temp >= 26.9) {
                 // Cek apakah alarm belum berbunyi di siklus darurat ini
                 if (!sudahBunyi) {
                     alarmAudio.play().catch(e => console.log("Menunggu interaksi user untuk play audio"));
                     sudahBunyi = true; // Kunci alarm agar tidak di-play berulang kali
                 }
             } else {
-                // Periksa apakah suhu KEDUA rak sudah turun di bawah 28°C
+                // Periksa apakah suhu KEDUA rak sudah turun di bawah 26.9°C
                 const t1 = parseFloat(document.getElementById('val1').innerText) || 0;
                 const t2 = parseFloat(document.getElementById('val2').innerText) || 0;
                 
-                if (t1 < 28.0 && t2 < 28.0) {
+                if (t1 < 26.9 && t2 < 26.9) {
                     alarmAudio.pause();
                     alarmAudio.currentTime = 0; // Reset posisi lagu ke awal
-                    sudahBunyi = false; // Buka kunci agar bisa berbunyi lagi jika nanti suhu naik ke 28 lagi
+                    sudahBunyi = false; // Buka kunci agar bisa berbunyi lagi jika nanti suhu naik ke 26.9 lagi
                 }
             }
         }
