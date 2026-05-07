@@ -43,7 +43,6 @@
             background: rgba(239, 68, 68, 0.1); box-shadow: 0 0 10px rgba(239, 68, 68, 0.2);
         }
 
-        /* Styling Notifikasi & Alarm */
         .notification-group { display: flex; gap: 8px; width: 100%; justify-content: flex-end; flex-wrap: wrap; }
         .alarm-inline {
             display: flex; justify-content: center; align-items: center;
@@ -54,7 +53,6 @@
         .alarm-inline i.fa-bell { color: var(--accent-orange); }
         .alarm-inline b { color: var(--text-main); letter-spacing: 0.5px; }
 
-        /* Styling khusus tombol Audio */
         .audio-btn {
             background: rgba(239, 68, 68, 0.05); border: 1px solid rgba(239, 68, 68, 0.3);
             cursor: pointer; transition: 0.3s;
@@ -356,14 +354,45 @@
             <i class="fa-solid fa-xmark" onclick="closeGraphModal()" style="cursor: pointer; color: var(--accent-red); font-size: 18px;"></i>
         </div>
         
-        <div style="display: flex; gap: 8px; margin-bottom: 15px;">
-            <input type="date" id="graphDatePicker" style="flex: 1; background: #0f172a; color: white; border: 1px solid #38bdf8; border-radius: 6px; padding: 5px; font-family: inherit; font-size: 11px;">
-            <button class="btn-mini" onclick="renderGraphData()" id="btnRenderGraph" style="background: var(--accent-blue); color: #000; padding: 0 15px;">TAMPILKAN</button>
-            <button class="btn-mini" onclick="downloadGraphImage()" style="background: var(--accent-green); color: #000; padding: 0 15px;" title="Unduh sebagai PNG"><i class="fa-solid fa-camera"></i> GAMBAR</button>
+        <div id="graphViewBulan">
+            <div style="color: var(--text-dim); font-size: 10px; margin-bottom: 10px;">Langkah 1: Pilih bulan untuk melihat grafik</div>
+            <div class="month-grid-ui">
+                <button class="btn-mini" onclick="selectGraphMonth('01', 'JANUARI')" style="padding: 10px 0;">JAN</button>
+                <button class="btn-mini" onclick="selectGraphMonth('02', 'FEBRUARI')" style="padding: 10px 0;">FEB</button>
+                <button class="btn-mini" onclick="selectGraphMonth('03', 'MARET')" style="padding: 10px 0;">MAR</button>
+                <button class="btn-mini" onclick="selectGraphMonth('04', 'APRIL')" style="padding: 10px 0;">APR</button>
+                <button class="btn-mini" onclick="selectGraphMonth('05', 'MEI')" style="padding: 10px 0;">MEI</button>
+                <button class="btn-mini" onclick="selectGraphMonth('06', 'JUNI')" style="padding: 10px 0;">JUN</button>
+                <button class="btn-mini" onclick="selectGraphMonth('07', 'JULI')" style="padding: 10px 0;">JUL</button>
+                <button class="btn-mini" onclick="selectGraphMonth('08', 'AGUSTUS')" style="padding: 10px 0;">AGU</button>
+                <button class="btn-mini" onclick="selectGraphMonth('09', 'SEPTEMBER')" style="padding: 10px 0;">SEP</button>
+                <button class="btn-mini" onclick="selectGraphMonth('10', 'OKTOBER')" style="padding: 10px 0;">OKT</button>
+                <button class="btn-mini" onclick="selectGraphMonth('11', 'NOVEMBER')" style="padding: 10px 0;">NOV</button>
+                <button class="btn-mini" onclick="selectGraphMonth('12', 'DESEMBER')" style="padding: 10px 0;">DES</button>
+            </div>
         </div>
 
-        <div style="background: rgba(0,0,0,0.2); padding: 10px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05); height: 300px; width: 100%;">
-            <canvas id="bigHistoryChart"></canvas>
+        <div id="graphViewHari" style="display: none;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                <span style="color: var(--accent-green); font-size: 12px; font-weight: bold;">🗓️ <span id="graphLabelBulanTerpilih"></span></span>
+                <button class="btn-mini" onclick="backToGraphBulan()" style="padding: 4px 8px; font-size: 9px; border-color: var(--text-dim); color: var(--text-dim);"><i class="fa-solid fa-arrow-left"></i> GANTI BULAN</button>
+            </div>
+            
+            <div style="background: rgba(255,255,255,0.02); padding: 10px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05); margin-bottom: 15px;">
+                <div style="color: var(--text-dim); font-size: 10px; margin-bottom: 5px;">Pilih tanggal:</div>
+                <div class="day-grid-ui" id="graphDayGrid">
+                    </div>
+            </div>
+
+            <div id="graphArea" style="display: none;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                    <span id="graphTglLabel" style="font-size: 11px; font-weight: 800; color: var(--text-main);"></span>
+                    <button class="btn-mini" onclick="downloadGraphImage()" style="background: var(--accent-green); color: #000; padding: 4px 15px;" title="Unduh sebagai PNG"><i class="fa-solid fa-camera"></i> SIMPAN GAMBAR</button>
+                </div>
+                <div style="background: rgba(0,0,0,0.2); padding: 10px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05); height: 300px; width: 100%;">
+                    <canvas id="bigHistoryChart"></canvas>
+                </div>
+            </div>
         </div>
     </div>
 </div>
@@ -380,20 +409,38 @@
     let lastUpdateR61 = 0;
     let lastUpdateR139 = 0;
     const OFFLINE_TIMEOUT = 15000;
-    let targetRackExport = "";
     
+    // Variabel Export CSV
+    let targetRackExport = "";
     let currentSelectedYear = new Date().getFullYear();
     let currentSelectedMonthNum = "";
 
-    // Variabel untuk Grafik & Audio
+    // Variabel Grafik Besar
     let targetRackGraph = "";
     let bigChartInstance = null;
+    let graphSelectedYear = new Date().getFullYear();
+    let graphSelectedMonthNum = "";
+    let graphSelectedDateFull = "";
+
+    // Variabel Audio
     let isAudioEnabled = false;
     const alarmAudio = document.getElementById('alarmSound');
-    let sudahBunyi = false; // Penanda alarm 1x siklus
+    let sudahBunyi = false;
 
+    // Riwayat Live Grafik Kecil
     let history61 = JSON.parse(localStorage.getItem('hist61')) || [0,0,0,0,0];
     let history139 = JSON.parse(localStorage.getItem('hist139')) || [0,0,0,0,0];
+
+    // Generate otomatis tombol hari 1-31 saat halaman dimuat
+    window.onload = function() {
+        let dayGrid = document.getElementById('graphDayGrid');
+        let html = '';
+        for(let i=1; i<=31; i++) {
+            let dayStr = i.toString().padStart(2, '0');
+            html += `<button class="btn-mini" onclick="renderGraphData('${dayStr}')">${i}</button>`;
+        }
+        dayGrid.innerHTML = html;
+    };
 
     // --- FUNGSI TOGGLE AUDIO ALARM ---
     function toggleAudio() {
@@ -408,7 +455,6 @@
             icon.style.color = 'var(--accent-green)';
             statusText.innerText = 'ACTIVE';
             statusText.style.color = 'var(--accent-green)';
-            // Pancing izin browser
             alarmAudio.play().then(() => {
                 alarmAudio.pause();
                 alarmAudio.currentTime = 0;
@@ -424,7 +470,7 @@
         }
     }
 
-    // --- PLUGIN UNTUK BACKGROUND GAMBAR SAAT DIUNDUH ---
+    // --- PLUGIN BACKGROUND CHARTJS (Untuk export gambar PNG) ---
     const pluginBackground = {
         id: 'customCanvasBackgroundColor',
         beforeDraw: (chart, args, options) => {
@@ -437,6 +483,7 @@
         }
     };
 
+    // --- CHARTJS KECIL ---
     function buildChart(ctxId, color, storageKey) {
         let savedData = JSON.parse(localStorage.getItem(storageKey));
         let initialData = (savedData && savedData.length === 25) ? savedData : Array(25).fill(null);
@@ -450,6 +497,7 @@
     const c1 = buildChart('chart1', '#10b981', 'chartData61');
     const c2 = buildChart('chart2', '#10b981', 'chartData139');
 
+    // --- CEK STATUS DEVICE ---
     function checkDeviceStatus() {
         const now = Date.now();
         const ind1 = document.getElementById('ind1');
@@ -474,6 +522,7 @@
     }
     setInterval(checkDeviceStatus, 5000);
 
+    // --- LOGGING ---
     function pushLog(id, temp, humi) {
         const now = new Date();
         const ts = now.getHours().toString().padStart(2, '0') + ":" + now.getMinutes().toString().padStart(2, '0') + ":" + now.getSeconds().toString().padStart(2, '0');
@@ -483,6 +532,7 @@
         if (list.children.length > 5) list.lastElementChild.remove();
     }
 
+    // --- ANALITIK SUHU & AUDIO ---
     function updateAnalytic(rackId, temp, historyArr) {
         historyArr.push(temp); historyArr.shift();
         const statusEl = document.getElementById(`status-${rackId}`);
@@ -511,23 +561,20 @@
         trendEl.innerText = diff >= 0.1 ? "↑" : diff <= -0.1 ? "↓" : "—";
         trendEl.style.color = diff >= 0.1 ? "var(--accent-red)" : diff <= -0.1 ? "var(--accent-blue)" : "var(--text-dim)";
 
-        // Logika Audio Alarm (Berbunyi 1x siklus di suhu >= 26.9°C)
         if (isAudioEnabled) {
             if (temp >= 26.9) {
-                // Cek apakah alarm belum berbunyi di siklus darurat ini
                 if (!sudahBunyi) {
                     alarmAudio.play().catch(e => console.log("Menunggu interaksi user untuk play audio"));
-                    sudahBunyi = true; // Kunci alarm agar tidak di-play berulang kali
+                    sudahBunyi = true; 
                 }
             } else {
-                // Periksa apakah suhu KEDUA rak sudah turun di bawah 26.9°C
                 const t1 = parseFloat(document.getElementById('val1').innerText) || 0;
                 const t2 = parseFloat(document.getElementById('val2').innerText) || 0;
                 
                 if (t1 < 26.9 && t2 < 26.9) {
                     alarmAudio.pause();
-                    alarmAudio.currentTime = 0; // Reset posisi lagu ke awal
-                    sudahBunyi = false; // Buka kunci agar bisa berbunyi lagi jika nanti suhu naik ke 26.9 lagi
+                    alarmAudio.currentTime = 0; 
+                    sudahBunyi = false; 
                 }
             }
         }
@@ -535,7 +582,6 @@
 
     function resetRekor(id) {
         if(confirm("Reset rekor Rack " + id + "?")) {
-            // Menghapus data dari Firebase agar tersinkron di semua perangkat
             db.ref('/rekor/rack_' + id).remove();
             
             document.getElementById('min'+id).innerText = '--'; 
@@ -554,6 +600,7 @@
         document.getElementById('monthModal').style.display = 'flex';
     }
     function closeModal() { document.getElementById('monthModal').style.display = 'none'; }
+    
     function selectMonth(monthNum, monthName) {
         currentSelectedMonthNum = monthNum;
         document.getElementById('labelBulanTerpilih').innerText = `${monthName} ${currentSelectedYear}`;
@@ -620,8 +667,9 @@
         targetRackGraph = rack;
         document.getElementById('graphModalTargetRack').innerText = rack.toUpperCase().replace('_', ' ');
         
-        const today = new Date().toISOString().split('T')[0];
-        document.getElementById('graphDatePicker').value = today;
+        document.getElementById('graphViewBulan').style.display = 'block';
+        document.getElementById('graphViewHari').style.display = 'none';
+        document.getElementById('graphArea').style.display = 'none';
         
         document.getElementById('graphModal').style.display = 'flex';
         
@@ -635,23 +683,38 @@
         document.getElementById('graphModal').style.display = 'none';
     }
 
-    function renderGraphData() {
-        let dateVal = document.getElementById('graphDatePicker').value; 
-        if (!dateVal) { alert("Silakan pilih tanggal terlebih dahulu."); return; }
+    function selectGraphMonth(monthNum, monthName) {
+        graphSelectedMonthNum = monthNum;
+        document.getElementById('graphLabelBulanTerpilih').innerText = `${monthName} ${graphSelectedYear}`;
+        document.getElementById('graphViewBulan').style.display = 'none';
+        document.getElementById('graphViewHari').style.display = 'block';
+        document.getElementById('graphArea').style.display = 'none'; 
+    }
 
-        let btnRender = document.getElementById('btnRenderGraph');
-        btnRender.innerText = "MEMUAT...";
+    function backToGraphBulan() {
+        document.getElementById('graphViewHari').style.display = 'none';
+        document.getElementById('graphViewBulan').style.display = 'block';
+    }
+
+    function renderGraphData(dayStr) {
+        graphSelectedDateFull = `${graphSelectedYear}-${graphSelectedMonthNum}-${dayStr}`; 
+        
+        document.getElementById('graphArea').style.display = 'block';
+        document.getElementById('graphTglLabel').innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Memuat data untuk ${graphSelectedDateFull}...`;
 
         db.ref('history_suhu/' + targetRackGraph).once('value').then((snap) => {
-            btnRender.innerText = "TAMPILKAN";
-            if (!snap.exists()) { alert("Data belum tersedia di sistem."); return; }
+            if (!snap.exists()) { 
+                document.getElementById('graphTglLabel').innerText = `Data tidak ditemukan (Rack kosong).`;
+                if(bigChartInstance) bigChartInstance.destroy();
+                return; 
+            }
 
             let labelsTime = [];
             let dataTemp = [];
 
             snap.forEach(c => {
                 let fullKey = c.key;
-                if (fullKey.startsWith(dateVal)) {
+                if (fullKey.startsWith(graphSelectedDateFull)) {
                     let timePart = fullKey;
                     if (fullKey.includes('_')) {
                         timePart = fullKey.split('_')[1].replace('-', ':');
@@ -664,60 +727,86 @@
             });
 
             if (labelsTime.length === 0) {
-                alert("Tidak ada riwayat data yang tersimpan pada tanggal " + dateVal);
+                document.getElementById('graphTglLabel').innerText = `Tidak ada rekam jejak pada tanggal ${graphSelectedDateFull}.`;
+                if(bigChartInstance) bigChartInstance.destroy();
                 return;
             }
+
+            document.getElementById('graphTglLabel').innerText = `DATA SUHU TANGGAL: ${graphSelectedDateFull}`;
 
             if (bigChartInstance) { bigChartInstance.destroy(); }
 
             const ctxBig = document.getElementById('bigHistoryChart').getContext('2d');
             bigChartInstance = new Chart(ctxBig, {
                 type: 'line',
-                plugins: [pluginBackground], // Menerapkan plugin background gelap
+                plugins: [pluginBackground],
                 data: {
                     labels: labelsTime,
                     datasets: [{
                         label: 'Suhu (°C)',
                         data: dataTemp,
                         borderColor: '#38bdf8',
-                        backgroundColor: 'rgba(56, 189, 248, 0.1)',
-                        borderWidth: 2,
+                        backgroundColor: 'rgba(56, 189, 248, 0.15)', 
+                        borderWidth: 2.5, 
                         fill: true,
-                        tension: 0.3,
-                        pointRadius: 2,
+                        tension: 0.4, 
+                        pointRadius: 0, 
+                        pointHoverRadius: 6, 
+                        pointHitRadius: 15, 
                         pointBackgroundColor: '#10b981'
                     }]
                 },
                 options: {
-                    responsive: true, maintainAspectRatio: false,
-                    plugins: { legend: { display: false }, tooltip: { mode: 'index', intersect: false } },
+                    responsive: true, 
+                    maintainAspectRatio: false,
+                    interaction: {
+                        mode: 'index',
+                        intersect: false, 
+                    },
+                    plugins: { 
+                        legend: { display: false }, 
+                        tooltip: { 
+                            backgroundColor: 'rgba(5, 10, 16, 0.9)',
+                            titleFont: { size: 13, weight: 'bold' },
+                            bodyFont: { size: 14, weight: 'bold' },
+                            borderColor: '#38bdf8',
+                            borderWidth: 1
+                        } 
+                    },
                     scales: { 
-                        x: { ticks: { color: '#94a3b8', font: { size: 10 }, maxTicksLimit: 12 }, grid: { color: 'rgba(255,255,255,0.05)' } },
-                        y: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#ffffff', font: { size: 12, weight: 'bold' } } }
+                        x: { 
+                            ticks: { color: '#94a3b8', font: { size: 10 }, maxTicksLimit: 10 },
+                            grid: { color: 'rgba(255,255,255,0.05)', drawBorder: false } 
+                        },
+                        y: { 
+                            grid: { color: 'rgba(255,255,255,0.1)', drawBorder: false }, 
+                            ticks: { color: '#ffffff', font: { size: 12, weight: 'bold' } } 
+                        }
                     }
                 }
             });
+        }).catch((error) => {
+            document.getElementById('graphTglLabel').innerText = "Gagal memuat data jaringan.";
+            console.error(error);
         });
     }
 
-    // --- FUNGSI UNDUH GAMBAR GRAFIK ---
     function downloadGraphImage() {
         const canvas = document.getElementById('bigHistoryChart');
         
         if(!bigChartInstance || bigChartInstance.data.labels.length === 0) {
-            alert("Silakan tekan tombol TAMPILKAN terlebih dahulu sebelum mengunduh gambar.");
+            alert("Grafik belum tampil. Silakan pilih tanggal yang memiliki data.");
             return;
         }
 
         const imageURL = canvas.toDataURL('image/png');
         const link = document.createElement('a');
-        let tanggal = document.getElementById('graphDatePicker').value;
-        link.download = `Grafik_Suhu_${targetRackGraph}_${tanggal}.png`;
+        link.download = `Grafik_Suhu_${targetRackGraph}_${graphSelectedDateFull}.png`;
         link.href = imageURL;
         link.click();
     }
 
-    // --- LISTENER LIVE DATA (SUDAH DIBERSIHKAN DARI LOCALSTORAGE UNTUK REKOR) ---
+    // --- LISTENER LIVE DATA FIREBASE ---
     db.ref('live_data').on('value', (snap) => {
         const d = snap.val();
         if (d) {
@@ -728,7 +817,7 @@
                 document.getElementById('hum1').innerText = (d.humi || 0).toFixed(1);
                 updateAnalytic('61', t, history61);
                 c1.data.datasets[0].data.push(t); c1.data.datasets[0].data.shift(); c1.update('none');
-                localStorage.setItem('hist61', JSON.stringify(history61)); // Hanya simpan riwayat grafik
+                localStorage.setItem('hist61', JSON.stringify(history61));
                 pushLog('logList1', t, d.humi || 0);
             }
             
@@ -739,13 +828,13 @@
                 document.getElementById('hum2').innerText = (d.kelembaban || 0).toFixed(1);
                 updateAnalytic('139', t, history139);
                 c2.data.datasets[0].data.push(t); c2.data.datasets[0].data.shift(); c2.update('none');
-                localStorage.setItem('hist139', JSON.stringify(history139)); // Hanya simpan riwayat grafik
+                localStorage.setItem('hist139', JSON.stringify(history139));
                 pushLog('logList2', t, d.kelembaban || 0);
             }
         }
     });
 
-    // --- LISTENER REKOR FIREBASE (AGAR SINKRON SEMUA PERANGKAT) ---
+    // --- LISTENER REKOR FIREBASE ---
     db.ref('rekor').on('value', (snap) => {
         const r = snap.val();
         if (r) {
@@ -762,7 +851,6 @@
                 document.getElementById('timeMax139').innerText = r.rack_139.tmax || '--:--';
             }
         } else {
-            // Jika rekor direset/kosong
             document.getElementById('min61').innerText = '--';
             document.getElementById('max61').innerText = '--';
             document.getElementById('timeMin61').innerText = '--:--';
