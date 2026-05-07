@@ -7,10 +7,8 @@
     
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
-    
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    
     <style>
         :root {
             --bg-color: #050a10;
@@ -24,32 +22,6 @@
         }
 
         body { background-color: var(--bg-color); color: var(--text-main); font-family: 'Segoe UI', sans-serif; margin: 0; padding: 15px; overflow-x: hidden;}
-
-        /* --- STYLING LOGIN SCREEN --- */
-        #login-overlay {
-            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
-            background: var(--bg-color); z-index: 99999;
-            display: flex; align-items: center; justify-content: center;
-        }
-        .login-box {
-            background: var(--card-color); border: 1px solid var(--accent-blue);
-            padding: 30px; border-radius: 12px; width: 300px; text-align: center;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-        }
-        .login-box input {
-            width: 100%; padding: 10px; margin: 10px 0; border-radius: 6px;
-            border: 1px solid rgba(56, 189, 248, 0.4); background: #0f172a; color: white;
-            box-sizing: border-box; font-family: inherit;
-        }
-        .login-btn {
-            width: 100%; padding: 10px; background: var(--accent-blue); color: #000;
-            border: none; border-radius: 6px; font-weight: 800; cursor: pointer; margin-top: 10px;
-        }
-        .login-btn:hover { background: #0284c7; color: #fff; }
-        #login-error { color: var(--accent-red); font-size: 11px; margin-top: 10px; display: none; }
-
-        /* Dasbor disembunyikan sampai login sukses */
-        #main-dashboard { display: none; }
 
         header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 15px; border-bottom: 1px solid rgba(56, 189, 248, 0.1); padding-bottom: 10px; flex-wrap: wrap; gap: 10px;}
         .logo-container { display: flex; align-items: center; gap: 12px; }
@@ -136,13 +108,6 @@
             display: flex; align-items: center; gap: 5px; justify-content: center;
         }
         .btn-mini:hover { background: rgba(56, 189, 248, 0.2); border-color: var(--accent-blue); color: #fff; }
-        
-        .btn-logout {
-            background: rgba(239, 68, 68, 0.1); border: 1px solid var(--accent-red); 
-            color: var(--accent-red); border-radius: 6px; padding: 6px 12px; 
-            font-size: 10px; font-weight: 800; cursor: pointer; transition: 0.2s;
-        }
-        .btn-logout:hover { background: var(--accent-red); color: white; }
 
         /* MODAL STYLING */
         .modal-overlay {
@@ -173,148 +138,130 @@
 </head>
 <body>
 
-<div id="login-overlay">
-    <div class="login-box">
-        <h2 style="margin-top: 0; color: var(--accent-blue); font-size: 20px;"><i class="fa-solid fa-lock"></i> SYSTEM LOGIN</h2>
-        <p style="font-size: 11px; color: var(--text-dim); margin-bottom: 20px;">DC-SDI THERMAL MONITORING</p>
-        
-        <input type="text" id="usernameInput" placeholder="Masukkan Username" autocomplete="off">
-        <input type="password" id="passwordInput" placeholder="Masukkan Password">
-        
-        <button class="login-btn" id="btnLogin" onclick="prosesLogin()">LOGIN MASUK</button>
-        <div id="login-error">Username atau password salah!</div>
+<header>
+    <div class="logo-container">
+        <svg class="site-logo" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect x="10" y="15" width="80" height="70" rx="4" fill="#1e293b" stroke="#38bdf8" stroke-width="2.5"/>
+            <path d="M15 25H25M15 35H25M15 45H25M15 55H25M15 65H25M15 75H25" stroke="#38bdf8" stroke-width="1.5" stroke-opacity="0.4"/>
+            <path d="M75 25H85M75 35H85M75 45H85M75 55H85M75 65H85M75 75H85" stroke="#38bdf8" stroke-width="1.5" stroke-opacity="0.4"/>
+            <path d="M10 32H90M10 49H90M10 66H90" stroke="#38bdf8" stroke-width="1.2" stroke-opacity="0.2"/>
+            <path d="M50 25C47.8 25 46 26.8 46 29V50.5C43.5 51.8 42 54.5 42 57.5C42 61.9 45.6 70.5 50 70.5C54.4 70.5 58 66.9 58 62.5C58 59.5 56.5 56.8 54 50.5V29C54 26.8 52.2 25 50 25Z" fill="#38bdf8"/>
+            <rect x="49" y="30" width="2" height="15" rx="1" fill="#050a10"/>
+            <circle cx="50" cy="57.5" r="4" fill="#050a10"/>
+            <circle cx="18" cy="20" r="2" fill="#10b981" fill-opacity="0.8"/>
+            <circle cx="24" cy="20" r="2" fill="#ef4444" fill-opacity="0.8"/>
+        </svg>
+        <div class="brand">
+            <h1>DC-SDI <span>REAL-TIME</span></h1>
+            <p>THERMAL MONITORING SYSTEM • INFRASTRUCTURE</p>
+        </div>
     </div>
-</div>
-
-<div id="main-dashboard">
-    <header>
-        <div class="logo-container">
-            <svg class="site-logo" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <rect x="10" y="15" width="80" height="70" rx="4" fill="#1e293b" stroke="#38bdf8" stroke-width="2.5"/>
-                <path d="M15 25H25M15 35H25M15 45H25M15 55H25M15 65H25M15 75H25" stroke="#38bdf8" stroke-width="1.5" stroke-opacity="0.4"/>
-                <path d="M75 25H85M75 35H85M75 45H85M75 55H85M75 65H85M75 75H85" stroke="#38bdf8" stroke-width="1.5" stroke-opacity="0.4"/>
-                <path d="M10 32H90M10 49H90M10 66H90" stroke="#38bdf8" stroke-width="1.2" stroke-opacity="0.2"/>
-                <path d="M50 25C47.8 25 46 26.8 46 29V50.5C43.5 51.8 42 54.5 42 57.5C42 61.9 45.6 70.5 50 70.5C54.4 70.5 58 66.9 58 62.5C58 59.5 56.5 56.8 54 50.5V29C54 26.8 52.2 25 50 25Z" fill="#38bdf8"/>
-                <rect x="49" y="30" width="2" height="15" rx="1" fill="#050a10"/>
-                <circle cx="50" cy="57.5" r="4" fill="#050a10"/>
-                <circle cx="18" cy="20" r="2" fill="#10b981" fill-opacity="0.8"/>
-                <circle cx="24" cy="20" r="2" fill="#ef4444" fill-opacity="0.8"/>
-            </svg>
-            <div class="brand">
-                <h1>DC-SDI <span>REAL-TIME</span></h1>
-                <p>THERMAL MONITORING SYSTEM • INFRASTRUCTURE</p>
-            </div>
+    
+    <div class="header-right">
+        <div class="indicators">
+            <div id="ind1" class="indicator">• RACK 61 WAITING...</div>
+            <div id="ind2" class="indicator">• RACK 139 WAITING...</div>
         </div>
         
-        <div class="header-right">
-            <div style="display: flex; gap: 10px; align-items: center; width: 100%; justify-content: flex-end;">
-                <div class="indicators" style="flex: 1; justify-content: flex-end;">
-                    <div id="ind1" class="indicator">• RACK 61 WAITING...</div>
-                    <div id="ind2" class="indicator">• RACK 139 WAITING...</div>
+        <div class="notification-group">
+            <div class="alarm-inline" id="telegramStatus" style="flex: 1;">
+                <div style="display: flex; align-items: center; gap: 6px;">
+                    <i class="fa-solid fa-bell"></i> <b>TELEGRAM ALARM NOTIFICATIONS:</b>
+                    <span id="lastAlertText"><i class="fa-solid fa-circle-check" style="color: var(--accent-green);"></i> System standby.</span>
                 </div>
-                <button class="btn-logout" onclick="prosesLogout()"><i class="fa-solid fa-right-from-bracket"></i> LOGOUT</button>
             </div>
-            
-            <div class="notification-group">
-                <div class="alarm-inline" id="telegramStatus" style="flex: 1;">
-                    <div style="display: flex; align-items: center; gap: 6px;">
-                        <i class="fa-solid fa-bell"></i> <b>TELEGRAM ALARM NOTIFICATIONS:</b>
-                        <span id="lastAlertText"><i class="fa-solid fa-circle-check" style="color: var(--accent-green);"></i> System standby.</span>
-                    </div>
-                </div>
 
-                <div class="alarm-inline audio-btn" id="audioToggle" onclick="toggleAudio()">
-                    <div style="display: flex; align-items: center; gap: 6px;">
-                        <i class="fa-solid fa-volume-xmark" id="audioIcon" style="color: var(--accent-red);"></i> 
-                        <b>THERMAL ALARM SYSTEM:</b>
-                        <span id="audioStatusText" style="color: var(--accent-red); font-weight: 800;">OFF</span>
-                    </div>
+            <div class="alarm-inline audio-btn" id="audioToggle" onclick="toggleAudio()">
+                <div style="display: flex; align-items: center; gap: 6px;">
+                    <i class="fa-solid fa-volume-xmark" id="audioIcon" style="color: var(--accent-red);"></i> 
+                    <b>THERMAL ALARM SYSTEM:</b>
+                    <span id="audioStatusText" style="color: var(--accent-red); font-weight: 800;">OFF</span>
                 </div>
             </div>
         </div>
-    </header>
+    </div>
+</header>
 
-    <div class="dashboard-grid">
-        <div class="card r61-group" id="card-temp-61">
-            <div class="card-label-row">
-                <span class="card-label">TEMPERATURE RACK 61</span>
-                <span id="trend-61" class="trend-icon">—</span>
-                <span id="status-61" class="status-tag">STABLE</span>
+<div class="dashboard-grid">
+    <div class="card r61-group" id="card-temp-61">
+        <div class="card-label-row">
+            <span class="card-label">TEMPERATURE RACK 61</span>
+            <span id="trend-61" class="trend-icon">—</span>
+            <span id="status-61" class="status-tag">STABLE</span>
+        </div>
+        <div class="card-value"><span id="val1">--</span><span class="unit">°C</span></div>
+        <div class="device-badge">DEVICE: ESP8266</div>
+    </div>
+    <div class="card r61-group">
+        <div class="card-label-row"><span class="card-label">HUMIDITY RACK 61</span></div>
+        <div class="card-value"><span id="hum1">--</span><span class="unit">%</span></div>
+        <div class="device-badge">DEVICE: ESP8266</div>
+    </div>
+    <div class="card full-mobile r61-group">
+        <div class="card-label-row" style="justify-content: space-between; margin-bottom: 8px;">
+            <span class="card-label">ACTIVITY LOG RACK 61</span>
+            <div class="action-buttons">
+                <button onclick="openModal('rack_61')" class="btn-mini"><i class="fa-solid fa-download"></i> EXPORT CSV</button>
             </div>
-            <div class="card-value"><span id="val1">--</span><span class="unit">°C</span></div>
-            <div class="device-badge">DEVICE: ESP8266</div>
         </div>
-        <div class="card r61-group">
-            <div class="card-label-row"><span class="card-label">HUMIDITY RACK 61</span></div>
-            <div class="card-value"><span id="hum1">--</span><span class="unit">%</span></div>
-            <div class="device-badge">DEVICE: ESP8266</div>
+        <div id="logList1" class="log-list"></div>
+    </div>
+
+    <div class="card r139-group" id="card-temp-139">
+        <div class="card-label-row">
+            <span class="card-label">TEMPERATURE RACK 139</span>
+            <span id="trend-139" class="trend-icon">—</span>
+            <span id="status-139" class="status-tag">STABLE</span>
         </div>
-        <div class="card full-mobile r61-group">
-            <div class="card-label-row" style="justify-content: space-between; margin-bottom: 8px;">
-                <span class="card-label">ACTIVITY LOG RACK 61</span>
-                <div class="action-buttons">
-                    <button onclick="openModal('rack_61')" class="btn-mini"><i class="fa-solid fa-download"></i> EXPORT CSV</button>
+        <div class="card-value"><span id="val2">--</span><span class="unit">°C</span></div>
+        <div class="device-badge">DEVICE: ESP32</div>
+    </div>
+    <div class="card r139-group">
+        <div class="card-label-row"><span class="card-label">HUMIDITY RACK 139</span></div>
+        <div class="card-value"><span id="hum2">--</span><span class="unit">%</span></div>
+        <div class="device-badge">DEVICE: ESP32</div>
+    </div>
+    <div class="card full-mobile r139-group">
+        <div class="card-label-row" style="justify-content: space-between; margin-bottom: 8px;">
+            <span class="card-label">ACTIVITY LOG RACK 139</span>
+            <div class="action-buttons">
+                <button onclick="openModal('rack_139')" class="btn-mini"><i class="fa-solid fa-download"></i> EXPORT CSV</button>
+            </div>
+        </div>
+        <div id="logList2" class="log-list"></div>
+    </div>
+
+    <div class="full-width">
+        <div class="chart-container">
+            <div class="r61-group">
+                <div class="card">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                        <span class="card-label" style="margin-bottom: 0;">RACK 61 TEMPERATURE HISTORY</span>
+                        <button onclick="openGraphModal('rack_61')" class="btn-mini" style="margin: 0;"><i class="fa-solid fa-chart-line"></i> GRAFIK</button>
+                    </div>
+                    <canvas id="chart1"></canvas>
+                </div>
+                <div class="card record-panel">
+                    <div style="font-size: 10px; font-weight: 800; color: var(--accent-blue);">RECORDS 61</div>
+                    <div style="font-size: 11px;">❄️ MIN: <span id="min61" style="color:var(--text-main); font-weight:800;">--</span>°C <small id="timeMin61" style="color:var(--text-dim); font-size:9px;">--:--</small></div>
+                    <div style="font-size: 11px;">🔥 MAX: <span id="max61" style="color:var(--text-main); font-weight:800;">--</span>°C <small id="timeMax61" style="color:var(--text-dim); font-size:9px;">--:--</small></div>
+                    <button onclick="resetRekor('61')" class="btn-mini" style="border-color: #475569; color: #475569; width:25px; height:25px;"><i class="fa-solid fa-rotate"></i></button>
                 </div>
             </div>
-            <div id="logList1" class="log-list"></div>
-        </div>
 
-        <div class="card r139-group" id="card-temp-139">
-            <div class="card-label-row">
-                <span class="card-label">TEMPERATURE RACK 139</span>
-                <span id="trend-139" class="trend-icon">—</span>
-                <span id="status-139" class="status-tag">STABLE</span>
-            </div>
-            <div class="card-value"><span id="val2">--</span><span class="unit">°C</span></div>
-            <div class="device-badge">DEVICE: ESP32</div>
-        </div>
-        <div class="card r139-group">
-            <div class="card-label-row"><span class="card-label">HUMIDITY RACK 139</span></div>
-            <div class="card-value"><span id="hum2">--</span><span class="unit">%</span></div>
-            <div class="device-badge">DEVICE: ESP32</div>
-        </div>
-        <div class="card full-mobile r139-group">
-            <div class="card-label-row" style="justify-content: space-between; margin-bottom: 8px;">
-                <span class="card-label">ACTIVITY LOG RACK 139</span>
-                <div class="action-buttons">
-                    <button onclick="openModal('rack_139')" class="btn-mini"><i class="fa-solid fa-download"></i> EXPORT CSV</button>
+            <div class="r139-group">
+                <div class="card">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                        <span class="card-label" style="margin-bottom: 0;">RACK 139 TEMPERATURE HISTORY</span>
+                        <button onclick="openGraphModal('rack_139')" class="btn-mini" style="margin: 0;"><i class="fa-solid fa-chart-line"></i> GRAFIK</button>
+                    </div>
+                    <canvas id="chart2"></canvas>
                 </div>
-            </div>
-            <div id="logList2" class="log-list"></div>
-        </div>
-
-        <div class="full-width">
-            <div class="chart-container">
-                <div class="r61-group">
-                    <div class="card">
-                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-                            <span class="card-label" style="margin-bottom: 0;">RACK 61 TEMPERATURE HISTORY</span>
-                            <button onclick="openGraphModal('rack_61')" class="btn-mini" style="margin: 0;"><i class="fa-solid fa-chart-line"></i> GRAFIK</button>
-                        </div>
-                        <canvas id="chart1"></canvas>
-                    </div>
-                    <div class="card record-panel">
-                        <div style="font-size: 10px; font-weight: 800; color: var(--accent-blue);">RECORDS 61</div>
-                        <div style="font-size: 11px;">❄️ MIN: <span id="min61" style="color:var(--text-main); font-weight:800;">--</span>°C <small id="timeMin61" style="color:var(--text-dim); font-size:9px;">--:--</small></div>
-                        <div style="font-size: 11px;">🔥 MAX: <span id="max61" style="color:var(--text-main); font-weight:800;">--</span>°C <small id="timeMax61" style="color:var(--text-dim); font-size:9px;">--:--</small></div>
-                        <button onclick="resetRekor('61')" class="btn-mini" style="border-color: #475569; color: #475569; width:25px; height:25px;"><i class="fa-solid fa-rotate"></i></button>
-                    </div>
-                </div>
-
-                <div class="r139-group">
-                    <div class="card">
-                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-                            <span class="card-label" style="margin-bottom: 0;">RACK 139 TEMPERATURE HISTORY</span>
-                            <button onclick="openGraphModal('rack_139')" class="btn-mini" style="margin: 0;"><i class="fa-solid fa-chart-line"></i> GRAFIK</button>
-                        </div>
-                        <canvas id="chart2"></canvas>
-                    </div>
-                    <div class="card record-panel">
-                        <div style="font-size: 10px; font-weight: 800; color: var(--accent-blue);">RECORDS 139</div>
-                        <div style="font-size: 11px;">❄️ MIN: <span id="min139" style="color:var(--text-main); font-weight:800;">--</span>°C <small id="timeMin139" style="color:var(--text-dim); font-size:9px;">--:--</small></div>
-                        <div style="font-size: 11px;">🔥 MAX: <span id="max139" style="color:var(--text-main); font-weight:800;">--</span>°C <small id="timeMax139" style="color:var(--text-dim); font-size:9px;">--:--</small></div>
-                        <button onclick="resetRekor('139')" class="btn-mini" style="border-color: #475569; color: #475569; width:25px; height:25px;"><i class="fa-solid fa-rotate"></i></button>
-                    </div>
+                <div class="card record-panel">
+                    <div style="font-size: 10px; font-weight: 800; color: var(--accent-blue);">RECORDS 139</div>
+                    <div style="font-size: 11px;">❄️ MIN: <span id="min139" style="color:var(--text-main); font-weight:800;">--</span>°C <small id="timeMin139" style="color:var(--text-dim); font-size:9px;">--:--</small></div>
+                    <div style="font-size: 11px;">🔥 MAX: <span id="max139" style="color:var(--text-main); font-weight:800;">--</span>°C <small id="timeMax139" style="color:var(--text-dim); font-size:9px;">--:--</small></div>
+                    <button onclick="resetRekor('139')" class="btn-mini" style="border-color: #475569; color: #475569; width:25px; height:25px;"><i class="fa-solid fa-rotate"></i></button>
                 </div>
             </div>
         </div>
@@ -468,73 +415,33 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
-    // --- LOGIKA LOGIN MANUAL (HARDCODED) ---
-    function checkSession() {
-        // Cek apakah user sudah login di session ini
-        if (sessionStorage.getItem("isLoggedIn") === "true") {
-            document.getElementById('login-overlay').style.display = 'none';
-            document.getElementById('main-dashboard').style.display = 'block';
-            mulaiDatabaseListener(); // Mulai tarik data
-        } else {
-            document.getElementById('login-overlay').style.display = 'flex';
-            document.getElementById('main-dashboard').style.display = 'none';
-        }
-    }
-
-    function prosesLogin() {
-        const user = document.getElementById('usernameInput').value;
-        const pass = document.getElementById('passwordInput').value;
-        const errorMsg = document.getElementById('login-error');
-        
-        // Pengecekan kredensial
-        if (user === "SDI infrastruktur" && pass === "12345678") {
-            sessionStorage.setItem("isLoggedIn", "true");
-            document.getElementById('login-overlay').style.display = 'none';
-            document.getElementById('main-dashboard').style.display = 'block';
-            
-            // Bersihkan form
-            document.getElementById('usernameInput').value = "";
-            document.getElementById('passwordInput').value = "";
-            
-            mulaiDatabaseListener();
-        } else {
-            errorMsg.style.display = "block";
-        }
-    }
-
-    function prosesLogout() {
-        if(confirm("Yakin ingin keluar dari dashboard?")) {
-            sessionStorage.removeItem("isLoggedIn");
-            location.reload(); // Refresh halaman agar kembali ke menu login
-        }
-    }
-
-    // Variabel Global
     let lastUpdateR61 = 0;
     let lastUpdateR139 = 0;
     const OFFLINE_TIMEOUT = 15000;
     
+    // Variabel Export CSV
     let targetRackExport = "";
     let currentSelectedYear = new Date().getFullYear();
     let currentSelectedMonthNum = "";
 
+    // Variabel Grafik Besar
     let targetRackGraph = "";
     let bigChartInstance = null;
     let graphSelectedYear = new Date().getFullYear();
     let graphSelectedMonthNum = "";
     let graphSelectedDateFull = "";
 
+    // Variabel Audio
     let isAudioEnabled = false;
     const alarmAudio = document.getElementById('alarmSound');
     let sudahBunyi = false;
 
+    // Riwayat Live Grafik Kecil
     let history61 = JSON.parse(localStorage.getItem('hist61')) || [0,0,0,0,0];
     let history139 = JSON.parse(localStorage.getItem('hist139')) || [0,0,0,0,0];
 
+    // Generate otomatis tombol hari 1-31 saat halaman dimuat
     window.onload = function() {
-        // Cek status login saat halaman pertama kali dimuat
-        checkSession();
-
         let dayGrid = document.getElementById('graphDayGrid');
         let html = '';
         for(let i=1; i<=31; i++) {
@@ -542,16 +449,9 @@
             html += `<button class="btn-mini" onclick="renderGraphData('${dayStr}')">${i}</button>`;
         }
         dayGrid.innerHTML = html;
-        
-        // Memungkinkan login pakai tombol Enter di kolom password
-        document.getElementById("passwordInput").addEventListener("keypress", function(event) {
-          if (event.key === "Enter") {
-            event.preventDefault();
-            document.getElementById("btnLogin").click();
-          }
-        });
     };
 
+    // --- FUNGSI TOGGLE AUDIO ALARM ---
     function toggleAudio() {
         isAudioEnabled = !isAudioEnabled;
         const btn = document.getElementById('audioToggle');
@@ -579,6 +479,7 @@
         }
     }
 
+    // --- PLUGIN BACKGROUND CHARTJS (Untuk export gambar PNG) ---
     const pluginBackground = {
         id: 'customCanvasBackgroundColor',
         beforeDraw: (chart, args, options) => {
@@ -591,6 +492,7 @@
         }
     };
 
+    // --- CHARTJS KECIL ---
     function buildChart(ctxId, color, storageKey) {
         let savedData = JSON.parse(localStorage.getItem(storageKey));
         let initialData = (savedData && savedData.length === 25) ? savedData : Array(25).fill(null);
@@ -604,6 +506,7 @@
     const c1 = buildChart('chart1', '#10b981', 'chartData61');
     const c2 = buildChart('chart2', '#10b981', 'chartData139');
 
+    // --- CEK STATUS DEVICE ---
     function checkDeviceStatus() {
         const now = Date.now();
         const ind1 = document.getElementById('ind1');
@@ -628,6 +531,7 @@
     }
     setInterval(checkDeviceStatus, 5000);
 
+    // --- LOGGING ---
     function pushLog(id, temp, humi) {
         const now = new Date();
         const ts = now.getHours().toString().padStart(2, '0') + ":" + now.getMinutes().toString().padStart(2, '0') + ":" + now.getSeconds().toString().padStart(2, '0');
@@ -637,6 +541,7 @@
         if (list.children.length > 5) list.lastElementChild.remove();
     }
 
+    // --- ANALITIK SUHU & AUDIO ---
     function updateAnalytic(rackId, temp, historyArr) {
         historyArr.push(temp); historyArr.shift();
         const statusEl = document.getElementById(`status-${rackId}`);
@@ -695,6 +600,7 @@
         }
     }
 
+    // --- LOGIKA MODAL CSV EXPORT ---
     function openModal(rack) {
         targetRackExport = rack;
         document.getElementById('modalTargetRack').innerText = rack.toUpperCase().replace('_', ' ');
@@ -765,6 +671,7 @@
         tarikDataFirebase(prefix, `Tanggal_${prefix}`);
     }
 
+    // --- LOGIKA MODAL GRAFIK BESAR ---
     function openGraphModal(rack) {
         targetRackGraph = rack;
         document.getElementById('graphModalTargetRack').innerText = rack.toUpperCase().replace('_', ' ');
@@ -861,7 +768,10 @@
                 options: {
                     responsive: true, 
                     maintainAspectRatio: false,
-                    interaction: { mode: 'index', intersect: false },
+                    interaction: {
+                        mode: 'index',
+                        intersect: false, 
+                    },
                     plugins: { 
                         legend: { display: false }, 
                         tooltip: { 
@@ -873,8 +783,14 @@
                         } 
                     },
                     scales: { 
-                        x: { ticks: { color: '#94a3b8', font: { size: 10 }, maxTicksLimit: 10 }, grid: { color: 'rgba(255,255,255,0.05)', drawBorder: false } },
-                        y: { grid: { color: 'rgba(255,255,255,0.1)', drawBorder: false }, ticks: { color: '#ffffff', font: { size: 12, weight: 'bold' } } }
+                        x: { 
+                            ticks: { color: '#94a3b8', font: { size: 10 }, maxTicksLimit: 10 },
+                            grid: { color: 'rgba(255,255,255,0.05)', drawBorder: false } 
+                        },
+                        y: { 
+                            grid: { color: 'rgba(255,255,255,0.1)', drawBorder: false }, 
+                            ticks: { color: '#ffffff', font: { size: 12, weight: 'bold' } } 
+                        }
                     }
                 }
             });
@@ -886,10 +802,12 @@
 
     function downloadGraphImage() {
         const canvas = document.getElementById('bigHistoryChart');
+        
         if(!bigChartInstance || bigChartInstance.data.labels.length === 0) {
             alert("Grafik belum tampil. Silakan pilih tanggal yang memiliki data.");
             return;
         }
+
         const imageURL = canvas.toDataURL('image/png');
         const link = document.createElement('a');
         link.download = `Grafik_Suhu_${targetRackGraph}_${graphSelectedDateFull}.png`;
@@ -897,63 +815,62 @@
         link.click();
     }
 
-    // --- FUNGSI MENGAMBIL DATA FIREBASE (HANYA BERJALAN JIKA SUDAH LOGIN) ---
-    let dbLiveListener = null;
-    let dbRekorListener = null;
-
-    function mulaiDatabaseListener() {
-        if(dbLiveListener) db.ref('live_data').off('value', dbLiveListener);
-        if(dbRekorListener) db.ref('rekor').off('value', dbRekorListener);
-
-        dbLiveListener = db.ref('live_data').on('value', (snap) => {
-            const d = snap.val();
-            if (d) {
-                if (d.ruangan !== undefined) {
-                    lastUpdateR61 = Date.now();
-                    const t = d.ruangan;
-                    document.getElementById('val1').innerText = t.toFixed(1);
-                    document.getElementById('hum1').innerText = (d.humi || 0).toFixed(1);
-                    updateAnalytic('61', t, history61);
-                    c1.data.datasets[0].data.push(t); c1.data.datasets[0].data.shift(); c1.update('none');
-                    localStorage.setItem('hist61', JSON.stringify(history61));
-                    pushLog('logList1', t, d.humi || 0);
-                }
-                if (d.pac !== undefined) {
-                    lastUpdateR139 = Date.now();
-                    const t = d.pac;
-                    document.getElementById('val2').innerText = t.toFixed(1);
-                    document.getElementById('hum2').innerText = (d.kelembaban || 0).toFixed(1);
-                    updateAnalytic('139', t, history139);
-                    c2.data.datasets[0].data.push(t); c2.data.datasets[0].data.shift(); c2.update('none');
-                    localStorage.setItem('hist139', JSON.stringify(history139));
-                    pushLog('logList2', t, d.kelembaban || 0);
-                }
+    // --- LISTENER LIVE DATA FIREBASE ---
+    db.ref('live_data').on('value', (snap) => {
+        const d = snap.val();
+        if (d) {
+            if (d.ruangan !== undefined) {
+                lastUpdateR61 = Date.now();
+                const t = d.ruangan;
+                document.getElementById('val1').innerText = t.toFixed(1);
+                document.getElementById('hum1').innerText = (d.humi || 0).toFixed(1);
+                updateAnalytic('61', t, history61);
+                c1.data.datasets[0].data.push(t); c1.data.datasets[0].data.shift(); c1.update('none');
+                localStorage.setItem('hist61', JSON.stringify(history61));
+                pushLog('logList1', t, d.humi || 0);
             }
-        });
-
-        dbRekorListener = db.ref('rekor').on('value', (snap) => {
-            const r = snap.val();
-            if (r) {
-                if (r.rack_61) {
-                    document.getElementById('min61').innerText = r.rack_61.min !== undefined ? r.rack_61.min.toFixed(1) : '--';
-                    document.getElementById('max61').innerText = r.rack_61.max !== undefined ? r.rack_61.max.toFixed(1) : '--';
-                    document.getElementById('timeMin61').innerText = r.rack_61.tmin || '--:--';
-                    document.getElementById('timeMax61').innerText = r.rack_61.tmax || '--:--';
-                }
-                if (r.rack_139) {
-                    document.getElementById('min139').innerText = r.rack_139.min !== undefined ? r.rack_139.min.toFixed(1) : '--';
-                    document.getElementById('max139').innerText = r.rack_139.max !== undefined ? r.rack_139.max.toFixed(1) : '--';
-                    document.getElementById('timeMin139').innerText = r.rack_139.tmin || '--:--';
-                    document.getElementById('timeMax139').innerText = r.rack_139.tmax || '--:--';
-                }
-            } else {
-                document.getElementById('min61').innerText = '--'; document.getElementById('max61').innerText = '--';
-                document.getElementById('timeMin61').innerText = '--:--'; document.getElementById('timeMax61').innerText = '--:--';
-                document.getElementById('min139').innerText = '--'; document.getElementById('max139').innerText = '--';
-                document.getElementById('timeMin139').innerText = '--:--'; document.getElementById('timeMax139').innerText = '--:--';
+            
+            if (d.pac !== undefined) {
+                lastUpdateR139 = Date.now();
+                const t = d.pac;
+                document.getElementById('val2').innerText = t.toFixed(1);
+                document.getElementById('hum2').innerText = (d.kelembaban || 0).toFixed(1);
+                updateAnalytic('139', t, history139);
+                c2.data.datasets[0].data.push(t); c2.data.datasets[0].data.shift(); c2.update('none');
+                localStorage.setItem('hist139', JSON.stringify(history139));
+                pushLog('logList2', t, d.kelembaban || 0);
             }
-        });
-    }
+        }
+    });
+
+    // --- LISTENER REKOR FIREBASE ---
+    db.ref('rekor').on('value', (snap) => {
+        const r = snap.val();
+        if (r) {
+            if (r.rack_61) {
+                document.getElementById('min61').innerText = r.rack_61.min !== undefined ? r.rack_61.min.toFixed(1) : '--';
+                document.getElementById('max61').innerText = r.rack_61.max !== undefined ? r.rack_61.max.toFixed(1) : '--';
+                document.getElementById('timeMin61').innerText = r.rack_61.tmin || '--:--';
+                document.getElementById('timeMax61').innerText = r.rack_61.tmax || '--:--';
+            }
+            if (r.rack_139) {
+                document.getElementById('min139').innerText = r.rack_139.min !== undefined ? r.rack_139.min.toFixed(1) : '--';
+                document.getElementById('max139').innerText = r.rack_139.max !== undefined ? r.rack_139.max.toFixed(1) : '--';
+                document.getElementById('timeMin139').innerText = r.rack_139.tmin || '--:--';
+                document.getElementById('timeMax139').innerText = r.rack_139.tmax || '--:--';
+            }
+        } else {
+            document.getElementById('min61').innerText = '--';
+            document.getElementById('max61').innerText = '--';
+            document.getElementById('timeMin61').innerText = '--:--';
+            document.getElementById('timeMax61').innerText = '--:--';
+            
+            document.getElementById('min139').innerText = '--';
+            document.getElementById('max139').innerText = '--';
+            document.getElementById('timeMin139').innerText = '--:--';
+            document.getElementById('timeMax139').innerText = '--:--';
+        }
+    });
 </script>
 </body>
 </html>
