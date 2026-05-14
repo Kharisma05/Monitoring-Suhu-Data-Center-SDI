@@ -654,16 +654,23 @@
 
     let targetRackGraph = "";
     let bigChartInstance = null;
-    let isAudioEnabled = true; // <-- Diubah menjadi true
-    let sudahBunyi = false;
+    let isAudioEnabled = true; 
     const alarmAudio = document.getElementById('alarmSound');
 
-    // Trik agar browser mengizinkan audio setelah user klik di mana saja
+    // PERBAIKAN: Setiap layar diklik, paksa cek kondisi untuk melewati pemblokiran browser
     window.addEventListener('click', () => {
-        if(isAudioEnabled && !sudahBunyi) {
-            alarmAudio.play().then(() => alarmAudio.pause()).catch(e => {});
+        if (isAudioEnabled) {
+            const t1 = parseFloat(document.getElementById('val1').innerText) || 0;
+            const t77 = parseFloat(document.getElementById('val77').innerText) || 0;
+            const t2 = parseFloat(document.getElementById('val2').innerText) || 0;
+            
+            if (t1 > 26.0 || t77 > 26.0 || t2 > 26.0) {
+                alarmAudio.play().catch(e => {}); // Langsung bunyikan jika panas
+            } else {
+                alarmAudio.play().then(() => alarmAudio.pause()).catch(e => {}); // Buka kunci browser
+            }
         }
-    }, { once: true });
+    });
     
     const popUpState = { '61': 0, '77': 0, '139': 0 };
 
@@ -705,7 +712,16 @@
 
         if (isAudioEnabled) {
             btn.style.borderColor = 'rgba(16, 185, 129, 0.5)'; icon.className = 'fa-solid fa-volume-high'; icon.style.color = 'var(--accent-green)'; statusText.innerText = 'ACTIVE'; statusText.style.color = 'var(--accent-green)';
-            alarmAudio.play().then(() => { alarmAudio.pause(); alarmAudio.currentTime = 0; }).catch(e => console.log("Audio siap"));
+            
+            const t1 = parseFloat(document.getElementById('val1').innerText) || 0;
+            const t77 = parseFloat(document.getElementById('val77').innerText) || 0;
+            const t2 = parseFloat(document.getElementById('val2').innerText) || 0;
+            
+            if (t1 > 26.0 || t77 > 26.0 || t2 > 26.0) {
+                alarmAudio.play().catch(e => console.log("Menunggu interaksi user"));
+            } else {
+                alarmAudio.play().then(() => { alarmAudio.pause(); alarmAudio.currentTime = 0; }).catch(e => {});
+            }
         } else {
             btn.style.borderColor = 'rgba(239, 68, 68, 0.5)'; icon.className = 'fa-solid fa-volume-xmark'; icon.style.color = 'var(--accent-red)'; statusText.innerText = 'OFF'; statusText.style.color = 'var(--accent-red)';
             alarmAudio.pause(); alarmAudio.currentTime = 0;
@@ -816,18 +832,17 @@
         trendEl.style.color = diff >= 0.1 ? "var(--accent-red)" : diff <= -0.1 ? "var(--accent-blue)" : "var(--text-dim)";
 
         if (isAudioEnabled) {
-            if (temp > 26.0) {
-                if (!sudahBunyi) { alarmAudio.play().catch(e => console.log("Menunggu interaksi user")); sudahBunyi = true; }
-            } else {
-                const t1 = parseFloat(document.getElementById('val1').innerText) || 0;
-                const t77 = parseFloat(document.getElementById('val77').innerText) || 0;
-                const t2 = parseFloat(document.getElementById('val2').innerText) || 0;
-                
-                if (t1 <= 26.0 && t77 <= 26.0 && t2 <= 26.0) { 
-                    alarmAudio.pause(); 
-                    alarmAudio.currentTime = 0; 
-                    sudahBunyi = false; 
+            const t1 = parseFloat(document.getElementById('val1').innerText) || 0;
+            const t77 = parseFloat(document.getElementById('val77').innerText) || 0;
+            const t2 = parseFloat(document.getElementById('val2').innerText) || 0;
+
+            if (t1 > 26.0 || t77 > 26.0 || t2 > 26.0) {
+                if (alarmAudio.paused) {
+                    alarmAudio.play().catch(e => console.log("Menunggu klik user"));
                 }
+            } else {
+                alarmAudio.pause();
+                alarmAudio.currentTime = 0;
             }
         }
     }
