@@ -1029,7 +1029,7 @@
                 data: {
                     labels: labelsTime,
                     datasets: [{
-                        label: `Suhu RACK ${targetRackGraph.replace('rack_','')} (°C)`,
+                        label: `Suhu RACK ${targetRackGraph.replace('rack_','')}`,
                         data: dataTemp, borderColor: lineColor, backgroundColor: bgColor,
                         borderWidth: 2, fill: true, tension: 0, 
                         pointRadius: isFullMonth ? 0 : 2, 
@@ -1118,11 +1118,12 @@
                 pushLog('logList1', t, d.humi || 0);
             }
             
-            if (d.rack77 !== undefined) {
+            // --- BAGIAN YANG DIPERBAIKI (RACK 77) ---
+            if (d.rack_77 !== undefined) {
                 lastUpdateR77 = Date.now();
-                const t = d.rack77.suhu;
+                const t = d.rack_77.suhu;
                 document.getElementById('val77').innerText = t.toFixed(1);
-                document.getElementById('hum77').innerText = (d.rack77.humi || 0).toFixed(1);
+                document.getElementById('hum77').innerText = (d.rack_77.kelembaban || 0).toFixed(1);
                 updateAnalytic('77', t, history77);
                 
                 c3.data.datasets[0].data.push(t); c3.data.datasets[0].data.shift(); c3.update('none');
@@ -1145,8 +1146,9 @@
                 document.getElementById('timeMax77').innerText = pMax77.time; 
                 document.getElementById('dateRekor77').innerText = pMax77.date || pMin77.date || dateStr;
                 
-                pushLog('logList77', t, d.rack77.humi || 0);
+                pushLog('logList77', t, d.rack_77.kelembaban || 0);
             }
+            // --- AKHIR BAGIAN YANG DIPERBAIKI ---
 
             if (d.pac !== undefined) {
                 lastUpdateR139 = Date.now();
