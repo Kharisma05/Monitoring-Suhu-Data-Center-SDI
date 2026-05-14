@@ -269,11 +269,11 @@
     
     <div class="header-right">
         <div class="notification-group">
-            <div class="audio-btn" id="audioToggle" onclick="toggleAudio()">
+            <div class="audio-btn active" id="audioToggle" onclick="toggleAudio()">
                 <div style="display: flex; align-items: center; gap: 6px;">
-                    <i class="fa-solid fa-volume-xmark" id="audioIcon" style="color: var(--accent-red);"></i> 
+                    <i class="fa-solid fa-volume-high" id="audioIcon" style="color: var(--accent-green);"></i> 
                     <b style="color: var(--text-main);">THERMAL ALARM SYSTEM:</b>
-                    <span id="audioStatusText" style="color: var(--accent-red); font-weight: 800;">OFF</span>
+                    <span id="audioStatusText" style="color: var(--accent-green); font-weight: 800;">ACTIVE</span>
                 </div>
             </div>
         </div>
@@ -654,9 +654,16 @@
 
     let targetRackGraph = "";
     let bigChartInstance = null;
-    let isAudioEnabled = false;
+    let isAudioEnabled = true; // <-- Diubah menjadi true
     let sudahBunyi = false;
     const alarmAudio = document.getElementById('alarmSound');
+
+    // Trik agar browser mengizinkan audio setelah user klik di mana saja
+    window.addEventListener('click', () => {
+        if(isAudioEnabled && !sudahBunyi) {
+            alarmAudio.play().then(() => alarmAudio.pause()).catch(e => {});
+        }
+    }, { once: true });
     
     const popUpState = { '61': 0, '77': 0, '139': 0 };
 
@@ -1118,7 +1125,6 @@
                 pushLog('logList1', t, d.humi || 0);
             }
             
-            // --- BAGIAN YANG DIPERBAIKI (RACK 77) ---
             if (d.rack_77 !== undefined) {
                 lastUpdateR77 = Date.now();
                 const t = d.rack_77.suhu;
@@ -1148,7 +1154,6 @@
                 
                 pushLog('logList77', t, d.rack_77.kelembaban || 0);
             }
-            // --- AKHIR BAGIAN YANG DIPERBAIKI ---
 
             if (d.pac !== undefined) {
                 lastUpdateR139 = Date.now();
