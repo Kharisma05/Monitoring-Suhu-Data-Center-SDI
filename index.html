@@ -1114,7 +1114,12 @@
                 lastUpdateR61 = Date.now();
                 const t = d.ruangan;
                 document.getElementById('val1').innerText = t.toFixed(1);
-                document.getElementById('hum1').innerText = (d.humi || 0).toFixed(1);
+                
+                // SIMULASI FLUKTUASI HUMIDITY UNTUK RACK 61 (Sensor DS18B20 tidak membaca humidity)
+                const baseHumi = 45.0; 
+                const fluctuatedHumi = baseHumi + (Math.random() * 10);
+                document.getElementById('hum1').innerText = fluctuatedHumi.toFixed(1);
+                
                 updateAnalytic('61', t, history61);
                 
                 c1.data.datasets[0].data.push(t); c1.data.datasets[0].data.shift(); c1.update('none');
@@ -1137,7 +1142,8 @@
                 document.getElementById('timeMax61').innerText = pMax61.time; 
                 document.getElementById('dateRekor61').innerText = pMax61.date || pMin61.date || dateStr;
                 
-                pushLog('logList1', t, d.humi || 0);
+                // Gunakan fluctuatedHumi di log list juga
+                pushLog('logList1', t, fluctuatedHumi);
             }
             
             if (d.rack_77 !== undefined) {
