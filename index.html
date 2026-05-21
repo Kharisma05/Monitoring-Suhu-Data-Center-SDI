@@ -657,6 +657,11 @@
     let isAudioEnabled = true; 
     const alarmAudio = document.getElementById('alarmSound');
 
+    // VARIABLE UNTUK SIMULASI HUMIDITY RACK 61
+    let lastFakeHumi61 = 51.0 + (Math.random() * 8); // Mulai dari 51.0% hingga 59.0%
+    let lastFakeHumiUpdate = 0; // Waktu terakhir angka diubah
+    const FAKE_HUMI_INTERVAL = 30000; // Ubah angka setiap 30.000 ms (30 detik)
+
     // PERBAIKAN: Setiap layar diklik, paksa cek kondisi untuk melewati pemblokiran browser
     window.addEventListener('click', () => {
         if (isAudioEnabled) {
@@ -1115,9 +1120,14 @@
                 const t = d.ruangan;
                 document.getElementById('val1').innerText = t.toFixed(1);
                 
-                // SIMULASI FLUKTUASI HUMIDITY UNTUK RACK 61 (Sensor DS18B20 tidak membaca humidity)
-                const baseHumi = 45.0; 
-                const fluctuatedHumi = baseHumi + (Math.random() * 10);
+                // SIMULASI FLUKTUASI HUMIDITY UNTUK RACK 61 DENGAN JEDA WAKTU
+                if (Date.now() - lastFakeHumiUpdate > FAKE_HUMI_INTERVAL) {
+                    const baseHumi = 51.0; 
+                    lastFakeHumi61 = baseHumi + (Math.random() * 8); // Rentang 51.0% - 59.0%
+                    lastFakeHumiUpdate = Date.now(); 
+                }
+                
+                const fluctuatedHumi = lastFakeHumi61;
                 document.getElementById('hum1').innerText = fluctuatedHumi.toFixed(1);
                 
                 updateAnalytic('61', t, history61);
