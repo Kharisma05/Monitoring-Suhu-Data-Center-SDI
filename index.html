@@ -158,6 +158,37 @@
         .btn-mini:hover { background: rgba(255,255,255,0.15); border-color: #fff; color: #fff; transform: translateY(-1px); box-shadow: 0 6px 15px rgba(0,0,0,0.4), inset 0 1px 1px rgba(255,255,255,0.3); }
         .action-buttons { display: flex; gap: 5px; align-items: center; flex-shrink: 0; }
 
+        /* --- STYLING UNTUK TOAST POPUP DI KANAN BAWAH --- */
+        .toast-container {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            z-index: 9999;
+            max-width: 300px;
+            width: 100%;
+            pointer-events: none;
+        }
+        .toast-card {
+            pointer-events: auto;
+            background: rgba(17, 27, 39, 0.92);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(239, 68, 68, 0.4);
+            border-left: 4px solid var(--accent-red);
+            border-radius: 10px;
+            padding: 12px 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.7), 0 0 20px rgba(239, 68, 68, 0.2);
+            display: none;
+            animation: slideInRight 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+        @keyframes slideInRight {
+            from { transform: translateX(110%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
         .modal-overlay {
             position: fixed; top: 0; left: 0; right: 0; bottom: 0;
             background: rgba(2, 5, 10, 0.85); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
@@ -196,14 +227,12 @@
             .header-right { width: 100%; align-items: center; gap: 8px; }
             .indicators { justify-content: center; width: 100%; gap: 6px; }
             .indicator { padding: 6px 12px; font-size: 10px; text-align: center; }
-            .notification-group { justify-content: center; }
             
             .dashboard-grid { grid-template-columns: 1.2fr 1.3fr; gap: 10px; width: 100%; }
             .log-card, .chart-card { grid-column: span 2; } 
             
             .card { padding: 12px 10px !important; min-height: 105px !important; border-radius: 12px; }
             
-            /* --- PERBAIKAN: LABEL TETAP DI SAMPING STATUS & TIDAK TERPOTONG --- */
             .card-label-row { 
                 flex-direction: row !important; 
                 flex-wrap: nowrap !important; 
@@ -507,6 +536,31 @@
     </div>
 </div>
 
+<!-- CONTAINER UNTUK TOAST NOTIFIKASI DI KANAN BAWAH -->
+<div class="toast-container" id="toastContainer">
+    <div class="toast-card" id="toast-61">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+            <span style="font-weight: 800; font-size: 11px; color: var(--accent-red);"><i class="fa-solid fa-triangle-exclamation"></i> RACK 61 ALERT</span>
+            <i class="fa-solid fa-xmark" onclick="hideToast('61')" style="cursor: pointer; font-size: 14px; color: var(--text-dim);"></i>
+        </div>
+        <div style="font-size: 10px; color: var(--text-dim); line-height: 1.4;">Info Sistem: Target penurunan suhu belum tercapai setelah 10 menit. Mohon verifikasi status perangkat.</div>
+    </div>
+    <div class="toast-card" id="toast-77">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+            <span style="font-weight: 800; font-size: 11px; color: var(--accent-red);"><i class="fa-solid fa-triangle-exclamation"></i> RACK 77 ALERT</span>
+            <i class="fa-solid fa-xmark" onclick="hideToast('77')" style="cursor: pointer; font-size: 14px; color: var(--text-dim);"></i>
+        </div>
+        <div style="font-size: 10px; color: var(--text-dim); line-height: 1.4;">Info Sistem: Target penurunan suhu belum tercapai setelah 10 menit. Mohon verifikasi status perangkat.</div>
+    </div>
+    <div class="toast-card" id="toast-139">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+            <span style="font-weight: 800; font-size: 11px; color: var(--accent-red);"><i class="fa-solid fa-triangle-exclamation"></i> RACK 139 ALERT</span>
+            <i class="fa-solid fa-xmark" onclick="hideToast('139')" style="cursor: pointer; font-size: 14px; color: var(--text-dim);"></i>
+        </div>
+        <div style="font-size: 10px; color: var(--text-dim); line-height: 1.4;">Info Sistem: Target penurunan suhu belum tercapai setelah 10 menit. Mohon verifikasi status perangkat.</div>
+    </div>
+</div>
+
 <div id="monthModal" class="modal-overlay">
     <div class="modal-content">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
@@ -546,8 +600,7 @@
 
             <div style="background: rgba(255,255,255,0.02); padding: 10px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);">
                 <div style="color: var(--text-dim); font-size: 10px; margin-bottom: 5px;">Atau pilih unduh per tanggal:</div>
-                <div class="day-grid-ui" id="csvDayGridUI">
-                    </div>
+                <div class="day-grid-ui" id="csvDayGridUI"></div>
             </div>
         </div>
     </div>
@@ -593,8 +646,7 @@
 
                 <div style="background: rgba(255,255,255,0.02); padding: 10px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);">
                     <div style="color: var(--text-dim); font-size: 10px; margin-bottom: 5px;">Atau pilih lihat per tanggal:</div>
-                    <div class="day-grid-ui" id="graphDayGridUI">
-                        </div>
+                    <div class="day-grid-ui" id="graphDayGridUI"></div>
                 </div>
             </div>
         </div>
@@ -657,12 +709,68 @@
     let isAudioEnabled = true; 
     const alarmAudio = document.getElementById('alarmSound');
 
-    // VARIABLE UNTUK SIMULASI HUMIDITY RACK 61
-    let lastFakeHumi61 = 51.0 + (Math.random() * 8); // Mulai dari 51.0% hingga 59.0%
-    let lastFakeHumiUpdate = 0; // Waktu terakhir angka diubah
-    const FAKE_HUMI_INTERVAL = 30000; // Ubah angka setiap 30.000 ms (30 detik)
+    // TRACKER UNTUK PENGAMANAN SUHU NAIK SELAMA > 10 MENIT TIDAK TURUN
+    const tempTrendTrackers = {
+        '61': { lastTemp: null, riseStartTime: null, baseTemp: null, alerted: false },
+        '77': { lastTemp: null, riseStartTime: null, baseTemp: null, alerted: false },
+        '139': { lastTemp: null, riseStartTime: null, baseTemp: null, alerted: false }
+    };
 
-    // PERBAIKAN: Setiap layar diklik, paksa cek kondisi untuk melewati pemblokiran browser
+    function evaluateTemperatureTrend(rackId, currentTemp) {
+        let tracker = tempTrendTrackers[rackId];
+        let now = Date.now();
+
+        if (tracker.lastTemp === null) {
+            tracker.lastTemp = currentTemp;
+            tracker.baseTemp = currentTemp;
+            tracker.riseStartTime = now;
+            return;
+        }
+
+        // Jika suhu naik atau tertahan tinggi (tidak turun)
+        if (currentTemp > tracker.lastTemp) {
+            if (!tracker.riseStartTime) {
+                tracker.riseStartTime = now;
+                tracker.baseTemp = tracker.lastTemp;
+            }
+        } else if (currentTemp < tracker.lastTemp) {
+            // Suhu berhasil turun, reset timer dan status alert
+            tracker.riseStartTime = null;
+            tracker.baseTemp = currentTemp;
+            tracker.alerted = false;
+            hideToast(rackId);
+        }
+
+        tracker.lastTemp = currentTemp;
+
+        // Cek jika sudah lebih dari atau sama dengan 10 menit (600.000 ms) dan suhu belum turun
+        if (tracker.riseStartTime && (now - tracker.riseStartTime >= 10 * 60 * 1000)) {
+            if (currentTemp >= tracker.baseTemp && !tracker.alerted) {
+                showToast(rackId);
+                tracker.alerted = true; // Mencegah popup berulang-ulang dalam rentang yang sama
+            }
+        }
+    }
+
+    function showToast(rackId) {
+        const toast = document.getElementById(`toast-${rackId}`);
+        if (toast) {
+            toast.style.display = 'block';
+        }
+    }
+
+    function hideToast(rackId) {
+        const toast = document.getElementById(`toast-${rackId}`);
+        if (toast) {
+            toast.style.display = 'none';
+        }
+    }
+
+    // VARIABLE UNTUK SIMULASI HUMIDITY RACK 61
+    let lastFakeHumi61 = 51.0 + (Math.random() * 8); 
+    let lastFakeHumiUpdate = 0; 
+    const FAKE_HUMI_INTERVAL = 30000; 
+
     window.addEventListener('click', () => {
         if (isAudioEnabled) {
             const t1 = parseFloat(document.getElementById('val1').innerText) || 0;
@@ -670,9 +778,9 @@
             const t2 = parseFloat(document.getElementById('val2').innerText) || 0;
             
             if (t1 > 26.0 || t77 > 26.0 || t2 > 26.0) {
-                alarmAudio.play().catch(e => {}); // Langsung bunyikan jika panas
+                alarmAudio.play().catch(e => {}); 
             } else {
-                alarmAudio.play().then(() => alarmAudio.pause()).catch(e => {}); // Buka kunci browser
+                alarmAudio.play().then(() => alarmAudio.pause()).catch(e => {}); 
             }
         }
     });
@@ -789,6 +897,9 @@
     function updateAnalytic(rackId, temp, historyArr) {
         historyArr.push(temp); historyArr.shift();
         
+        // Jalankan pengecekan tren kenaikan suhu selama > 10 menit
+        evaluateTemperatureTrend(rackId, temp);
+
         const cardEl = document.getElementById(`card-temp-${rackId}`);
         const statusEl = document.getElementById(`status-${rackId}`);
         const trendEl = document.getElementById(`trend-${rackId}`);
@@ -1037,15 +1148,14 @@
 
             if (bigChartInstance) { bigChartInstance.destroy(); }
 
-            // Set point color dynamically based on rack
-            let lineColor = '#38bdf8'; // default blue
+            let lineColor = '#38bdf8'; 
             let bgColor = 'rgba(56, 189, 248, 0.1)';
             
             if(targetRackGraph === 'rack_77') {
-                lineColor = '#24bbbd'; // Teal (gabungan biru & hijau)
+                lineColor = '#24bbbd'; 
                 bgColor = 'rgba(36, 187, 189, 0.1)';
             } else if(targetRackGraph === 'rack_139') {
-                lineColor = '#10b981'; // Green
+                lineColor = '#10b981'; 
                 bgColor = 'rgba(16, 185, 129, 0.1)';
             }
 
@@ -1120,10 +1230,9 @@
                 const t = d.ruangan;
                 document.getElementById('val1').innerText = t.toFixed(1);
                 
-                // SIMULASI FLUKTUASI HUMIDITY UNTUK RACK 61 DENGAN JEDA WAKTU
                 if (Date.now() - lastFakeHumiUpdate > FAKE_HUMI_INTERVAL) {
                     const baseHumi = 51.0; 
-                    lastFakeHumi61 = baseHumi + (Math.random() * 8); // Rentang 51.0% - 59.0%
+                    lastFakeHumi61 = baseHumi + (Math.random() * 8); 
                     lastFakeHumiUpdate = Date.now(); 
                 }
                 
@@ -1152,7 +1261,6 @@
                 document.getElementById('timeMax61').innerText = pMax61.time; 
                 document.getElementById('dateRekor61').innerText = pMax61.date || pMin61.date || dateStr;
                 
-                // Gunakan fluctuatedHumi di log list juga
                 pushLog('logList1', t, fluctuatedHumi);
             }
             
