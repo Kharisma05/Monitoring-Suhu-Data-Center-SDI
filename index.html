@@ -164,7 +164,7 @@
             bottom: 20px;
             right: 20px;
             display: flex;
-            flex-direction: column;
+            flex-direction: column-reverse;
             gap: 10px;
             z-index: 9999;
             max-width: 300px;
@@ -184,6 +184,14 @@
             display: none;
             animation: slideInRight 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
         }
+        
+        .toast-card.critical {
+            border-color: rgba(239, 68, 68, 0.8);
+            border-left-color: var(--accent-red);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.7), 0 0 30px rgba(239, 68, 68, 0.4);
+            background: rgba(17, 27, 39, 0.95);
+        }
+
         @keyframes slideInRight {
             from { transform: translateX(110%); opacity: 0; }
             to { transform: translateX(0); opacity: 1; }
@@ -538,26 +546,58 @@
 
 <!-- CONTAINER UNTUK TOAST NOTIFIKASI DI KANAN BAWAH -->
 <div class="toast-container" id="toastContainer">
+    <!-- NOTIFIKASI PERTAMA RACK 61 (15 menit) -->
     <div class="toast-card" id="toast-61">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
-            <span style="font-weight: 800; font-size: 11px; color: var(--accent-red);"><i class="fa-solid fa-triangle-exclamation"></i> RACK 61 ALERT</span>
+            <span style="font-weight: 800; font-size: 11px; color: var(--accent-orange);"><i class="fa-solid fa-triangle-exclamation"></i> RACK 61 ALERT (15 MIN)</span>
             <i class="fa-solid fa-xmark" onclick="hideToast('61')" style="cursor: pointer; font-size: 14px; color: var(--text-dim);"></i>
         </div>
-        <div style="font-size: 10px; color: var(--text-dim); line-height: 1.4;">Info Sistem: Target penurunan suhu belum tercapai setelah 10 menit. Mohon verifikasi status perangkat.</div>
+        <div style="font-size: 10px; color: var(--text-dim); line-height: 1.4;">⏱️ Suhu tidak kunjung turun selama 15 menit. Mohon verifikasi sistem pendingin.</div>
     </div>
+
+    <!-- NOTIFIKASI KEDUA RACK 61 (30 menit) -->
+    <div class="toast-card critical" id="toast-61-2">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+            <span style="font-weight: 800; font-size: 11px; color: var(--accent-red);"><i class="fa-solid fa-circle-exclamation"></i> RACK 61 CRITICAL (30 MIN)</span>
+            <i class="fa-solid fa-xmark" onclick="hideToast('61')" style="cursor: pointer; font-size: 14px; color: var(--text-dim);"></i>
+        </div>
+        <div style="font-size: 10px; color: var(--text-dim); line-height: 1.4;">🔴 KONDISI KRITIS! Suhu masih tinggi setelah 30 menit. Segera lakukan pengecekan hardware & segera hubungi admin!</div>
+    </div>
+
+    <!-- NOTIFIKASI PERTAMA RACK 77 (15 menit) -->
     <div class="toast-card" id="toast-77">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
-            <span style="font-weight: 800; font-size: 11px; color: var(--accent-red);"><i class="fa-solid fa-triangle-exclamation"></i> RACK 77 ALERT</span>
+            <span style="font-weight: 800; font-size: 11px; color: var(--accent-orange);"><i class="fa-solid fa-triangle-exclamation"></i> RACK 77 ALERT (15 MIN)</span>
             <i class="fa-solid fa-xmark" onclick="hideToast('77')" style="cursor: pointer; font-size: 14px; color: var(--text-dim);"></i>
         </div>
-        <div style="font-size: 10px; color: var(--text-dim); line-height: 1.4;">Info Sistem: Target penurunan suhu belum tercapai setelah 10 menit. Mohon verifikasi status perangkat.</div>
+        <div style="font-size: 10px; color: var(--text-dim); line-height: 1.4;">⏱️ Suhu tidak kunjung turun selama 15 menit. Mohon verifikasi sistem pendingin.</div>
     </div>
+
+    <!-- NOTIFIKASI KEDUA RACK 77 (30 menit) -->
+    <div class="toast-card critical" id="toast-77-2">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+            <span style="font-weight: 800; font-size: 11px; color: var(--accent-red);"><i class="fa-solid fa-circle-exclamation"></i> RACK 77 CRITICAL (30 MIN)</span>
+            <i class="fa-solid fa-xmark" onclick="hideToast('77')" style="cursor: pointer; font-size: 14px; color: var(--text-dim);"></i>
+        </div>
+        <div style="font-size: 10px; color: var(--text-dim); line-height: 1.4;">🔴 KONDISI KRITIS! Suhu masih tinggi setelah 30 menit. Segera lakukan pengecekan hardware & segera hubungi admin!</div>
+    </div>
+
+    <!-- NOTIFIKASI PERTAMA RACK 139 (15 menit) -->
     <div class="toast-card" id="toast-139">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
-            <span style="font-weight: 800; font-size: 11px; color: var(--accent-red);"><i class="fa-solid fa-triangle-exclamation"></i> RACK 139 ALERT</span>
+            <span style="font-weight: 800; font-size: 11px; color: var(--accent-orange);"><i class="fa-solid fa-triangle-exclamation"></i> RACK 139 ALERT (15 MIN)</span>
             <i class="fa-solid fa-xmark" onclick="hideToast('139')" style="cursor: pointer; font-size: 14px; color: var(--text-dim);"></i>
         </div>
-        <div style="font-size: 10px; color: var(--text-dim); line-height: 1.4;">Info Sistem: Target penurunan suhu belum tercapai setelah 10 menit. Mohon verifikasi status perangkat.</div>
+        <div style="font-size: 10px; color: var(--text-dim); line-height: 1.4;">⏱️ Suhu tidak kunjung turun selama 15 menit. Mohon verifikasi sistem pendingin.</div>
+    </div>
+
+    <!-- NOTIFIKASI KEDUA RACK 139 (30 menit) -->
+    <div class="toast-card critical" id="toast-139-2">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+            <span style="font-weight: 800; font-size: 11px; color: var(--accent-red);"><i class="fa-solid fa-circle-exclamation"></i> RACK 139 CRITICAL (30 MIN)</span>
+            <i class="fa-solid fa-xmark" onclick="hideToast('139')" style="cursor: pointer; font-size: 14px; color: var(--text-dim);"></i>
+        </div>
+        <div style="font-size: 10px; color: var(--text-dim); line-height: 1.4;">🔴 KONDISI KRITIS! Suhu masih tinggi setelah 30 menit. Segera lakukan pengecekan hardware & segera hubungi admin!</div>
     </div>
 </div>
 
@@ -709,11 +749,11 @@
     let isAudioEnabled = true; 
     const alarmAudio = document.getElementById('alarmSound');
 
-    // TRACKER UNTUK PENGAMANAN SUHU NAIK SELAMA > 10 MENIT TIDAK TURUN
+    // TRACKER UNTUK PENGAMANAN SUHU NAIK SELAMA > 15 MENIT TIDAK TURUN (dan 30 menit untuk alert ke-2)
     const tempTrendTrackers = {
-        '61': { lastTemp: null, riseStartTime: null, baseTemp: null, alerted: false },
-        '77': { lastTemp: null, riseStartTime: null, baseTemp: null, alerted: false },
-        '139': { lastTemp: null, riseStartTime: null, baseTemp: null, alerted: false }
+        '61': { lastTemp: null, riseStartTime: null, baseTemp: null, alerted15: false, alerted30: false },
+        '77': { lastTemp: null, riseStartTime: null, baseTemp: null, alerted15: false, alerted30: false },
+        '139': { lastTemp: null, riseStartTime: null, baseTemp: null, alerted15: false, alerted30: false }
     };
 
     function evaluateTemperatureTrend(rackId, currentTemp) {
@@ -737,33 +777,74 @@
             // Suhu berhasil turun, reset timer dan status alert
             tracker.riseStartTime = null;
             tracker.baseTemp = currentTemp;
-            tracker.alerted = false;
+            tracker.alerted15 = false;
+            tracker.alerted30 = false;
             hideToast(rackId);
         }
 
         tracker.lastTemp = currentTemp;
 
-        // Cek jika sudah lebih dari atau sama dengan 10 menit (600.000 ms) dan suhu belum turun
-        if (tracker.riseStartTime && (now - tracker.riseStartTime >= 10 * 60 * 1000)) {
-            if (currentTemp >= tracker.baseTemp && !tracker.alerted) {
-                showToast(rackId);
-                tracker.alerted = true; // Mencegah popup berulang-ulang dalam rentang yang sama
+        // Cek notifikasi pertama: 15 menit (900.000 ms)
+        if (tracker.riseStartTime && (now - tracker.riseStartTime >= 15 * 60 * 1000)) {
+            if (currentTemp >= tracker.baseTemp && !tracker.alerted15) {
+                showToast(rackId, 1); // 1 = notifikasi ke-1
+                sendBrowserNotification(rackId, currentTemp, 1); // Kirim browser notification
+                tracker.alerted15 = true;
+            }
+        }
+
+        // Cek notifikasi kedua: 30 menit (1.800.000 ms)
+        if (tracker.riseStartTime && (now - tracker.riseStartTime >= 30 * 60 * 1000)) {
+            if (currentTemp >= tracker.baseTemp && !tracker.alerted30) {
+                showToast(rackId, 2); // 2 = notifikasi ke-2 (akan stack di atas)
+                sendBrowserNotification(rackId, currentTemp, 2); // Kirim browser notification
+                tracker.alerted30 = true;
             }
         }
     }
 
-    function showToast(rackId) {
-        const toast = document.getElementById(`toast-${rackId}`);
+    function sendBrowserNotification(rackId, temp, alertLevel) {
+        // Request permission jika belum
+        if ('Notification' in window) {
+            if (Notification.permission === 'granted') {
+                triggerNotificationDisplay(rackId, temp, alertLevel);
+            } else if (Notification.permission !== 'denied') {
+                Notification.requestPermission().then(permission => {
+                    if (permission === 'granted') {
+                        triggerNotificationDisplay(rackId, temp, alertLevel);
+                    }
+                });
+            }
+        }
+    }
+
+    function triggerNotificationDisplay(rackId, temp, alertLevel) {
+        const title = alertLevel === 1 
+            ? `⚠️ RACK ${rackId} - Temperature Alert (15 Min)` 
+            : `🔴 RACK ${rackId} - CRITICAL Alert (30 Min)`;
+        const options = {
+            body: `Temperature: ${temp.toFixed(1)}°C\nExtended high temperature detected!`,
+            icon: 'data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Crect fill=%2338bdf8%22 width=%22100%22 height=%22100%22/%3E%3Ctext x=%2750%27 y=%2750%27 font-size=%2750%27 fill=%22white%22 text-anchor=%22middle%22 dominant-baseline=%22middle%22%3E⚠%3C/text%3E%3C/svg%3E',
+            tag: `rack-${rackId}-alert-${alertLevel}`,
+            requireInteraction: true,
+            badge: 'data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Ccircle cx=%2750%27 cy=%2750%27 r=%2745%27 fill=%2338bdf8%22/%3E%3C/svg%3E'
+        };
+        new Notification(title, options);
+    }
+
+    function showToast(rackId, alertLevel = 1) {
+        const toastId = alertLevel === 1 ? `toast-${rackId}` : `toast-${rackId}-2`;
+        const toast = document.getElementById(toastId);
         if (toast) {
             toast.style.display = 'block';
         }
     }
 
     function hideToast(rackId) {
-        const toast = document.getElementById(`toast-${rackId}`);
-        if (toast) {
-            toast.style.display = 'none';
-        }
+        const toast1 = document.getElementById(`toast-${rackId}`);
+        const toast2 = document.getElementById(`toast-${rackId}-2`);
+        if (toast1) toast1.style.display = 'none';
+        if (toast2) toast2.style.display = 'none';
     }
 
     // VARIABLE UNTUK SIMULASI HUMIDITY RACK 61
@@ -897,7 +978,7 @@
     function updateAnalytic(rackId, temp, historyArr) {
         historyArr.push(temp); historyArr.shift();
         
-        // Jalankan pengecekan tren kenaikan suhu selama > 10 menit
+        // Jalankan pengecekan tren kenaikan suhu selama > 15 menit
         evaluateTemperatureTrend(rackId, temp);
 
         const cardEl = document.getElementById(`card-temp-${rackId}`);
