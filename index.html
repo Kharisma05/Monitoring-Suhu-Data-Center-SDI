@@ -250,6 +250,100 @@
             100% { box-shadow: 0 0 60px rgba(239, 68, 68, 0.6), inset 0 0 20px rgba(239, 68, 68, 0.3); }
         }
 
+        /* ========== PANEL RIWAYAT NOTIFIKASI ========== */
+        .notification-history-panel {
+            grid-column: 1 / -1; /* Full width dalam grid */
+            background-color: var(--card-color);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-top: 1px solid rgba(255,255,255,0.25);
+            border-left: 1px solid rgba(255,255,255,0.15);
+            border-radius: 14px;
+            box-shadow: 0 12px 35px rgba(0,0,0,0.5), inset 0 1px 1px rgba(255,255,255,0.1);
+            margin-bottom: 15px;
+            transition: all 0.3s ease;
+            box-sizing: border-box;
+        }
+        .panel-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 15px;
+            cursor: pointer;
+            user-select: none;
+        }
+        .panel-title {
+            font-size: 13px;
+            font-weight: 800;
+            color: var(--accent-blue);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .panel-actions {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .panel-arrow {
+            transition: transform 0.3s ease;
+            color: var(--text-dim);
+        }
+        .panel-arrow.rotated {
+            transform: rotate(180deg);
+        }
+        .panel-body {
+            padding: 0 15px 15px 15px;
+            border-top: 1px solid rgba(255,255,255,0.05);
+        }
+        .notification-list {
+            max-height: 300px;
+            overflow-y: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 10px;
+            color: var(--text-main);
+            line-height: 1.5;
+        }
+        .notification-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+        .notification-item:last-child {
+            border-bottom: none;
+        }
+        .notification-time {
+            color: var(--text-dim);
+            white-space: nowrap;
+            margin-right: 10px;
+            min-width: 120px;
+        }
+        .notification-detail {
+            flex: 1;
+            text-align: right;
+        }
+        .notification-type {
+            font-weight: 800;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 9px;
+            text-transform: uppercase;
+        }
+        .notification-type.warning {
+            background: rgba(245, 158, 11, 0.2);
+            color: var(--accent-orange);
+        }
+        .notification-type.critical {
+            background: rgba(239, 68, 68, 0.2);
+            color: var(--accent-red);
+        }
+        /* ========== AKHIR PANEL RIWAYAT ========== */
+
         @media (max-width: 768px) {
             header { flex-direction: column; align-items: center; justify-content: center; text-align: center; }
             .logo-container { flex-direction: column; gap: 8px; margin-bottom: 12px; }
@@ -260,7 +354,7 @@
             .indicator { padding: 6px 12px; font-size: 10px; text-align: center; }
             
             .dashboard-grid { grid-template-columns: 1.2fr 1.3fr; gap: 10px; width: 100%; }
-            .log-card, .chart-card { grid-column: span 2; } 
+            .log-card, .chart-card, .notification-history-panel { grid-column: span 2; } /* Full width di mobile */
             
             .card { padding: 12px 10px !important; min-height: 105px !important; border-radius: 12px; }
             
@@ -303,6 +397,20 @@
             .min-max-time { display: block !important; margin-left: 0 !important; margin-top: 2px !important; font-size: 7px !important; }
             
             .device-badge { font-size: 6px !important; bottom: 5px !important; right: 8px !important; }
+
+            .notification-history-panel {
+                margin-bottom: 10px;
+            }
+            .panel-title {
+                font-size: 10px;
+            }
+            .notification-time {
+                min-width: 90px;
+                font-size: 8px;
+            }
+            .notification-detail {
+                font-size: 8px;
+            }
         }
     </style>
 </head>
@@ -345,7 +453,6 @@
         </div>
     </div>
 </header>
-
 
 <div class="dashboard-grid">
     <!-- RACK 61 -->
@@ -536,6 +643,27 @@
         </div>
         <div id="logList2" class="log-list"></div>
     </div>
+
+    <!-- ===== PANEL RIWAYAT NOTIFIKASI (dipindah ke sini) ===== -->
+    <div class="notification-history-panel" id="notificationHistoryPanel">
+        <div class="panel-header" onclick="toggleNotificationHistory()">
+            <span class="panel-title">
+                <i class="fa-solid fa-bell"></i> RIWAYAT NOTIFIKASI
+            </span>
+            <div class="panel-actions">
+                <button class="btn-mini" onclick="clearNotificationHistory(event)" title="Hapus semua riwayat">
+                    <i class="fa-solid fa-trash"></i>
+                </button>
+                <i class="fa-solid fa-chevron-down panel-arrow" id="panelArrow"></i>
+            </div>
+        </div>
+        <div class="panel-body" id="panelBody" style="display: none;">
+            <div id="notificationList" class="notification-list">
+                <!-- Entri riwayat akan dimasukkan di sini -->
+            </div>
+        </div>
+    </div>
+    <!-- ===== AKHIR PANEL ===== -->
 
     <div class="card chart-card">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
@@ -1006,6 +1134,91 @@
         }
     }
 
+    // ========== RIWAYAT NOTIFIKASI ==========
+    let notificationHistory = JSON.parse(localStorage.getItem('notifHistory')) || [];
+
+    function saveNotificationHistory() {
+        // Simpan maksimal 50 entri terbaru
+        if (notificationHistory.length > 50) {
+            notificationHistory = notificationHistory.slice(-50);
+        }
+        localStorage.setItem('notifHistory', JSON.stringify(notificationHistory));
+    }
+
+    function addNotificationHistory(rackId, temp, alertType) {
+        const now = new Date();
+        const dateStr = now.getDate().toString().padStart(2, '0') + '/' +
+                        (now.getMonth() + 1).toString().padStart(2, '0') + '/' +
+                        now.getFullYear();
+        const timeStr = now.getHours().toString().padStart(2, '0') + ':' +
+                        now.getMinutes().toString().padStart(2, '0') + ':' +
+                        now.getSeconds().toString().padStart(2, '0');
+        
+        const entry = {
+            timestamp: `${dateStr} ${timeStr}`,
+            rackId: rackId,
+            temp: temp.toFixed(1),
+            type: alertType // '15 menit' atau '30 menit'
+        };
+        
+        notificationHistory.push(entry);
+        saveNotificationHistory();
+        renderNotificationHistory();
+    }
+
+    function renderNotificationHistory() {
+        const listEl = document.getElementById('notificationList');
+        if (!listEl) return;
+        
+        if (notificationHistory.length === 0) {
+            listEl.innerHTML = '<div style="text-align:center; color:var(--text-dim); padding:10px;">Belum ada notifikasi</div>';
+            return;
+        }
+        
+        let html = '';
+        // Tampilkan dari yang terbaru (urutan terbalik)
+        for (let i = notificationHistory.length - 1; i >= 0; i--) {
+            const item = notificationHistory[i];
+            const typeClass = item.type === '15 menit' ? 'warning' : 'critical';
+            html += `
+                <div class="notification-item">
+                    <span class="notification-time">${item.timestamp}</span>
+                    <span class="notification-detail">
+                        <span style="margin-right:10px;">RACK ${item.rackId} · ${item.temp}°C</span>
+                        <span class="notification-type ${typeClass}">${item.type}</span>
+                    </span>
+                </div>
+            `;
+        }
+        listEl.innerHTML = html;
+    }
+
+    function toggleNotificationHistory() {
+        const body = document.getElementById('panelBody');
+        const arrow = document.getElementById('panelArrow');
+        if (body.style.display === 'none') {
+            body.style.display = 'block';
+            arrow.classList.add('rotated');
+        } else {
+            body.style.display = 'none';
+            arrow.classList.remove('rotated');
+        }
+    }
+
+    function clearNotificationHistory(event) {
+        event.stopPropagation(); // Jangan trigger toggle
+        if (confirm('Hapus semua riwayat notifikasi?')) {
+            notificationHistory = [];
+            saveNotificationHistory();
+            renderNotificationHistory();
+        }
+    }
+
+    // Panggil saat halaman dimuat
+    document.addEventListener('DOMContentLoaded', () => {
+        renderNotificationHistory();
+    });
+
     // TRACKER UNTUK PENGAMANAN SUHU NAIK SELAMA > 15 MENIT TIDAK TURUN (dan 30 menit untuk alert ke-2)
     const tempTrendTrackers = {
         '61': { lastTemp: null, riseStartTime: null, baseTemp: null, alerted15: false, alerted30: false },
@@ -1046,6 +1259,7 @@
             if (currentTemp >= tracker.baseTemp && !tracker.alerted15) {
                 showToast(rackId, 1); // 1 = notifikasi ke-1
                 sendBrowserNotification(rackId, currentTemp, 1); // Kirim browser notification
+                addNotificationHistory(rackId, currentTemp, '15 menit'); // ✅ Tambahkan ke riwayat
                 tracker.alerted15 = true;
             }
         }
@@ -1055,6 +1269,7 @@
             if (currentTemp >= tracker.baseTemp && !tracker.alerted30) {
                 showToast(rackId, 2); // 2 = notifikasi ke-2 (akan stack di atas)
                 sendBrowserNotification(rackId, currentTemp, 2); // Kirim browser notification
+                addNotificationHistory(rackId, currentTemp, '30 menit'); // ✅ Tambahkan ke riwayat
                 tracker.alerted30 = true;
             }
         }
