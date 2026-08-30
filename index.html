@@ -1134,63 +1134,64 @@
         }
     }
 
-    // ========== RIWAYAT NOTIFIKASI ==========
-    let notificationHistory = JSON.parse(localStorage.getItem('notifHistory')) || [];
+    // ========== RIWAYAT NOTIFIKASI (Firebase) ==========
+    // Listener notifikasi real-time
+    db.ref('notifications').limitToLast(50).on('child_added', (snap) => {
+        const data = snap.val();
+        addNotificationItemToDOM(snap.key, data);
+    });
 
-    function saveNotificationHistory() {
-        // Simpan maksimal 50 entri terbaru
-        if (notificationHistory.length > 50) {
-            notificationHistory = notificationHistory.slice(-50);
+    // Listener records untuk setiap rack
+    ['61', '77', '139'].forEach(rackId => {
+        db.ref(`records/rack${rackId}`).on('value', (snap) => {
+            const data = snap.val();
+            updateRecordsUI(rackId, data);
+        });
+    });
+
+    function formatTimestamp(ms) {
+        const date = new Date(ms);
+        return `${date.getDate().toString().padStart(2,'0')}/${(date.getMonth()+1).toString().padStart(2,'0')}/${date.getFullYear()} ${date.getHours().toString().padStart(2,'0')}:${date.getMinutes().toString().padStart(2,'0')}:${date.getSeconds().toString().padStart(2,'0')}`;
+    }
+
+    function addNotificationItemToDOM(key, data) {
+        const listEl = document.getElementById('notificationList');
+        if (!listEl) return;
+
+        const typeClass = data.type === '15 menit' ? 'warning' : 'critical';
+        const itemDiv = document.createElement('div');
+        itemDiv.className = 'notification-item';
+        itemDiv.id = `notif-${key}`;
+        itemDiv.innerHTML = `
+            <span class="notification-time">${formatTimestamp(data.timestamp)}</span>
+            <span class="notification-detail">
+                <span style="margin-right:10px;">RACK ${data.rackId} · ${data.temp}°C</span>
+                <span class="notification-type ${typeClass}">${data.type}</span>
+            </span>
+        `;
+        listEl.prepend(itemDiv); // taruh di atas
+
+        // Batasi maksimal 50 item di DOM
+        while (listEl.children.length > 50) {
+            listEl.lastElementChild.remove();
         }
-        localStorage.setItem('notifHistory', JSON.stringify(notificationHistory));
     }
 
     function addNotificationHistory(rackId, temp, alertType) {
-        const now = new Date();
-        const dateStr = now.getDate().toString().padStart(2, '0') + '/' +
-                        (now.getMonth() + 1).toString().padStart(2, '0') + '/' +
-                        now.getFullYear();
-        const timeStr = now.getHours().toString().padStart(2, '0') + ':' +
-                        now.getMinutes().toString().padStart(2, '0') + ':' +
-                        now.getSeconds().toString().padStart(2, '0');
-        
-        const entry = {
-            timestamp: `${dateStr} ${timeStr}`,
+        db.ref('notifications').push({
             rackId: rackId,
             temp: temp.toFixed(1),
-            type: alertType // '15 menit' atau '30 menit'
-        };
-        
-        notificationHistory.push(entry);
-        saveNotificationHistory();
-        renderNotificationHistory();
+            type: alertType,
+            timestamp: Date.now()
+        });
     }
 
-    function renderNotificationHistory() {
-        const listEl = document.getElementById('notificationList');
-        if (!listEl) return;
-        
-        if (notificationHistory.length === 0) {
-            listEl.innerHTML = '<div style="text-align:center; color:var(--text-dim); padding:10px;">Belum ada notifikasi</div>';
-            return;
+    function clearNotificationHistory(event) {
+        event.stopPropagation();
+        if (confirm('Hapus semua riwayat notifikasi?')) {
+            db.ref('notifications').remove();
+            document.getElementById('notificationList').innerHTML = '<div style="text-align:center; color:var(--text-dim); padding:10px;">Belum ada notifikasi</div>';
         }
-        
-        let html = '';
-        // Tampilkan dari yang terbaru (urutan terbalik)
-        for (let i = notificationHistory.length - 1; i >= 0; i--) {
-            const item = notificationHistory[i];
-            const typeClass = item.type === '15 menit' ? 'warning' : 'critical';
-            html += `
-                <div class="notification-item">
-                    <span class="notification-time">${item.timestamp}</span>
-                    <span class="notification-detail">
-                        <span style="margin-right:10px;">RACK ${item.rackId} · ${item.temp}°C</span>
-                        <span class="notification-type ${typeClass}">${item.type}</span>
-                    </span>
-                </div>
-            `;
-        }
-        listEl.innerHTML = html;
     }
 
     function toggleNotificationHistory() {
@@ -1205,19 +1206,65 @@
         }
     }
 
-    function clearNotificationHistory(event) {
-        event.stopPropagation(); // Jangan trigger toggle
-        if (confirm('Hapus semua riwayat notifikasi?')) {
-            notificationHistory = [];
-            saveNotificationHistory();
-            renderNotificationHistory();
+    // ========== RECORDS SUHU (Firebase) ==========
+    function updateRecordIfNeeded(rackId, currentTemp, stampStr) {
+        const recordRef = db.ref(`records/rack${rackId}`);
+        recordRef.once('value').then((snap) => {
+            const record = snap.val() || {};
+            let updates = {};
+            let changed = false;
+
+            // Cek MIN
+            if (record.min === undefined || currentTemp < record.min) {
+                updates.min = currentTemp;
+                updates.timeMin = stampStr;
+                changed = true;
+            }
+            // Cek MAX
+            if (record.max === undefined || currentTemp > record.max) {
+                updates.max = currentTemp;
+                updates.timeMax = stampStr;
+                changed = true;
+            }
+
+            if (changed) {
+                recordRef.update(updates);
+            }
+        });
+    }
+
+    function updateRecordsUI(rackId, data) {
+        const minEl = document.getElementById(`min${rackId}`);
+        const maxEl = document.getElementById(`max${rackId}`);
+        const timeMinEl = document.getElementById(`timeMin${rackId}`);
+        const timeMaxEl = document.getElementById(`timeMax${rackId}`);
+        const dateRekorEl = document.getElementById(`dateRekor${rackId}`);
+
+        if (data) {
+            minEl.innerText = data.min !== undefined ? data.min.toFixed(1) : '--';
+            maxEl.innerText = data.max !== undefined ? data.max.toFixed(1) : '--';
+            timeMinEl.innerText = data.timeMin ? data.timeMin.split(' ')[0] : '--:--';
+            timeMaxEl.innerText = data.timeMax ? data.timeMax.split(' ')[0] : '--:--';
+            // ambil tanggal dari stamp
+            const dateMin = data.timeMin ? data.timeMin.split('(')[1]?.replace(')','') : '--/--/--';
+            const dateMax = data.timeMax ? data.timeMax.split('(')[1]?.replace(')','') : '--/--/--';
+            dateRekorEl.innerText = dateMax || dateMin || '--/--/--';
+        } else {
+            // reset ke placeholder
+            minEl.innerText = '--';
+            maxEl.innerText = '--';
+            timeMinEl.innerText = '--:--';
+            timeMaxEl.innerText = '--:--';
+            dateRekorEl.innerText = '--/--/--';
         }
     }
 
-    // Panggil saat halaman dimuat
-    document.addEventListener('DOMContentLoaded', () => {
-        renderNotificationHistory();
-    });
+    function resetRekor(rackId) {
+        if(confirm("Reset rekor Rack " + rackId + "?")) {
+            db.ref(`records/rack${rackId}`).remove();
+            // UI akan otomatis terupdate oleh listener 'value'
+        }
+    }
 
     // TRACKER UNTUK PENGAMANAN SUHU NAIK SELAMA > 15 MENIT TIDAK TURUN (dan 30 menit untuk alert ke-2)
     const tempTrendTrackers = {
@@ -1259,7 +1306,7 @@
             if (currentTemp >= tracker.baseTemp && !tracker.alerted15) {
                 showToast(rackId, 1); // 1 = notifikasi ke-1
                 sendBrowserNotification(rackId, currentTemp, 1); // Kirim browser notification
-                addNotificationHistory(rackId, currentTemp, '15 menit'); // ✅ Tambahkan ke riwayat
+                addNotificationHistory(rackId, currentTemp, '15 menit'); // ✅ Tulis ke Firebase
                 tracker.alerted15 = true;
             }
         }
@@ -1269,7 +1316,7 @@
             if (currentTemp >= tracker.baseTemp && !tracker.alerted30) {
                 showToast(rackId, 2); // 2 = notifikasi ke-2 (akan stack di atas)
                 sendBrowserNotification(rackId, currentTemp, 2); // Kirim browser notification
-                addNotificationHistory(rackId, currentTemp, '30 menit'); // ✅ Tambahkan ke riwayat
+                addNotificationHistory(rackId, currentTemp, '30 menit'); // ✅ Tulis ke Firebase
                 tracker.alerted30 = true;
             }
         }
@@ -1331,6 +1378,13 @@
     const FAKE_HUMI_INTERVAL = 30000; 
 
     window.addEventListener('click', () => {
+        // Pastikan AudioContext di-resume
+        const ctx = initAudioContext();
+        if (ctx && ctx.state === 'suspended') {
+            ctx.resume().then(() => {
+                console.log('AudioContext resumed');
+            });
+        }
         if (isAudioEnabled) {
             const t1 = parseFloat(document.getElementById('val1').innerText) || 0;
             const t77 = parseFloat(document.getElementById('val77').innerText) || 0;
@@ -1541,15 +1595,6 @@
                 alarmAudio.pause();
                 alarmAudio.currentTime = 0;
             }
-        }
-    }
-
-    function resetRekor(id) {
-        if(confirm("Reset rekor Rack " + id + "?")) {
-            localStorage.removeItem('min'+id); localStorage.removeItem('max'+id); localStorage.removeItem('tmin'+id); localStorage.removeItem('tmax'+id);
-            document.getElementById('min'+id).innerText = '--'; document.getElementById('max'+id).innerText = '--';
-            document.getElementById('timeMin'+id).innerText = '--:--'; document.getElementById('timeMax'+id).innerText = '--:--';
-            document.getElementById('dateRekor'+id).innerText = '--/--/--';
         }
     }
 
@@ -1821,26 +1866,10 @@
                 document.getElementById('hum1').innerText = fluctuatedHumi.toFixed(1);
                 
                 updateAnalytic('61', t, history61);
+                updateRecordIfNeeded('61', t, stampStr); // ✅ Update records ke Firebase
                 
                 c1.data.datasets[0].data.push(t); c1.data.datasets[0].data.shift(); c1.update('none');
                 localStorage.setItem('hist61', JSON.stringify(history61));
-                
-                let min61 = localStorage.getItem('min61'); let max61 = localStorage.getItem('max61');
-                let tmin61 = localStorage.getItem('tmin61') || stampStr; let tmax61 = localStorage.getItem('tmax61') || stampStr;
-
-                if (min61 === null) { min61 = t; localStorage.setItem('min61', t); localStorage.setItem('tmin61', stampStr); tmin61 = stampStr; } else { min61 = parseFloat(min61); }
-                if (max61 === null) { max61 = t; localStorage.setItem('max61', t); localStorage.setItem('tmax61', stampStr); tmax61 = stampStr; } else { max61 = parseFloat(max61); }
-
-                if(t < min61) { min61 = t; tmin61 = stampStr; localStorage.setItem('min61', min61); localStorage.setItem('tmin61', tmin61); }
-                if(t > max61) { max61 = t; tmax61 = stampStr; localStorage.setItem('max61', max61); localStorage.setItem('tmax61', tmax61); }
-                
-                let pMin61 = parseStamp(tmin61); let pMax61 = parseStamp(tmax61);
-
-                document.getElementById('min61').innerText = min61.toFixed(1); 
-                document.getElementById('max61').innerText = max61.toFixed(1);
-                document.getElementById('timeMin61').innerText = pMin61.time; 
-                document.getElementById('timeMax61').innerText = pMax61.time; 
-                document.getElementById('dateRekor61').innerText = pMax61.date || pMin61.date || dateStr;
                 
                 pushLog('logList1', t, fluctuatedHumi);
             }
@@ -1851,26 +1880,10 @@
                 document.getElementById('val77').innerText = t.toFixed(1);
                 document.getElementById('hum77').innerText = (d.rack_77.kelembaban || 0).toFixed(1);
                 updateAnalytic('77', t, history77);
+                updateRecordIfNeeded('77', t, stampStr); // ✅ Update records ke Firebase
                 
                 c3.data.datasets[0].data.push(t); c3.data.datasets[0].data.shift(); c3.update('none');
                 localStorage.setItem('hist77', JSON.stringify(history77));
-                
-                let min77 = localStorage.getItem('min77'); let max77 = localStorage.getItem('max77');
-                let tmin77 = localStorage.getItem('tmin77') || stampStr; let tmax77 = localStorage.getItem('tmax77') || stampStr;
-
-                if (min77 === null) { min77 = t; localStorage.setItem('min77', t); localStorage.setItem('tmin77', stampStr); tmin77 = stampStr; } else { min77 = parseFloat(min77); }
-                if (max77 === null) { max77 = t; localStorage.setItem('max77', t); localStorage.setItem('tmax77', stampStr); tmax77 = stampStr; } else { max77 = parseFloat(max77); }
-
-                if(t < min77) { min77 = t; tmin77 = stampStr; localStorage.setItem('min77', min77); localStorage.setItem('tmin77', tmin77); }
-                if(t > max77) { max77 = t; tmax77 = stampStr; localStorage.setItem('max77', max77); localStorage.setItem('tmax77', tmax77); }
-                
-                let pMin77 = parseStamp(tmin77); let pMax77 = parseStamp(tmax77);
-
-                document.getElementById('min77').innerText = min77.toFixed(1); 
-                document.getElementById('max77').innerText = max77.toFixed(1);
-                document.getElementById('timeMin77').innerText = pMin77.time; 
-                document.getElementById('timeMax77').innerText = pMax77.time; 
-                document.getElementById('dateRekor77').innerText = pMax77.date || pMin77.date || dateStr;
                 
                 pushLog('logList77', t, d.rack_77.kelembaban || 0);
             }
@@ -1881,26 +1894,10 @@
                 document.getElementById('val2').innerText = t.toFixed(1);
                 document.getElementById('hum2').innerText = (d.kelembaban || 0).toFixed(1);
                 updateAnalytic('139', t, history139);
+                updateRecordIfNeeded('139', t, stampStr); // ✅ Update records ke Firebase
                 
                 c2.data.datasets[0].data.push(t); c2.data.datasets[0].data.shift(); c2.update('none');
                 localStorage.setItem('hist139', JSON.stringify(history139));
-                
-                let min139 = localStorage.getItem('min139'); let max139 = localStorage.getItem('max139');
-                let tmin139 = localStorage.getItem('tmin139') || stampStr; let tmax139 = localStorage.getItem('tmax139') || stampStr;
-
-                if (min139 === null) { min139 = t; localStorage.setItem('min139', t); localStorage.setItem('tmin139', stampStr); tmin139 = stampStr; } else { min139 = parseFloat(min139); }
-                if (max139 === null) { max139 = t; localStorage.setItem('max139', t); localStorage.setItem('tmax139', stampStr); tmax139 = stampStr; } else { max139 = parseFloat(max139); }
-
-                if(t < min139) { min139 = t; tmin139 = stampStr; localStorage.setItem('min139', min139); localStorage.setItem('tmin139', tmin139); }
-                if(t > max139) { max139 = t; tmax139 = stampStr; localStorage.setItem('max139', max139); localStorage.setItem('tmax139', tmax139); }
-                
-                let pMin139 = parseStamp(tmin139); let pMax139 = parseStamp(tmax139);
-
-                document.getElementById('min139').innerText = min139.toFixed(1); 
-                document.getElementById('max139').innerText = max139.toFixed(1);
-                document.getElementById('timeMin139').innerText = pMin139.time; 
-                document.getElementById('timeMax139').innerText = pMax139.time; 
-                document.getElementById('dateRekor139').innerText = pMax139.date || pMin139.date || dateStr;
                 
                 pushLog('logList2', t, d.kelembaban || 0);
             }
@@ -1908,4 +1905,4 @@
     });
 </script>
 </body>
-</html>
+    </html>
