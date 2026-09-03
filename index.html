@@ -1354,6 +1354,9 @@
         let tracker = tempTrendTrackers[rackId];
         let now = Date.now();
 
+        // Debug log
+        console.log(`RACK ${rackId} - Temp: ${currentTemp.toFixed(2)}, Last: ${tracker.lastTemp ? tracker.lastTemp.toFixed(2) : 'null'}, RiseStart: ${tracker.riseStartTime ? new Date(tracker.riseStartTime).toLocaleTimeString() : 'null'}`);
+
         if (tracker.lastTemp === null) {
             tracker.lastTemp = currentTemp;
             tracker.baseTemp = currentTemp;
@@ -1365,8 +1368,10 @@
             if (!tracker.riseStartTime) {
                 tracker.riseStartTime = now;
                 tracker.baseTemp = tracker.lastTemp;
+                console.log(`⏱️ RACK ${rackId} mulai naik. BaseTemp: ${tracker.baseTemp.toFixed(2)}`);
             }
-        } else if (currentTemp < tracker.lastTemp) {
+        } else if (currentTemp < tracker.lastTemp - 0.2) {
+            // Hanya reset jika penurunan signifikan (>= 0.2°C)
             tracker.riseStartTime = null;
             tracker.baseTemp = currentTemp;
             tracker.alerted15 = false;
@@ -1374,12 +1379,15 @@
             tracker.alerted45 = false;
             tracker.alerted60 = false;
             hideToast(rackId);
+            console.log(`📉 RACK ${rackId} turun signifikan, reset timer.`);
         }
 
         tracker.lastTemp = currentTemp;
 
+        // Cek 15 menit
         if (tracker.riseStartTime && (now - tracker.riseStartTime >= 15 * 60 * 1000)) {
             if (currentTemp >= tracker.baseTemp && !tracker.alerted15) {
+                console.log(`🚨 RACK ${rackId} ALERT 15 MIN! Temp: ${currentTemp.toFixed(2)}`);
                 showToast(rackId, 1);
                 sendBrowserNotification(rackId, currentTemp, 1);
                 addNotificationHistory(rackId, currentTemp, '15 menit');
@@ -1387,8 +1395,10 @@
             }
         }
 
+        // Cek 30 menit
         if (tracker.riseStartTime && (now - tracker.riseStartTime >= 30 * 60 * 1000)) {
             if (currentTemp >= tracker.baseTemp && !tracker.alerted30) {
+                console.log(`🚨 RACK ${rackId} ALERT 30 MIN! Temp: ${currentTemp.toFixed(2)}`);
                 showToast(rackId, 2);
                 sendBrowserNotification(rackId, currentTemp, 2);
                 addNotificationHistory(rackId, currentTemp, '30 menit');
@@ -1396,8 +1406,10 @@
             }
         }
 
+        // Cek 45 menit
         if (tracker.riseStartTime && (now - tracker.riseStartTime >= 45 * 60 * 1000)) {
             if (currentTemp >= tracker.baseTemp && !tracker.alerted45) {
+                console.log(`🚨 RACK ${rackId} ALERT 45 MIN! Temp: ${currentTemp.toFixed(2)}`);
                 showToast(rackId, 3);
                 sendBrowserNotification(rackId, currentTemp, 3);
                 addNotificationHistory(rackId, currentTemp, '45 menit');
@@ -1405,8 +1417,10 @@
             }
         }
 
+        // Cek 60 menit
         if (tracker.riseStartTime && (now - tracker.riseStartTime >= 60 * 60 * 1000)) {
             if (currentTemp >= tracker.baseTemp && !tracker.alerted60) {
+                console.log(`🚨 RACK ${rackId} ALERT 60 MIN! Temp: ${currentTemp.toFixed(2)}`);
                 showToast(rackId, 4);
                 sendBrowserNotification(rackId, currentTemp, 4);
                 addNotificationHistory(rackId, currentTemp, '60 menit');
@@ -1950,6 +1964,7 @@
 
     db.ref('live_data').on('value', (snap) => {
         const d = snap.val();
+        console.log('Live data:', d); // 🔍 Log untuk debugging
         if (d) {
             const now = new Date();
             const timeStr = now.getHours().toString().padStart(2, '0') + ":" + now.getMinutes().toString().padStart(2, '0');
@@ -1979,18 +1994,23 @@
                 pushLog('logList1', t, fluctuatedHumi);
             }
             
-            if (d.rack_77 !== undefined && d.rack_77.suhu !== undefined) {
-                lastUpdateR77 = Date.now();
-                const t = d.rack_77.suhu;
-                document.getElementById('val77').innerText = t.toFixed(1);
-                document.getElementById('hum77').innerText = (d.rack_77.kelembaban || 0).toFixed(1);
-                updateAnalytic('77', t, history77);
-                updateRecordIfNeeded('77', t, stampStr);
-                
-                c3.data.datasets[0].data.push(t); c3.data.datasets[0].data.shift(); c3.update('none');
-                localStorage.setItem('hist77', JSON.stringify(history77));
-                
-                pushLog('logList77', t, d.rack_77.kelembaban || 0);
+            // RACK 77 – mendukung angka langsung atau objek {suhu, kelembaban}
+            const rack77Data = d.rack_77;
+            if (rack77Data !== undefined) {
+                const t = typeof rack77Data === 'number' ? rack77Data : rack77Data.suhu;
+                const h = typeof rack77Data === 'number' ? 0 : (rack77Data.kelembaban || 0);
+                if (t !== undefined && !isNaN(t)) {
+                    lastUpdateR77 = Date.now();
+                    document.getElementById('val77').innerText = t.toFixed(1);
+                    document.getElementById('hum77').innerText = h.toFixed(1);
+                    updateAnalytic('77', t, history77);
+                    updateRecordIfNeeded('77', t, stampStr);
+                    
+                    c3.data.datasets[0].data.push(t); c3.data.datasets[0].data.shift(); c3.update('none');
+                    localStorage.setItem('hist77', JSON.stringify(history77));
+                    
+                    pushLog('logList77', t, h);
+                }
             }
 
             if (d.pac !== undefined) {
