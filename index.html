@@ -659,7 +659,7 @@
     <div class="notification-history-panel" id="notificationHistoryPanel">
         <div class="panel-header" onclick="toggleNotificationHistory()">
             <span class="panel-title">
-                <i class="fa-solid fa-bell"></i> NOTIFICATION HISTORY
+                <i class="fa-solid fa-bell"></i> RIWAYAT NOTIFIKASI
             </span>
             <div class="panel-actions">
                 <button class="btn-mini" onclick="clearNotificationHistory(event)" title="Hapus semua riwayat">
@@ -677,7 +677,7 @@
     <div class="card chart-card">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
             <span class="card-label" style="margin-bottom: 0; color: var(--accent-blue);">RACK 61 TEMPERATURE HISTORY</span>
-            <button onclick="openGraphModal('rack_61')" class="btn-mini" style="margin: 0;"><i class="fa-solid fa-chart-line"></i> GRAPH</button>
+            <button onclick="openGraphModal('rack_61')" class="btn-mini" style="margin: 0;"><i class="fa-solid fa-chart-line"></i> CHART</button>
         </div>
         <div style="position: relative; width: 100%; height: 160px;">
             <canvas id="chart1"></canvas>
@@ -687,7 +687,7 @@
     <div class="card chart-card">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
             <span class="card-label" style="margin-bottom: 0; color: var(--accent-teal);">RACK 77 TEMPERATURE HISTORY</span>
-            <button onclick="openGraphModal('rack_77')" class="btn-mini" style="margin: 0; color: var(--accent-teal); border-color: rgba(36, 187, 189, 0.4);"><i class="fa-solid fa-chart-line"></i> GRAPH</button>
+            <button onclick="openGraphModal('rack_77')" class="btn-mini" style="margin: 0; color: var(--accent-teal); border-color: rgba(36, 187, 189, 0.4);"><i class="fa-solid fa-chart-line"></i> CHART</button>
         </div>
         <div style="position: relative; width: 100%; height: 160px;">
             <canvas id="chart77"></canvas>
@@ -697,7 +697,7 @@
     <div class="card chart-card">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
             <span class="card-label" style="margin-bottom: 0; color: var(--accent-green);">RACK 139 TEMPERATURE HISTORY</span>
-            <button onclick="openGraphModal('rack_139')" class="btn-mini" style="margin: 0; color: var(--accent-green); border-color: rgba(16, 185, 129, 0.4);"><i class="fa-solid fa-chart-line"></i> GRAPH</button>
+            <button onclick="openGraphModal('rack_139')" class="btn-mini" style="margin: 0; color: var(--accent-green); border-color: rgba(16, 185, 129, 0.4);"><i class="fa-solid fa-chart-line"></i> CHART</button>
         </div>
         <div style="position: relative; width: 100%; height: 160px;">
             <canvas id="chart2"></canvas>
@@ -713,28 +713,28 @@
             <span style="font-weight: 800; font-size: 11px; color: var(--accent-orange);"><i class="fa-solid fa-triangle-exclamation"></i> RACK 61 ALERT (15 MIN)</span>
             <i class="fa-solid fa-xmark" onclick="hideToast('61')" style="cursor: pointer; font-size: 14px; color: var(--text-dim);"></i>
         </div>
-        <div style="font-size: 10px; color: var(--text-dim); line-height: 1.4;">⏱️ Suhu tidak kunjung turun selama 15 menit. Mohon verifikasi sistem pendingin.</div>
+        <div id="toast-msg-61-1" style="font-size: 10px; color: var(--text-dim); line-height: 1.4;">⏱️ Suhu tidak kunjung turun selama 15 menit. Mohon verifikasi sistem pendingin.</div>
     </div>
     <div class="toast-card critical" id="toast-61-2">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
             <span style="font-weight: 800; font-size: 11px; color: var(--accent-red);"><i class="fa-solid fa-circle-exclamation"></i> RACK 61 CRITICAL (30 MIN)</span>
             <i class="fa-solid fa-xmark" onclick="hideToast('61')" style="cursor: pointer; font-size: 14px; color: var(--text-dim);"></i>
         </div>
-        <div style="font-size: 10px; color: var(--text-dim); line-height: 1.4;">🔴 KONDISI KRITIS! Suhu masih tinggi setelah 30 menit.</div>
+        <div id="toast-msg-61-2" style="font-size: 10px; color: var(--text-dim); line-height: 1.4;">🔴 KONDISI KRITIS! Suhu masih tinggi setelah 30 menit.</div>
     </div>
     <div class="toast-card critical" id="toast-61-3">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
             <span style="font-weight: 800; font-size: 11px; color: var(--accent-red);"><i class="fa-solid fa-circle-exclamation"></i> RACK 61 SANGAT KRITIS (45 MIN)</span>
             <i class="fa-solid fa-xmark" onclick="hideToast('61')" style="cursor: pointer; font-size: 14px; color: var(--text-dim);"></i>
         </div>
-        <div style="font-size: 10px; color: var(--text-dim); line-height: 1.4;">🔴🔴 SANGAT KRITIS! Suhu bertahan 45 menit.</div>
+        <div id="toast-msg-61-3" style="font-size: 10px; color: var(--text-dim); line-height: 1.4;">🔴🔴 SANGAT KRITIS! Suhu bertahan 45 menit.</div>
     </div>
     <div class="toast-card critical" id="toast-61-4">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
             <span style="font-weight: 800; font-size: 11px; color: var(--accent-red);"><i class="fa-solid fa-circle-exclamation"></i> RACK 61 DARURAT (60 MIN)</span>
             <i class="fa-solid fa-xmark" onclick="hideToast('61')" style="cursor: pointer; font-size: 14px; color: var(--text-dim);"></i>
         </div>
-        <div style="font-size: 10px; color: var(--text-dim); line-height: 1.4;">🔴🔴🔴 DARURAT! Suhu bertahan 1 jam penuh!</div>
+        <div id="toast-msg-61-4" style="font-size: 10px; color: var(--text-dim); line-height: 1.4;">🔴🔴🔴 DARURAT! Suhu bertahan 1 jam penuh!</div>
     </div>
 
     <!-- RACK 77 -->
@@ -743,28 +743,28 @@
             <span style="font-weight: 800; font-size: 11px; color: var(--accent-orange);"><i class="fa-solid fa-triangle-exclamation"></i> RACK 77 ALERT (15 MIN)</span>
             <i class="fa-solid fa-xmark" onclick="hideToast('77')" style="cursor: pointer; font-size: 14px; color: var(--text-dim);"></i>
         </div>
-        <div style="font-size: 10px; color: var(--text-dim); line-height: 1.4;">⏱️ Suhu tidak kunjung turun selama 15 menit. Mohon verifikasi sistem pendingin.</div>
+        <div id="toast-msg-77-1" style="font-size: 10px; color: var(--text-dim); line-height: 1.4;">⏱️ Suhu tidak kunjung turun selama 15 menit. Mohon verifikasi sistem pendingin.</div>
     </div>
     <div class="toast-card critical" id="toast-77-2">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
             <span style="font-weight: 800; font-size: 11px; color: var(--accent-red);"><i class="fa-solid fa-circle-exclamation"></i> RACK 77 CRITICAL (30 MIN)</span>
             <i class="fa-solid fa-xmark" onclick="hideToast('77')" style="cursor: pointer; font-size: 14px; color: var(--text-dim);"></i>
         </div>
-        <div style="font-size: 10px; color: var(--text-dim); line-height: 1.4;">🔴 KONDISI KRITIS! Suhu masih tinggi setelah 30 menit.</div>
+        <div id="toast-msg-77-2" style="font-size: 10px; color: var(--text-dim); line-height: 1.4;">🔴 KONDISI KRITIS! Suhu masih tinggi setelah 30 menit.</div>
     </div>
     <div class="toast-card critical" id="toast-77-3">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
             <span style="font-weight: 800; font-size: 11px; color: var(--accent-red);"><i class="fa-solid fa-circle-exclamation"></i> RACK 77 SANGAT KRITIS (45 MIN)</span>
             <i class="fa-solid fa-xmark" onclick="hideToast('77')" style="cursor: pointer; font-size: 14px; color: var(--text-dim);"></i>
         </div>
-        <div style="font-size: 10px; color: var(--text-dim); line-height: 1.4;">🔴🔴 SANGAT KRITIS! Suhu bertahan 45 menit.</div>
+        <div id="toast-msg-77-3" style="font-size: 10px; color: var(--text-dim); line-height: 1.4;">🔴🔴 SANGAT KRITIS! Suhu bertahan 45 menit.</div>
     </div>
     <div class="toast-card critical" id="toast-77-4">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
             <span style="font-weight: 800; font-size: 11px; color: var(--accent-red);"><i class="fa-solid fa-circle-exclamation"></i> RACK 77 DARURAT (60 MIN)</span>
             <i class="fa-solid fa-xmark" onclick="hideToast('77')" style="cursor: pointer; font-size: 14px; color: var(--text-dim);"></i>
         </div>
-        <div style="font-size: 10px; color: var(--text-dim); line-height: 1.4;">🔴🔴🔴 DARURAT! Suhu bertahan 1 jam penuh!</div>
+        <div id="toast-msg-77-4" style="font-size: 10px; color: var(--text-dim); line-height: 1.4;">🔴🔴🔴 DARURAT! Suhu bertahan 1 jam penuh!</div>
     </div>
 
     <!-- RACK 139 -->
@@ -773,28 +773,28 @@
             <span style="font-weight: 800; font-size: 11px; color: var(--accent-orange);"><i class="fa-solid fa-triangle-exclamation"></i> RACK 139 ALERT (15 MIN)</span>
             <i class="fa-solid fa-xmark" onclick="hideToast('139')" style="cursor: pointer; font-size: 14px; color: var(--text-dim);"></i>
         </div>
-        <div style="font-size: 10px; color: var(--text-dim); line-height: 1.4;">⏱️ Suhu tidak kunjung turun selama 15 menit. Mohon verifikasi sistem pendingin.</div>
+        <div id="toast-msg-139-1" style="font-size: 10px; color: var(--text-dim); line-height: 1.4;">⏱️ Suhu tidak kunjung turun selama 15 menit. Mohon verifikasi sistem pendingin.</div>
     </div>
     <div class="toast-card critical" id="toast-139-2">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
             <span style="font-weight: 800; font-size: 11px; color: var(--accent-red);"><i class="fa-solid fa-circle-exclamation"></i> RACK 139 CRITICAL (30 MIN)</span>
             <i class="fa-solid fa-xmark" onclick="hideToast('139')" style="cursor: pointer; font-size: 14px; color: var(--text-dim);"></i>
         </div>
-        <div style="font-size: 10px; color: var(--text-dim); line-height: 1.4;">🔴 KONDISI KRITIS! Suhu masih tinggi setelah 30 menit.</div>
+        <div id="toast-msg-139-2" style="font-size: 10px; color: var(--text-dim); line-height: 1.4;">🔴 KONDISI KRITIS! Suhu masih tinggi setelah 30 menit.</div>
     </div>
     <div class="toast-card critical" id="toast-139-3">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
             <span style="font-weight: 800; font-size: 11px; color: var(--accent-red);"><i class="fa-solid fa-circle-exclamation"></i> RACK 139 SANGAT KRITIS (45 MIN)</span>
             <i class="fa-solid fa-xmark" onclick="hideToast('139')" style="cursor: pointer; font-size: 14px; color: var(--text-dim);"></i>
         </div>
-        <div style="font-size: 10px; color: var(--text-dim); line-height: 1.4;">🔴🔴 SANGAT KRITIS! Suhu bertahan 45 menit.</div>
+        <div id="toast-msg-139-3" style="font-size: 10px; color: var(--text-dim); line-height: 1.4;">🔴🔴 SANGAT KRITIS! Suhu bertahan 45 menit.</div>
     </div>
     <div class="toast-card critical" id="toast-139-4">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
             <span style="font-weight: 800; font-size: 11px; color: var(--accent-red);"><i class="fa-solid fa-circle-exclamation"></i> RACK 139 DARURAT (60 MIN)</span>
             <i class="fa-solid fa-xmark" onclick="hideToast('139')" style="cursor: pointer; font-size: 14px; color: var(--text-dim);"></i>
         </div>
-        <div style="font-size: 10px; color: var(--text-dim); line-height: 1.4;">🔴🔴🔴 DARURAT! Suhu bertahan 1 jam penuh!</div>
+        <div id="toast-msg-139-4" style="font-size: 10px; color: var(--text-dim); line-height: 1.4;">🔴🔴🔴 DARURAT! Suhu bertahan 1 jam penuh!</div>
     </div>
 </div>
 
@@ -1233,6 +1233,13 @@
         return `${date.getDate().toString().padStart(2,'0')}/${(date.getMonth()+1).toString().padStart(2,'0')}/${date.getFullYear()} ${date.getHours().toString().padStart(2,'0')}:${date.getMinutes().toString().padStart(2,'0')}:${date.getSeconds().toString().padStart(2,'0')}`;
     }
 
+    function formatTimeRange(start, end) {
+        const pad = n => n.toString().padStart(2, '0');
+        const startDate = new Date(start);
+        const endDate = new Date(end);
+        return `${pad(startDate.getHours())}:${pad(startDate.getMinutes())} - ${pad(endDate.getHours())}:${pad(endDate.getMinutes())}`;
+    }
+
     function addNotificationItemToDOM(key, data) {
         const listEl = document.getElementById('notificationList');
         if (!listEl) return;
@@ -1242,13 +1249,15 @@
         else if (data.type === '45 menit') typeClass = 'verycritical';
         else if (data.type === '60 menit') typeClass = 'emergency';
 
+        let periodText = data.period ? ` | ${data.period}` : '';
+
         const itemDiv = document.createElement('div');
         itemDiv.className = 'notification-item';
         itemDiv.id = `notif-${key}`;
         itemDiv.innerHTML = `
             <span class="notification-time">${formatTimestamp(data.timestamp)}</span>
             <span class="notification-detail">
-                <span style="margin-right:10px;">RACK ${data.rackId} · ${data.temp}°C</span>
+                <span style="margin-right:10px;">RACK ${data.rackId} · ${data.temp}°C${periodText}</span>
                 <span class="notification-type ${typeClass}">${data.type}</span>
             </span>
         `;
@@ -1259,12 +1268,13 @@
         }
     }
 
-    function addNotificationHistory(rackId, temp, alertType) {
+    function addNotificationHistory(rackId, temp, alertType, period = '') {
         db.ref('notifications').push({
             rackId: rackId,
             temp: temp.toFixed(1),
             type: alertType,
-            timestamp: Date.now()
+            timestamp: Date.now(),
+            period: period
         });
     }
 
@@ -1354,9 +1364,6 @@
         let tracker = tempTrendTrackers[rackId];
         let now = Date.now();
 
-        // Debug log
-        console.log(`RACK ${rackId} - Temp: ${currentTemp.toFixed(2)}, Last: ${tracker.lastTemp ? tracker.lastTemp.toFixed(2) : 'null'}, RiseStart: ${tracker.riseStartTime ? new Date(tracker.riseStartTime).toLocaleTimeString() : 'null'}`);
-
         if (tracker.lastTemp === null) {
             tracker.lastTemp = currentTemp;
             tracker.baseTemp = currentTemp;
@@ -1368,10 +1375,8 @@
             if (!tracker.riseStartTime) {
                 tracker.riseStartTime = now;
                 tracker.baseTemp = tracker.lastTemp;
-                console.log(`⏱️ RACK ${rackId} mulai naik. BaseTemp: ${tracker.baseTemp.toFixed(2)}`);
             }
         } else if (currentTemp < tracker.lastTemp - 0.2) {
-            // Hanya reset jika penurunan signifikan (>= 0.2°C)
             tracker.riseStartTime = null;
             tracker.baseTemp = currentTemp;
             tracker.alerted15 = false;
@@ -1379,51 +1384,48 @@
             tracker.alerted45 = false;
             tracker.alerted60 = false;
             hideToast(rackId);
-            console.log(`📉 RACK ${rackId} turun signifikan, reset timer.`);
         }
 
         tracker.lastTemp = currentTemp;
 
-        // Cek 15 menit
+        // Cek 15 menit (tanpa browser notification, tanpa suara)
         if (tracker.riseStartTime && (now - tracker.riseStartTime >= 15 * 60 * 1000)) {
             if (currentTemp >= tracker.baseTemp && !tracker.alerted15) {
-                console.log(`🚨 RACK ${rackId} ALERT 15 MIN! Temp: ${currentTemp.toFixed(2)}`);
-                showToast(rackId, 1);
-                sendBrowserNotification(rackId, currentTemp, 1);
-                addNotificationHistory(rackId, currentTemp, '15 menit');
+                const period = formatTimeRange(tracker.riseStartTime, now);
+                showToast(rackId, 1, period, true); // silent
+                addNotificationHistory(rackId, currentTemp, '15 menit', period);
                 tracker.alerted15 = true;
             }
         }
 
-        // Cek 30 menit
+        // Cek 30 menit (tanpa browser notification, tanpa suara)
         if (tracker.riseStartTime && (now - tracker.riseStartTime >= 30 * 60 * 1000)) {
             if (currentTemp >= tracker.baseTemp && !tracker.alerted30) {
-                console.log(`🚨 RACK ${rackId} ALERT 30 MIN! Temp: ${currentTemp.toFixed(2)}`);
-                showToast(rackId, 2);
-                sendBrowserNotification(rackId, currentTemp, 2);
-                addNotificationHistory(rackId, currentTemp, '30 menit');
+                const period = formatTimeRange(tracker.riseStartTime, now);
+                showToast(rackId, 2, period, true); // silent
+                addNotificationHistory(rackId, currentTemp, '30 menit', period);
                 tracker.alerted30 = true;
             }
         }
 
-        // Cek 45 menit
+        // Cek 45 menit (dengan browser notification, dengan suara)
         if (tracker.riseStartTime && (now - tracker.riseStartTime >= 45 * 60 * 1000)) {
             if (currentTemp >= tracker.baseTemp && !tracker.alerted45) {
-                console.log(`🚨 RACK ${rackId} ALERT 45 MIN! Temp: ${currentTemp.toFixed(2)}`);
-                showToast(rackId, 3);
+                const period = formatTimeRange(tracker.riseStartTime, now);
+                showToast(rackId, 3, period, false);
                 sendBrowserNotification(rackId, currentTemp, 3);
-                addNotificationHistory(rackId, currentTemp, '45 menit');
+                addNotificationHistory(rackId, currentTemp, '45 menit', period);
                 tracker.alerted45 = true;
             }
         }
 
-        // Cek 60 menit
+        // Cek 60 menit (dengan browser notification, dengan suara)
         if (tracker.riseStartTime && (now - tracker.riseStartTime >= 60 * 60 * 1000)) {
             if (currentTemp >= tracker.baseTemp && !tracker.alerted60) {
-                console.log(`🚨 RACK ${rackId} ALERT 60 MIN! Temp: ${currentTemp.toFixed(2)}`);
-                showToast(rackId, 4);
+                const period = formatTimeRange(tracker.riseStartTime, now);
+                showToast(rackId, 4, period, false);
                 sendBrowserNotification(rackId, currentTemp, 4);
-                addNotificationHistory(rackId, currentTemp, '60 menit');
+                addNotificationHistory(rackId, currentTemp, '60 menit', period);
                 tracker.alerted60 = true;
             }
         }
@@ -1469,20 +1471,25 @@
         new Notification(title, options);
     }
 
-    function showToast(rackId, alertLevel = 1) {
+    function showToast(rackId, alertLevel, period = '', silent = false) {
         const toastId = `toast-${rackId}-${alertLevel}`;
         const toast = document.getElementById(toastId);
         if (toast) {
+            const msgEl = document.getElementById(`toast-msg-${rackId}-${alertLevel}`);
+            if (msgEl && period) {
+                let baseMsg = '';
+                if (alertLevel === 1) baseMsg = `⏱️ Suhu tidak kunjung turun sejak ${period}. Mohon verifikasi sistem pendingin.`;
+                else if (alertLevel === 2) baseMsg = `🔴 KONDISI KRITIS! Suhu masih tinggi sejak ${period}. Segera lakukan pengecekan hardware & hubungi admin!`;
+                else if (alertLevel === 3) baseMsg = `🔴🔴 SANGAT KRITIS! Suhu bertahan sejak ${period}.`;
+                else if (alertLevel === 4) baseMsg = `🔴🔴🔴 DARURAT! Suhu bertahan sejak ${period} (1 jam penuh)!`;
+                msgEl.innerHTML = baseMsg;
+            }
             toast.style.display = 'block';
-            // Mainkan beep sesuai level
-            if (alertLevel === 1) {
-                playWarningBeep();
-            } else if (alertLevel === 2) {
-                playCriticalBeep30();
-            } else if (alertLevel === 3) {
-                playCriticalBeep45();
-            } else if (alertLevel === 4) {
-                playCriticalBeep60();
+            if (!silent) {
+                if (alertLevel === 1) playWarningBeep();
+                else if (alertLevel === 2) playCriticalBeep30();
+                else if (alertLevel === 3) playCriticalBeep45();
+                else if (alertLevel === 4) playCriticalBeep60();
             }
         }
     }
@@ -1964,7 +1971,6 @@
 
     db.ref('live_data').on('value', (snap) => {
         const d = snap.val();
-        console.log('Live data:', d); // 🔍 Log untuk debugging
         if (d) {
             const now = new Date();
             const timeStr = now.getHours().toString().padStart(2, '0') + ":" + now.getMinutes().toString().padStart(2, '0');
@@ -2030,4 +2036,4 @@
     });
 </script>
 </body>
-</html>
+                                                                                                                                                                                               </html>
