@@ -307,33 +307,40 @@
             color: var(--text-main);
             line-height: 1.5;
         }
+        /* --- PERBAIKAN CSS DI SINI --- */
         .notification-item {
             display: flex;
             justify-content: space-between;
-            align-items: flex-start;
+            align-items: center; /* Ubah dari flex-start ke center agar sejajar */
             padding: 8px 0;
             border-bottom: 1px solid rgba(255,255,255,0.05);
-        }
-        .notification-item:last-child {
-            border-bottom: none;
         }
         .notification-time {
             color: var(--text-dim);
             white-space: nowrap;
             margin-right: 10px;
-            min-width: 120px;
+            min-width: auto; /* Hapus min-width agar fleksibel */
+            flex-shrink: 0; /* Jangan menyusut */
         }
         .notification-detail {
             flex: 1;
+            display: flex; /* Ubah dari text-align right */
+            justify-content: flex-end;
+            align-items: center;
+            gap: 8px; /* Jarak antara teks dan badge */
+            min-width: 0; /* Agar teks bisa menyusut jika terlalu panjang */
             text-align: right;
         }
         .notification-type {
-            font-weight: 800;
-            padding: 2px 8px;
-            border-radius: 4px;
-            font-size: 9px;
-            text-transform: uppercase;
+            flex-shrink: 0; /* Badge tidak boleh menyusut */
+            white-space: nowrap;
         }
+        /* --- AKHIR PERBAIKAN --- */
+
+        .notification-item:last-child {
+            border-bottom: none;
+        }
+        
         .notification-type.warning {
             background: rgba(245, 158, 11, 0.2);
             color: var(--accent-orange);
@@ -415,13 +422,20 @@
             .panel-title {
                 font-size: 10px;
             }
+            /* --- PERBAIKAN CSS MOBILE DI SINI --- */
             .notification-time {
-                min-width: 90px;
                 font-size: 8px;
+                margin-right: 5px;
             }
             .notification-detail {
                 font-size: 8px;
+                gap: 4px;
             }
+            .notification-type {
+                font-size: 8px;
+                padding: 2px 6px;
+            }
+            /* --- AKHIR PERBAIKAN --- */
         }
     </style>
 </head>
@@ -659,7 +673,7 @@
     <div class="notification-history-panel" id="notificationHistoryPanel">
         <div class="panel-header" onclick="toggleNotificationHistory()">
             <span class="panel-title">
-                <i class="fa-solid fa-bell"></i> RIWAYAT NOTIFIKASI
+                <i class="fa-solid fa-bell"></i> NOTIFICATION HISTORY
             </span>
             <div class="panel-actions">
                 <button class="btn-mini" onclick="clearNotificationHistory(event)" title="Hapus semua riwayat">
