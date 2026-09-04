@@ -355,7 +355,6 @@
         }
         /* ========== AKHIR PANEL RIWAYAT ========== */
 
-        /* ========== PERBAIKAN TAMPILAN MOBILE ========== */
         @media (max-width: 768px) {
             header { 
                 flex-direction: column; 
@@ -474,36 +473,36 @@
             .notification-detail {
                 font-size: 9px;
             }
-        }
 
-        /* Untuk layar sangat sempit (HP kecil) */
-        @media (max-width: 480px) {
-            .dashboard-grid { 
-                grid-template-columns: 1fr; 
+            /* Untuk layar sangat sempit (HP kecil) */
+            @media (max-width: 480px) {
+                .dashboard-grid { 
+                    grid-template-columns: 1fr; 
+                }
+                .log-card, 
+                .chart-card, 
+                .notification-history-panel { 
+                    grid-column: span 1; 
+                }
+                .card { 
+                    padding: 16px 12px !important; 
+                    min-height: 120px !important; 
+                }
+                .card-value { 
+                    font-size: 36px !important; 
+                }
+                .card-label { 
+                    font-size: 9px !important; 
+                }
+                .status-tag {
+                    font-size: 9px !important; 
+                }
+                .min-max-val { font-size: 14px !important; }
+                .min-max-label { font-size: 9px !important; }
+                .min-max-icon { font-size: 11px !important; }
+                .min-max-time { font-size: 9px !important; }
+                .device-badge { font-size: 7.5px !important; }
             }
-            .log-card, 
-            .chart-card, 
-            .notification-history-panel { 
-                grid-column: span 1; 
-            }
-            .card { 
-                padding: 16px 12px !important; 
-                min-height: 120px !important; 
-            }
-            .card-value { 
-                font-size: 36px !important; 
-            }
-            .card-label { 
-                font-size: 9px !important; 
-            }
-            .status-tag {
-                font-size: 9px !important; 
-            }
-            .min-max-val { font-size: 14px !important; }
-            .min-max-label { font-size: 9px !important; }
-            .min-max-icon { font-size: 11px !important; }
-            .min-max-time { font-size: 9px !important; }
-            .device-badge { font-size: 7.5px !important; }
         }
     </style>
 </head>
