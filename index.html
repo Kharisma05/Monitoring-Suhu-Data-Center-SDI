@@ -1492,8 +1492,8 @@
             const msgEl = document.getElementById(`toast-msg-${rackId}-${alertLevel}`);
             if (msgEl && period) {
                 let baseMsg = '';
-                if (alertLevel === 1) baseMsg = `⏱️ Suhu tidak kunjung turun sejak ${period}. Mohon verifikasi sistem pendingin.`;
-                else if (alertLevel === 2) baseMsg = `🔴 KONDISI KRITIS! Suhu masih tinggi sejak ${period}. Segera lakukan pengecekan hardware & hubungi admin!`;
+                if (alertLevel === 1) baseMsg = `⏱️ Suhu tidak kunjung turun sejak ${period}. Mohon verifikasi sistem pendingin PAC.`;
+                else if (alertLevel === 2) baseMsg = `🔴 KONDISI KRITIS! Suhu masih tinggi sejak ${period}. Segera lakukan pengecekan Sistem Pendingin PAC!`;
                 else if (alertLevel === 3) baseMsg = `🔴🔴 SANGAT KRITIS! Suhu bertahan sejak ${period}.`;
                 else if (alertLevel === 4) baseMsg = `🔴🔴🔴 DARURAT! Suhu bertahan sejak ${period} (1 jam penuh)!`;
                 msgEl.innerHTML = baseMsg;
