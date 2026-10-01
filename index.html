@@ -307,11 +307,10 @@
             color: var(--text-main);
             line-height: 1.5;
         }
-        /* --- PERBAIKAN CSS DI SINI --- */
         .notification-item {
             display: flex;
             justify-content: space-between;
-            align-items: center; /* Ubah dari flex-start ke center agar sejajar */
+            align-items: center;
             padding: 8px 0;
             border-bottom: 1px solid rgba(255,255,255,0.05);
         }
@@ -319,23 +318,22 @@
             color: var(--text-dim);
             white-space: nowrap;
             margin-right: 10px;
-            min-width: auto; /* Hapus min-width agar fleksibel */
-            flex-shrink: 0; /* Jangan menyusut */
+            min-width: auto;
+            flex-shrink: 0;
         }
         .notification-detail {
             flex: 1;
-            display: flex; /* Ubah dari text-align right */
+            display: flex;
             justify-content: flex-end;
             align-items: center;
-            gap: 8px; /* Jarak antara teks dan badge */
-            min-width: 0; /* Agar teks bisa menyusut jika terlalu panjang */
+            gap: 8px;
+            min-width: 0;
             text-align: right;
         }
         .notification-type {
-            flex-shrink: 0; /* Badge tidak boleh menyusut */
+            flex-shrink: 0;
             white-space: nowrap;
         }
-        /* --- AKHIR PERBAIKAN --- */
 
         .notification-item:last-child {
             border-bottom: none;
@@ -372,7 +370,7 @@
             .indicator { padding: 6px 12px; font-size: 10px; text-align: center; }
             
             .dashboard-grid { grid-template-columns: 1.2fr 1.3fr; gap: 10px; width: 100%; }
-            .log-card, .chart-card, .notification-history-panel { grid-column: span 2; } /* Full width di mobile */
+            .log-card, .chart-card, .notification-history-panel { grid-column: span 2; }
             
             .card { padding: 12px 10px !important; min-height: 105px !important; border-radius: 12px; }
             
@@ -422,7 +420,6 @@
             .panel-title {
                 font-size: 10px;
             }
-            /* --- PERBAIKAN CSS MOBILE DI SINI --- */
             .notification-time {
                 font-size: 8px;
                 margin-right: 5px;
@@ -435,7 +432,6 @@
                 font-size: 8px;
                 padding: 2px 6px;
             }
-            /* --- AKHIR PERBAIKAN --- */
         }
     </style>
 </head>
@@ -461,7 +457,7 @@
     </div>
     
     <div class="header-right">
-        <div class="notification-group">
+        <div class="notification-group" style="display: flex; gap: 8px; flex-wrap: wrap; justify-content: flex-end;">
             <div class="audio-btn active" id="audioToggle" onclick="toggleAudio()">
                 <div style="display: flex; align-items: center; gap: 6px;">
                     <i class="fa-solid fa-volume-high" id="audioIcon" style="color: var(--accent-green);"></i> 
@@ -469,6 +465,14 @@
                     <span id="audioStatusText" style="color: var(--accent-green); font-weight: 800;">ACTIVE</span>
                 </div>
             </div>
+            <!-- TOMBOL MINI WIDGET -->
+            <button class="audio-btn" id="pipToggleBtn" onclick="togglePiPWidget()" style="background: linear-gradient(135deg, rgba(56, 189, 248, 0.1) 0%, rgba(56, 189, 248, 0.02) 100%); border-color: rgba(56, 189, 248, 0.3); border-top-color: rgba(56, 189, 248, 0.5);">
+                <div style="display: flex; align-items: center; gap: 6px;">
+                    <i class="fa-solid fa-window-restore" id="pipIcon" style="color: var(--accent-blue);"></i>
+                    <b style="color: var(--text-main);">MINI WIDGET:</b>
+                    <span id="pipStatusText" style="color: var(--text-dim); font-weight: 800;">OFF</span>
+                </div>
+            </button>
         </div>
         
         <div class="indicators">
@@ -1402,27 +1406,24 @@
 
         tracker.lastTemp = currentTemp;
 
-        // Cek 15 menit (tanpa browser notification, tanpa suara)
         if (tracker.riseStartTime && (now - tracker.riseStartTime >= 15 * 60 * 1000)) {
             if (currentTemp >= tracker.baseTemp && !tracker.alerted15) {
                 const period = formatTimeRange(tracker.riseStartTime, now);
-                showToast(rackId, 1, period, true); // silent
+                showToast(rackId, 1, period, true);
                 addNotificationHistory(rackId, currentTemp, '15 menit', period);
                 tracker.alerted15 = true;
             }
         }
 
-        // Cek 30 menit (tanpa browser notification, tanpa suara)
         if (tracker.riseStartTime && (now - tracker.riseStartTime >= 30 * 60 * 1000)) {
             if (currentTemp >= tracker.baseTemp && !tracker.alerted30) {
                 const period = formatTimeRange(tracker.riseStartTime, now);
-                showToast(rackId, 2, period, true); // silent
+                showToast(rackId, 2, period, true);
                 addNotificationHistory(rackId, currentTemp, '30 menit', period);
                 tracker.alerted30 = true;
             }
         }
 
-        // Cek 45 menit (dengan browser notification, dengan suara)
         if (tracker.riseStartTime && (now - tracker.riseStartTime >= 45 * 60 * 1000)) {
             if (currentTemp >= tracker.baseTemp && !tracker.alerted45) {
                 const period = formatTimeRange(tracker.riseStartTime, now);
@@ -1433,7 +1434,6 @@
             }
         }
 
-        // Cek 60 menit (dengan browser notification, dengan suara)
         if (tracker.riseStartTime && (now - tracker.riseStartTime >= 60 * 60 * 1000)) {
             if (currentTemp >= tracker.baseTemp && !tracker.alerted60) {
                 const period = formatTimeRange(tracker.riseStartTime, now);
@@ -1738,6 +1738,156 @@
         }
     }
 
+    // ========== MINI WIDGET (PICTURE-IN-PICTURE) ==========
+    let pipWindow = null;
+
+    async function togglePiPWidget() {
+        if (pipWindow && !pipWindow.closed) { pipWindow.close(); return; }
+        
+        if (!('documentPictureInPicture' in window)) {
+            alert('⚠️ Mini Widget butuh Chrome / Edge versi 116+.\n\nAlternatif: buka dashboard di window terpisah (Shift + klik bookmark), lalu resize dan pin di pojok layar.');
+            return;
+        }
+        
+        try {
+            pipWindow = await documentPictureInPicture.requestWindow({ 
+                width: 240, 
+                height: 175 
+            });
+            
+            const style = pipWindow.document.createElement('style');
+            style.textContent = `
+                * { box-sizing: border-box; margin: 0; padding: 0; }
+                body { 
+                    background: #050a10; 
+                    color: #fff; 
+                    font-family: 'Segoe UI', sans-serif;
+                    overflow: hidden;
+                    height: 100vh;
+                    display: flex;
+                    flex-direction: column;
+                    user-select: none;
+                }
+                .pip-head { 
+                    text-align: center; 
+                    font-size: 9px; 
+                    color: #64748b; 
+                    letter-spacing: 2px; 
+                    padding: 6px 0; 
+                    font-weight: 700;
+                    background: rgba(56,189,248,0.05);
+                    border-bottom: 1px solid rgba(56,189,248,0.15);
+                }
+                .rack-row { 
+                    flex: 1;
+                    display: flex; 
+                    justify-content: space-between; 
+                    align-items: center; 
+                    padding: 0 14px;
+                    border-bottom: 1px solid rgba(255,255,255,0.03);
+                }
+                .rack-row:last-child { border-bottom: none; }
+                .rack-label { 
+                    font-size: 10px; 
+                    font-weight: 800; 
+                    color: #94a3b8; 
+                    letter-spacing: 1px;
+                }
+                .rack-temp { 
+                    font-size: 30px; 
+                    font-weight: 800; 
+                    letter-spacing: -1.5px;
+                    transition: color .3s, text-shadow .3s;
+                    line-height: 1;
+                }
+                .ok   { color: #10b981; text-shadow: 0 0 10px rgba(16,185,129,0.4); }
+                .warn { color: #f59e0b; text-shadow: 0 0 12px rgba(245,158,11,0.5); }
+                .crit { color: #ef4444; text-shadow: 0 0 18px rgba(239,68,68,0.9); animation: pipBlink 1s ease-in-out infinite; }
+                @keyframes pipBlink { 
+                    0%,100% { opacity: 1; } 
+                    50%     { opacity: 0.55; } 
+                }
+            `;
+            pipWindow.document.head.appendChild(style);
+            pipWindow.document.body.innerHTML = `
+                <div class="pip-head">DC-SDI · LIVE TEMP</div>
+                <div class="rack-row">
+                    <span class="rack-label">RACK 61</span>
+                    <span class="rack-temp" id="pip-t61">--</span>
+                </div>
+                <div class="rack-row">
+                    <span class="rack-label">RACK 77</span>
+                    <span class="rack-temp" id="pip-t77">--</span>
+                </div>
+                <div class="rack-row">
+                    <span class="rack-label">RACK 139</span>
+                    <span class="rack-temp" id="pip-t139">--</span>
+                </div>
+            `;
+            
+            pipWindow.addEventListener('pagehide', () => {
+                pipWindow = null;
+                const s = document.getElementById('pipStatusText');
+                if (s) { s.innerText = 'OFF'; s.style.color = 'var(--text-dim)'; }
+                const btn = document.getElementById('pipToggleBtn');
+                if (btn) { btn.style.borderColor = 'rgba(56, 189, 248, 0.3)'; btn.style.borderTopColor = 'rgba(56, 189, 248, 0.5)'; }
+                const icon = document.getElementById('pipIcon');
+                if (icon) { icon.style.color = 'var(--accent-blue)'; }
+            });
+            
+            const s = document.getElementById('pipStatusText');
+            if (s) { s.innerText = 'ON'; s.style.color = 'var(--accent-green)'; }
+            const btn = document.getElementById('pipToggleBtn');
+            if (btn) { btn.style.borderColor = 'rgba(16, 185, 129, 0.5)'; btn.style.borderTopColor = 'rgba(16, 185, 129, 0.8)'; }
+            const icon = document.getElementById('pipIcon');
+            if (icon) { icon.style.color = 'var(--accent-green)'; }
+            
+            syncPiPWidget();
+        } catch(e) {
+            console.error('PiP error:', e);
+            alert('Gagal membuka mini widget: ' + e.message);
+        }
+    }
+
+    function syncPiPWidget() {
+        if (!pipWindow || pipWindow.closed) return;
+        const racks = [
+            { valId: 'val1',  tempId: 'pip-t61'  },
+            { valId: 'val77', tempId: 'pip-t77'  },
+            { valId: 'val2',  tempId: 'pip-t139' }
+        ];
+        racks.forEach(r => {
+            const val = document.getElementById(r.valId)?.innerText || '--';
+            const tempEl = pipWindow.document.getElementById(r.tempId);
+            if (!tempEl) return;
+            const t = parseFloat(val);
+            if (isNaN(t)) {
+                tempEl.innerText = '--';
+                tempEl.className = 'rack-temp';
+                return;
+            }
+            tempEl.innerText = t.toFixed(1) + '°';
+            let cls = 'ok';
+            if (t > 26.0)      cls = 'crit';
+            else if (t > 25.0) cls = 'warn';
+            else if (t < 17.0) cls = 'warn';
+            tempEl.className = 'rack-temp ' + cls;
+        });
+    }
+
+    // ========== TAB TITLE DINAMIS ==========
+    function updateTabTitle() {
+        const t1   = parseFloat(document.getElementById('val1')?.innerText)  || 0;
+        const t77  = parseFloat(document.getElementById('val77')?.innerText) || 0;
+        const t139 = parseFloat(document.getElementById('val2')?.innerText)  || 0;
+        const maxTemp = Math.max(t1, t77, t139);
+        let icon = '🟢';
+        if (maxTemp > 26.0) icon = '🔴';
+        else if (maxTemp > 25.0) icon = '🟡';
+        else if (maxTemp < 17.0) icon = '🔵';
+        document.title = `${icon} ${maxTemp.toFixed(1)}°C | DC-SDI`;
+    }
+
     function openModal(rack) {
         targetRackExport = rack;
         document.getElementById('modalTargetRack').innerText = rack.toUpperCase().replace('_', ' ');
@@ -2014,7 +2164,6 @@
                 pushLog('logList1', t, fluctuatedHumi);
             }
             
-            // RACK 77 – mendukung angka langsung atau objek {suhu, kelembaban}
             const rack77Data = d.rack_77;
             if (rack77Data !== undefined) {
                 const t = typeof rack77Data === 'number' ? rack77Data : rack77Data.suhu;
@@ -2046,8 +2195,12 @@
                 
                 pushLog('logList2', t, d.kelembaban || 0);
             }
+            
+            // === UPDATE MINI WIDGET & TAB TITLE SETIAP ADA DATA BARU ===
+            updateTabTitle();
+            syncPiPWidget();
         }
     });
 </script>
 </body>
-    </html>
+</html>
