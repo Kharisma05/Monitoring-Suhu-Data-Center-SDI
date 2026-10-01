@@ -295,14 +295,78 @@
         .notification-type.verycritical { background: rgba(255, 0, 0, 0.3); color: #ff5555; font-weight: 900; }
         .notification-type.emergency { background: rgba(180, 0, 0, 0.4); color: #ff0000; font-weight: 900; animation: pulse 1s infinite; }
 
+        /* ============================================================
+           ✅ PERUBAHAN #1: HEADER MOBILE SEMUA CENTER
+           ============================================================ */
         @media (max-width: 768px) {
-            header { flex-direction: column; align-items: center; justify-content: center; text-align: center; }
-            .logo-container { flex-direction: column; gap: 8px; margin-bottom: 12px; }
-            .brand h1 { font-size: 20px; }
-            .brand p { font-size: 9px; line-height: 1.3; }
-            .header-right { width: 100%; align-items: center; gap: 8px; }
-            .indicators { justify-content: center; width: 100%; gap: 6px; }
-            .indicator { padding: 6px 12px; font-size: 10px; text-align: center; }
+            header { 
+                flex-direction: column !important; 
+                align-items: center !important; 
+                justify-content: center !important; 
+                text-align: center !important; 
+                width: 100% !important;
+                gap: 12px !important;
+            }
+            .logo-container { 
+                flex-direction: column !important; 
+                align-items: center !important; 
+                gap: 8px !important; 
+                margin-bottom: 0 !important; 
+                width: 100% !important;
+            }
+            .brand { text-align: center !important; }
+            .brand h1 { font-size: 20px !important; }
+            .brand p { font-size: 9px !important; line-height: 1.3 !important; }
+
+            .header-right { 
+                width: 100% !important; 
+                align-items: center !important; 
+                gap: 10px !important;
+            }
+
+            .notification-group {
+                display: flex !important;
+                flex-direction: column !important;
+                align-items: center !important;
+                justify-content: center !important;
+                width: 100% !important;
+                max-width: 300px !important;
+                margin: 0 auto !important;
+                gap: 8px !important;
+            }
+            .notification-group .audio-btn {
+                width: 100% !important;
+                padding: 10px 14px !important;
+                font-size: 11px !important;
+                display: flex !important;
+                justify-content: center !important;
+                align-items: center !important;
+                box-sizing: border-box !important;
+            }
+            .notification-group .audio-btn > div {
+                display: flex !important;
+                align-items: center !important;
+                justify-content: center !important;
+                gap: 6px !important;
+                width: 100% !important;
+            }
+            .notification-group .audio-btn b { font-size: 10px !important; white-space: nowrap !important; }
+            .notification-group .audio-btn span { font-size: 10px !important; white-space: nowrap !important; }
+
+            .indicators { 
+                justify-content: center !important; 
+                align-items: center !important;
+                width: 100% !important; 
+                gap: 6px !important;
+                margin: 0 auto !important;
+            }
+            .indicator { 
+                padding: 6px 14px !important; 
+                font-size: 10px !important; 
+                text-align: center !important;
+                justify-content: center !important;
+            }
+
             .dashboard-grid { grid-template-columns: 1.2fr 1.3fr; gap: 10px; width: 100%; }
             .log-card, .chart-card, .notification-history-panel { grid-column: span 2; }
             .card { padding: 12px 10px !important; min-height: 105px !important; border-radius: 12px; }
@@ -1280,9 +1344,6 @@
         }
     }
 
-    // ================================================================
-    // ✅ checkDeviceStatus() — Lingkaran nomor merah + Tanda seru
-    // ================================================================
     function checkDeviceStatus() {
         const now = Date.now();
         const racks = [
@@ -1446,7 +1507,8 @@
     }
 
     // ================================================================
-    // ✅ updateTabTitle() — Tab title dengan status koneksi
+    // ✅ PERUBAHAN #2: updateTabTitle() — HANYA STATUS ESP + NAMA SITUS
+    // Tidak ada suhu. Suhu tetap tersedia di dashboard & floating monitor.
     // ================================================================
     function updateTabTitle() {
         const now = Date.now();
@@ -1454,28 +1516,24 @@
         const online77  = (now - lastUpdateR77)  < OFFLINE_TIMEOUT;
         const online139 = (now - lastUpdateR139) < OFFLINE_TIMEOUT;
         const onlineCount = [online61, online77, online139].filter(Boolean).length;
-        const t1   = parseFloat(document.getElementById('val1')?.innerText)  || 0;
-        const t77  = parseFloat(document.getElementById('val77')?.innerText) || 0;
-        const t139 = parseFloat(document.getElementById('val2')?.innerText)  || 0;
-        const maxTemp = Math.max(t1, t77, t139);
-        let offlineNums = [];
-        if (!online61)  offlineNums.push('1');
-        if (!online77)  offlineNums.push('2');
-        if (!online139) offlineNums.push('3');
+        
         let titleText;
+        
         if (onlineCount === 0) {
-            titleText = `❗ SYSTEM DOWN | DC-SDI`;
-        } else if (offlineNums.length > 0) {
-            titleText = `🔴${offlineNums.join(',')} ${maxTemp.toFixed(1)}°C | DC-SDI`;
-        } else if (maxTemp > 26.0) {
-            titleText = `🔴 ${maxTemp.toFixed(1)}°C | DC-SDI`;
-        } else if (maxTemp > 25.0) {
-            titleText = `🟡 ${maxTemp.toFixed(1)}°C | DC-SDI`;
-        } else if (maxTemp < 17.0) {
-            titleText = `🔵 ${maxTemp.toFixed(1)}°C | DC-SDI`;
+            // ❗ SEMUA ESP MATI
+            titleText = `❗ DC-SDI`;
+        } else if (onlineCount < 3) {
+            // 1-2 ESP mati → tampilkan nomor dalam lingkaran
+            let offlineNums = [];
+            if (!online61)  offlineNums.push('❶');
+            if (!online77)  offlineNums.push('❷');
+            if (!online139) offlineNums.push('❸');
+            titleText = `${offlineNums.join(' ')} DC-SDI`;
         } else {
-            titleText = `🟢 ${maxTemp.toFixed(1)}°C | DC-SDI`;
+            // Semua online → hijau
+            titleText = `🟢 DC-SDI`;
         }
+        
         document.title = titleText;
     }
 
@@ -1710,4 +1768,4 @@
     });
 </script>
 </body>
-</html>
+                </html>
