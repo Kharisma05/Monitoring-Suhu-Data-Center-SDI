@@ -23,21 +23,12 @@
         }
 
         @keyframes alertPulse {
-            0% {
-                box-shadow: 0 12px 35px rgba(0,0,0,0.5), 0 0 60px rgba(239, 68, 68, 0.6), inset 0 1px 2px rgba(255,255,255,0.4);
-            }
-            50% {
-                box-shadow: 0 12px 35px rgba(0,0,0,0.5), 0 0 80px rgba(239, 68, 68, 0.9), inset 0 1px 2px rgba(255,255,255,0.5);
-                transform: scale(1.02);
-            }
-            100% {
-                box-shadow: 0 12px 35px rgba(0,0,0,0.5), 0 0 60px rgba(239, 68, 68, 0.6), inset 0 1px 2px rgba(255,255,255,0.4);
-            }
+            0% { box-shadow: 0 12px 35px rgba(0,0,0,0.5), 0 0 60px rgba(239, 68, 68, 0.6), inset 0 1px 2px rgba(255,255,255,0.4); }
+            50% { box-shadow: 0 12px 35px rgba(0,0,0,0.5), 0 0 80px rgba(239, 68, 68, 0.9), inset 0 1px 2px rgba(255,255,255,0.5); transform: scale(1.02); }
+            100% { box-shadow: 0 12px 35px rgba(0,0,0,0.5), 0 0 60px rgba(239, 68, 68, 0.6), inset 0 1px 2px rgba(255,255,255,0.4); }
         }
 
-        .modal-content.alert-critical-mode {
-            animation: alertPulse 0.8s ease-in-out infinite;
-        }
+        .modal-content.alert-critical-mode { animation: alertPulse 0.8s ease-in-out infinite; }
 
         body { 
             background-color: var(--bg-color); 
@@ -75,6 +66,50 @@
             box-shadow: 0 4px 15px rgba(239, 68, 68, 0.3), inset 0 1px 1px rgba(255, 255, 255, 0.2);
         }
         .dot-icon { font-size: 13px; line-height: 1; display: flex; align-items: center; text-shadow: 0 0 8px currentColor;}
+
+        /* ========== LINGKARAN MERAH NOMOR ESP ========== */
+        .dot-icon.offline-circle {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 16px;
+            height: 16px;
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+            color: #ffffff;
+            border-radius: 50%;
+            font-size: 10px;
+            font-weight: 900;
+            line-height: 1;
+            text-shadow: none;
+            box-shadow: 0 0 8px rgba(239, 68, 68, 0.9), inset 0 1px 1px rgba(255,255,255,0.4);
+            animation: redCirclePulse 1.5s ease-in-out infinite;
+        }
+        @keyframes redCirclePulse {
+            0%, 100% { box-shadow: 0 0 8px rgba(239, 68, 68, 0.9), inset 0 1px 1px rgba(255,255,255,0.4); }
+            50%      { box-shadow: 0 0 16px rgba(239, 68, 68, 1), inset 0 1px 1px rgba(255,255,255,0.6); }
+        }
+
+        /* ========== TANDA SERU MERAH (SEMUA ESP MATI) ========== */
+        .dot-icon.offline-exclaim {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 18px;
+            height: 18px;
+            background: linear-gradient(135deg, #ef4444 0%, #b91c1c 100%);
+            color: #ffffff;
+            border-radius: 50%;
+            font-size: 14px;
+            font-weight: 900;
+            line-height: 1;
+            text-shadow: 0 0 4px rgba(0,0,0,0.5);
+            box-shadow: 0 0 10px rgba(239, 68, 68, 1), inset 0 1px 1px rgba(255,255,255,0.4);
+            animation: exclaimPulse 0.8s ease-in-out infinite;
+        }
+        @keyframes exclaimPulse {
+            0%, 100% { box-shadow: 0 0 10px rgba(239, 68, 68, 0.9), inset 0 1px 1px rgba(255,255,255,0.4); transform: scale(1); }
+            50%      { box-shadow: 0 0 20px rgba(239, 68, 68, 1), inset 0 1px 1px rgba(255,255,255,0.6); transform: scale(1.15); }
+        }
 
         .audio-btn { 
             background: linear-gradient(135deg, rgba(239, 68, 68, 0.1) 0%, rgba(239, 68, 68, 0.02) 100%); 
@@ -175,40 +210,28 @@
         .btn-mini:hover { background: rgba(255,255,255,0.15); border-color: #fff; color: #fff; transform: translateY(-1px); box-shadow: 0 6px 15px rgba(0,0,0,0.4), inset 0 1px 1px rgba(255,255,255,0.3); }
         .action-buttons { display: flex; gap: 5px; align-items: center; flex-shrink: 0; }
 
-        /* --- STYLING UNTUK TOAST POPUP DI KANAN BAWAH --- */
         .toast-container {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            display: flex;
-            flex-direction: column-reverse;
-            gap: 10px;
-            z-index: 9999;
-            max-width: 300px;
-            width: 100%;
-            pointer-events: none;
+            position: fixed; bottom: 20px; right: 20px;
+            display: flex; flex-direction: column-reverse; gap: 10px;
+            z-index: 9999; max-width: 300px; width: 100%; pointer-events: none;
         }
         .toast-card {
             pointer-events: auto;
             background: rgba(17, 27, 39, 0.92);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
+            backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
             border: 1px solid rgba(239, 68, 68, 0.4);
             border-left: 4px solid var(--accent-red);
-            border-radius: 10px;
-            padding: 12px 15px;
+            border-radius: 10px; padding: 12px 15px;
             box-shadow: 0 10px 30px rgba(0,0,0,0.7), 0 0 20px rgba(239, 68, 68, 0.2);
             display: none;
             animation: slideInRight 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
         }
-        
         .toast-card.critical {
             border-color: rgba(239, 68, 68, 0.8);
             border-left-color: var(--accent-red);
             box-shadow: 0 10px 30px rgba(0,0,0,0.7), 0 0 30px rgba(239, 68, 68, 0.4);
             background: rgba(17, 27, 39, 0.95);
         }
-
         @keyframes slideInRight {
             from { transform: translateX(110%); opacity: 0; }
             to { transform: translateX(0); opacity: 1; }
@@ -226,7 +249,6 @@
             box-shadow: 0 20px 50px rgba(0,0,0,0.8), 0 0 30px rgba(56, 189, 248, 0.1), inset 0 1px 1px rgba(255,255,255,0.1);
         }
         .month-grid-ui { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-top: 15px; }
-        
         .day-grid-ui { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; margin-top: 10px; }
         .btn-day {
             background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.08); border-top: 1px solid rgba(255,255,255,0.15);
@@ -244,121 +266,34 @@
             100% { transform: scale(1); opacity: 1; text-shadow: 0 0 10px var(--accent-red); }
         }
 
-        @keyframes alertPulse {
-            0% { box-shadow: 0 0 60px rgba(239, 68, 68, 0.6), inset 0 0 20px rgba(239, 68, 68, 0.3); }
-            50% { box-shadow: 0 0 80px rgba(239, 68, 68, 0.9), inset 0 0 30px rgba(239, 68, 68, 0.5); transform: scale(1.02); }
-            100% { box-shadow: 0 0 60px rgba(239, 68, 68, 0.6), inset 0 0 20px rgba(239, 68, 68, 0.3); }
-        }
-
         /* ========== PANEL RIWAYAT NOTIFIKASI ========== */
         .notification-history-panel {
-            grid-column: 1 / -1; /* Full width dalam grid */
+            grid-column: 1 / -1;
             background-color: var(--card-color);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
+            backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
             border: 1px solid rgba(255,255,255,0.08);
             border-top: 1px solid rgba(255,255,255,0.25);
             border-left: 1px solid rgba(255,255,255,0.15);
             border-radius: 14px;
             box-shadow: 0 12px 35px rgba(0,0,0,0.5), inset 0 1px 1px rgba(255,255,255,0.1);
-            margin-bottom: 15px;
-            transition: all 0.3s ease;
-            box-sizing: border-box;
+            margin-bottom: 15px; transition: all 0.3s ease; box-sizing: border-box;
         }
-        .panel-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 12px 15px;
-            cursor: pointer;
-            user-select: none;
-        }
-        .panel-title {
-            font-size: 13px;
-            font-weight: 800;
-            color: var(--accent-blue);
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        .panel-actions {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        .panel-arrow {
-            transition: transform 0.3s ease;
-            color: var(--text-dim);
-        }
-        .panel-arrow.rotated {
-            transform: rotate(180deg);
-        }
-        .panel-body {
-            padding: 0 15px 15px 15px;
-            border-top: 1px solid rgba(255,255,255,0.05);
-        }
-        .notification-list {
-            max-height: 300px;
-            overflow-y: auto;
-            font-family: 'Courier New', monospace;
-            font-size: 10px;
-            color: var(--text-main);
-            line-height: 1.5;
-        }
-        .notification-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 8px 0;
-            border-bottom: 1px solid rgba(255,255,255,0.05);
-        }
-        .notification-time {
-            color: var(--text-dim);
-            white-space: nowrap;
-            margin-right: 10px;
-            min-width: auto;
-            flex-shrink: 0;
-        }
-        .notification-detail {
-            flex: 1;
-            display: flex;
-            justify-content: flex-end;
-            align-items: center;
-            gap: 8px;
-            min-width: 0;
-            text-align: right;
-        }
-        .notification-type {
-            flex-shrink: 0;
-            white-space: nowrap;
-        }
-
-        .notification-item:last-child {
-            border-bottom: none;
-        }
-        
-        .notification-type.warning {
-            background: rgba(245, 158, 11, 0.2);
-            color: var(--accent-orange);
-        }
-        .notification-type.critical {
-            background: rgba(239, 68, 68, 0.2);
-            color: var(--accent-red);
-        }
-        .notification-type.verycritical {
-            background: rgba(255, 0, 0, 0.3);
-            color: #ff5555;
-            font-weight: 900;
-        }
-        .notification-type.emergency {
-            background: rgba(180, 0, 0, 0.4);
-            color: #ff0000;
-            font-weight: 900;
-            animation: pulse 1s infinite;
-        }
-        /* ========== AKHIR PANEL RIWAYAT ========== */
+        .panel-header { display: flex; justify-content: space-between; align-items: center; padding: 12px 15px; cursor: pointer; user-select: none; }
+        .panel-title { font-size: 13px; font-weight: 800; color: var(--accent-blue); text-transform: uppercase; letter-spacing: 0.5px; display: flex; align-items: center; gap: 8px; }
+        .panel-actions { display: flex; align-items: center; gap: 8px; }
+        .panel-arrow { transition: transform 0.3s ease; color: var(--text-dim); }
+        .panel-arrow.rotated { transform: rotate(180deg); }
+        .panel-body { padding: 0 15px 15px 15px; border-top: 1px solid rgba(255,255,255,0.05); }
+        .notification-list { max-height: 300px; overflow-y: auto; font-family: 'Courier New', monospace; font-size: 10px; color: var(--text-main); line-height: 1.5; }
+        .notification-item { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.05); }
+        .notification-time { color: var(--text-dim); white-space: nowrap; margin-right: 10px; min-width: auto; flex-shrink: 0; }
+        .notification-detail { flex: 1; display: flex; justify-content: flex-end; align-items: center; gap: 8px; min-width: 0; text-align: right; }
+        .notification-type { flex-shrink: 0; white-space: nowrap; }
+        .notification-item:last-child { border-bottom: none; }
+        .notification-type.warning { background: rgba(245, 158, 11, 0.2); color: var(--accent-orange); }
+        .notification-type.critical { background: rgba(239, 68, 68, 0.2); color: var(--accent-red); }
+        .notification-type.verycritical { background: rgba(255, 0, 0, 0.3); color: #ff5555; font-weight: 900; }
+        .notification-type.emergency { background: rgba(180, 0, 0, 0.4); color: #ff0000; font-weight: 900; animation: pulse 1s infinite; }
 
         @media (max-width: 768px) {
             header { flex-direction: column; align-items: center; justify-content: center; text-align: center; }
@@ -368,70 +303,27 @@
             .header-right { width: 100%; align-items: center; gap: 8px; }
             .indicators { justify-content: center; width: 100%; gap: 6px; }
             .indicator { padding: 6px 12px; font-size: 10px; text-align: center; }
-            
             .dashboard-grid { grid-template-columns: 1.2fr 1.3fr; gap: 10px; width: 100%; }
             .log-card, .chart-card, .notification-history-panel { grid-column: span 2; }
-            
             .card { padding: 12px 10px !important; min-height: 105px !important; border-radius: 12px; }
-            
-            .card-label-row { 
-                flex-direction: row !important; 
-                flex-wrap: nowrap !important; 
-                align-items: center !important; 
-                width: 100% !important; 
-                gap: 4px !important;
-            }
-            .card-label { 
-                font-size: 7.5px !important; 
-                line-height: 1.2 !important; 
-                white-space: normal !important; 
-                flex: 1 1 0% !important; 
-                min-width: 0 !important; 
-                word-break: break-word !important; 
-                overflow-wrap: break-word !important; 
-            }
-            .status-wrapper {
-                flex-shrink: 0 !important; 
-                align-items: center !important;
-            }
-            .status-tag {
-                font-size: 7.5px !important; 
-                padding: 3px 4px !important;
-                letter-spacing: 0.5px !important;
-            }
-            .trend-icon {
-                font-size: 12px !important;
-            }
-            
+            .card-label-row { flex-direction: row !important; flex-wrap: nowrap !important; align-items: center !important; width: 100% !important; gap: 4px !important; }
+            .card-label { font-size: 7.5px !important; line-height: 1.2 !important; white-space: normal !important; flex: 1 1 0% !important; min-width: 0 !important; word-break: break-word !important; overflow-wrap: break-word !important; }
+            .status-wrapper { flex-shrink: 0 !important; align-items: center !important; }
+            .status-tag { font-size: 7.5px !important; padding: 3px 4px !important; letter-spacing: 0.5px !important; }
+            .trend-icon { font-size: 12px !important; }
             .card-value { font-size: 28px !important; margin: 0 !important; }
             .unit { font-size: 11px !important; }
-            
             .min-max-group { gap: 5px !important; margin-bottom: 0 !important; }
             .min-max-icon { font-size: 9px !important; }
             .min-max-label { font-size: 7px !important; }
             .min-max-val { font-size: 11px !important; }
             .min-max-time { display: block !important; margin-left: 0 !important; margin-top: 2px !important; font-size: 7px !important; }
-            
             .device-badge { font-size: 6px !important; bottom: 5px !important; right: 8px !important; }
-
-            .notification-history-panel {
-                margin-bottom: 10px;
-            }
-            .panel-title {
-                font-size: 10px;
-            }
-            .notification-time {
-                font-size: 8px;
-                margin-right: 5px;
-            }
-            .notification-detail {
-                font-size: 8px;
-                gap: 4px;
-            }
-            .notification-type {
-                font-size: 8px;
-                padding: 2px 6px;
-            }
+            .notification-history-panel { margin-bottom: 10px; }
+            .panel-title { font-size: 10px; }
+            .notification-time { font-size: 8px; margin-right: 5px; }
+            .notification-detail { font-size: 8px; gap: 4px; }
+            .notification-type { font-size: 8px; padding: 2px 6px; }
         }
     </style>
 </head>
@@ -465,7 +357,6 @@
                     <span id="audioStatusText" style="color: var(--accent-green); font-weight: 800;">ACTIVE</span>
                 </div>
             </div>
-            <!-- TOMBOL MINI WIDGET -->
             <button class="audio-btn" id="pipToggleBtn" onclick="togglePiPWidget()" style="background: linear-gradient(135deg, rgba(56, 189, 248, 0.1) 0%, rgba(56, 189, 248, 0.02) 100%); border-color: rgba(56, 189, 248, 0.3); border-top-color: rgba(56, 189, 248, 0.5);">
                 <div style="display: flex; align-items: center; gap: 6px;">
                     <i class="fa-solid fa-window-restore" id="pipIcon" style="color: var(--accent-blue);"></i>
@@ -673,7 +564,7 @@
         <div id="logList2" class="log-list"></div>
     </div>
 
-    <!-- ===== PANEL RIWAYAT NOTIFIKASI ===== -->
+    <!-- PANEL RIWAYAT NOTIFIKASI -->
     <div class="notification-history-panel" id="notificationHistoryPanel">
         <div class="panel-header" onclick="toggleNotificationHistory()">
             <span class="panel-title">
@@ -690,7 +581,6 @@
             <div id="notificationList" class="notification-list"></div>
         </div>
     </div>
-    <!-- ===== AKHIR PANEL ===== -->
 
     <div class="card chart-card">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
@@ -725,94 +615,91 @@
 
 <!-- Toast container -->
 <div class="toast-container" id="toastContainer">
-    <!-- RACK 61 -->
     <div class="toast-card" id="toast-61-1">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
             <span style="font-weight: 800; font-size: 11px; color: var(--accent-orange);"><i class="fa-solid fa-triangle-exclamation"></i> RACK 61 ALERT (15 MIN)</span>
             <i class="fa-solid fa-xmark" onclick="hideToast('61')" style="cursor: pointer; font-size: 14px; color: var(--text-dim);"></i>
         </div>
-        <div id="toast-msg-61-1" style="font-size: 10px; color: var(--text-dim); line-height: 1.4;">⏱️ Suhu tidak kunjung turun selama 15 menit. Mohon verifikasi sistem pendingin.</div>
+        <div id="toast-msg-61-1" style="font-size: 10px; color: var(--text-dim); line-height: 1.4;">⏱️ Suhu tidak kunjung turun selama 15 menit.</div>
     </div>
     <div class="toast-card critical" id="toast-61-2">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
             <span style="font-weight: 800; font-size: 11px; color: var(--accent-red);"><i class="fa-solid fa-circle-exclamation"></i> RACK 61 CRITICAL (30 MIN)</span>
             <i class="fa-solid fa-xmark" onclick="hideToast('61')" style="cursor: pointer; font-size: 14px; color: var(--text-dim);"></i>
         </div>
-        <div id="toast-msg-61-2" style="font-size: 10px; color: var(--text-dim); line-height: 1.4;">🔴 KONDISI KRITIS! Suhu masih tinggi setelah 30 menit.</div>
+        <div id="toast-msg-61-2" style="font-size: 10px; color: var(--text-dim); line-height: 1.4;">🔴 KONDISI KRITIS!</div>
     </div>
     <div class="toast-card critical" id="toast-61-3">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
             <span style="font-weight: 800; font-size: 11px; color: var(--accent-red);"><i class="fa-solid fa-circle-exclamation"></i> RACK 61 SANGAT KRITIS (45 MIN)</span>
             <i class="fa-solid fa-xmark" onclick="hideToast('61')" style="cursor: pointer; font-size: 14px; color: var(--text-dim);"></i>
         </div>
-        <div id="toast-msg-61-3" style="font-size: 10px; color: var(--text-dim); line-height: 1.4;">🔴🔴 SANGAT KRITIS! Suhu bertahan 45 menit.</div>
+        <div id="toast-msg-61-3" style="font-size: 10px; color: var(--text-dim); line-height: 1.4;">🔴🔴 SANGAT KRITIS!</div>
     </div>
     <div class="toast-card critical" id="toast-61-4">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
             <span style="font-weight: 800; font-size: 11px; color: var(--accent-red);"><i class="fa-solid fa-circle-exclamation"></i> RACK 61 DARURAT (60 MIN)</span>
             <i class="fa-solid fa-xmark" onclick="hideToast('61')" style="cursor: pointer; font-size: 14px; color: var(--text-dim);"></i>
         </div>
-        <div id="toast-msg-61-4" style="font-size: 10px; color: var(--text-dim); line-height: 1.4;">🔴🔴🔴 DARURAT! Suhu bertahan 1 jam penuh!</div>
+        <div id="toast-msg-61-4" style="font-size: 10px; color: var(--text-dim); line-height: 1.4;">🔴🔴🔴 DARURAT! 1 jam penuh!</div>
     </div>
 
-    <!-- RACK 77 -->
     <div class="toast-card" id="toast-77-1">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
             <span style="font-weight: 800; font-size: 11px; color: var(--accent-orange);"><i class="fa-solid fa-triangle-exclamation"></i> RACK 77 ALERT (15 MIN)</span>
             <i class="fa-solid fa-xmark" onclick="hideToast('77')" style="cursor: pointer; font-size: 14px; color: var(--text-dim);"></i>
         </div>
-        <div id="toast-msg-77-1" style="font-size: 10px; color: var(--text-dim); line-height: 1.4;">⏱️ Suhu tidak kunjung turun selama 15 menit. Mohon verifikasi sistem pendingin.</div>
+        <div id="toast-msg-77-1" style="font-size: 10px; color: var(--text-dim); line-height: 1.4;">⏱️ Suhu tidak kunjung turun.</div>
     </div>
     <div class="toast-card critical" id="toast-77-2">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
             <span style="font-weight: 800; font-size: 11px; color: var(--accent-red);"><i class="fa-solid fa-circle-exclamation"></i> RACK 77 CRITICAL (30 MIN)</span>
             <i class="fa-solid fa-xmark" onclick="hideToast('77')" style="cursor: pointer; font-size: 14px; color: var(--text-dim);"></i>
         </div>
-        <div id="toast-msg-77-2" style="font-size: 10px; color: var(--text-dim); line-height: 1.4;">🔴 KONDISI KRITIS! Suhu masih tinggi setelah 30 menit.</div>
+        <div id="toast-msg-77-2" style="font-size: 10px; color: var(--text-dim); line-height: 1.4;">🔴 KONDISI KRITIS!</div>
     </div>
     <div class="toast-card critical" id="toast-77-3">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
             <span style="font-weight: 800; font-size: 11px; color: var(--accent-red);"><i class="fa-solid fa-circle-exclamation"></i> RACK 77 SANGAT KRITIS (45 MIN)</span>
             <i class="fa-solid fa-xmark" onclick="hideToast('77')" style="cursor: pointer; font-size: 14px; color: var(--text-dim);"></i>
         </div>
-        <div id="toast-msg-77-3" style="font-size: 10px; color: var(--text-dim); line-height: 1.4;">🔴🔴 SANGAT KRITIS! Suhu bertahan 45 menit.</div>
+        <div id="toast-msg-77-3" style="font-size: 10px; color: var(--text-dim); line-height: 1.4;">🔴🔴 SANGAT KRITIS!</div>
     </div>
     <div class="toast-card critical" id="toast-77-4">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
             <span style="font-weight: 800; font-size: 11px; color: var(--accent-red);"><i class="fa-solid fa-circle-exclamation"></i> RACK 77 DARURAT (60 MIN)</span>
             <i class="fa-solid fa-xmark" onclick="hideToast('77')" style="cursor: pointer; font-size: 14px; color: var(--text-dim);"></i>
         </div>
-        <div id="toast-msg-77-4" style="font-size: 10px; color: var(--text-dim); line-height: 1.4;">🔴🔴🔴 DARURAT! Suhu bertahan 1 jam penuh!</div>
+        <div id="toast-msg-77-4" style="font-size: 10px; color: var(--text-dim); line-height: 1.4;">🔴🔴🔴 DARURAT! 1 jam penuh!</div>
     </div>
 
-    <!-- RACK 139 -->
     <div class="toast-card" id="toast-139-1">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
             <span style="font-weight: 800; font-size: 11px; color: var(--accent-orange);"><i class="fa-solid fa-triangle-exclamation"></i> RACK 139 ALERT (15 MIN)</span>
             <i class="fa-solid fa-xmark" onclick="hideToast('139')" style="cursor: pointer; font-size: 14px; color: var(--text-dim);"></i>
         </div>
-        <div id="toast-msg-139-1" style="font-size: 10px; color: var(--text-dim); line-height: 1.4;">⏱️ Suhu tidak kunjung turun selama 15 menit. Mohon verifikasi sistem pendingin.</div>
+        <div id="toast-msg-139-1" style="font-size: 10px; color: var(--text-dim); line-height: 1.4;">⏱️ Suhu tidak kunjung turun.</div>
     </div>
     <div class="toast-card critical" id="toast-139-2">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
             <span style="font-weight: 800; font-size: 11px; color: var(--accent-red);"><i class="fa-solid fa-circle-exclamation"></i> RACK 139 CRITICAL (30 MIN)</span>
             <i class="fa-solid fa-xmark" onclick="hideToast('139')" style="cursor: pointer; font-size: 14px; color: var(--text-dim);"></i>
         </div>
-        <div id="toast-msg-139-2" style="font-size: 10px; color: var(--text-dim); line-height: 1.4;">🔴 KONDISI KRITIS! Suhu masih tinggi setelah 30 menit.</div>
+        <div id="toast-msg-139-2" style="font-size: 10px; color: var(--text-dim); line-height: 1.4;">🔴 KONDISI KRITIS!</div>
     </div>
     <div class="toast-card critical" id="toast-139-3">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
             <span style="font-weight: 800; font-size: 11px; color: var(--accent-red);"><i class="fa-solid fa-circle-exclamation"></i> RACK 139 SANGAT KRITIS (45 MIN)</span>
             <i class="fa-solid fa-xmark" onclick="hideToast('139')" style="cursor: pointer; font-size: 14px; color: var(--text-dim);"></i>
         </div>
-        <div id="toast-msg-139-3" style="font-size: 10px; color: var(--text-dim); line-height: 1.4;">🔴🔴 SANGAT KRITIS! Suhu bertahan 45 menit.</div>
+        <div id="toast-msg-139-3" style="font-size: 10px; color: var(--text-dim); line-height: 1.4;">🔴🔴 SANGAT KRITIS!</div>
     </div>
     <div class="toast-card critical" id="toast-139-4">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
             <span style="font-weight: 800; font-size: 11px; color: var(--accent-red);"><i class="fa-solid fa-circle-exclamation"></i> RACK 139 DARURAT (60 MIN)</span>
             <i class="fa-solid fa-xmark" onclick="hideToast('139')" style="cursor: pointer; font-size: 14px; color: var(--text-dim);"></i>
         </div>
-        <div id="toast-msg-139-4" style="font-size: 10px; color: var(--text-dim); line-height: 1.4;">🔴🔴🔴 DARURAT! Suhu bertahan 1 jam penuh!</div>
+        <div id="toast-msg-139-4" style="font-size: 10px; color: var(--text-dim); line-height: 1.4;">🔴🔴🔴 DARURAT! 1 jam penuh!</div>
     </div>
 </div>
 
@@ -825,7 +712,6 @@
             </span>
             <i class="fa-solid fa-xmark" onclick="closeModal()" style="cursor: pointer; color: var(--accent-red); font-size: 18px;"></i>
         </div>
-
         <div id="viewBulan">
             <div style="color: var(--text-dim); font-size: 10px; margin-bottom: 10px;">Langkah 1: Pilih bulan riwayat yang ingin diunduh</div>
             <div class="month-grid-ui">
@@ -843,17 +729,14 @@
                 <button class="btn-mini" onclick="selectMonth('12', 'DESEMBER')">DES</button>
             </div>
         </div>
-
         <div id="viewHari" style="display: none;">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
                 <span style="color: var(--accent-green); font-size: 12px; font-weight: bold;">🗓️ <span id="labelBulanTerpilih"></span></span>
                 <button class="btn-mini" onclick="backToBulan()" style="padding: 4px 8px; font-size: 9px; border-color: var(--text-dim); color: var(--text-dim);"><i class="fa-solid fa-arrow-left"></i> KEMBALI</button>
             </div>
-            
             <button class="btn-mini" onclick="executeDownloadMonthFull()" style="width: 100%; margin-bottom: 15px; padding: 10px; background: rgba(56, 189, 248, 0.1); font-size: 11px;">
                 <i class="fa-solid fa-file-excel"></i> UNDUH FULL 1 BULAN
             </button>
-
             <div style="background: rgba(255,255,255,0.02); padding: 10px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);">
                 <div style="color: var(--text-dim); font-size: 10px; margin-bottom: 5px;">Atau pilih unduh per tanggal:</div>
                 <div class="day-grid-ui" id="csvDayGridUI"></div>
@@ -871,7 +754,6 @@
             </span>
             <i class="fa-solid fa-xmark" onclick="closeGraphModal()" style="cursor: pointer; color: var(--accent-red); font-size: 18px;"></i>
         </div>
-
         <div id="graphSelectionArea">
             <div id="graphViewBulan">
                 <div style="color: var(--text-dim); font-size: 10px; margin-bottom: 10px;">Langkah 1: Pilih bulan grafik yang ingin dilihat</div>
@@ -890,24 +772,20 @@
                     <button class="btn-mini" onclick="selectGraphMonth('12', 'DESEMBER')">DES</button>
                 </div>
             </div>
-
             <div id="graphViewHari" style="display: none;">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
                     <span style="color: var(--accent-green); font-size: 12px; font-weight: bold;">🗓️ <span id="graphLabelBulanTerpilih"></span></span>
                     <button class="btn-mini" onclick="backToGraphBulan()" style="padding: 4px 8px; font-size: 9px; border-color: var(--text-dim); color: var(--text-dim);"><i class="fa-solid fa-arrow-left"></i> KEMBALI</button>
                 </div>
-                
                 <button class="btn-mini" onclick="renderGraphData('FULL')" style="width: 100%; margin-bottom: 15px; padding: 10px; background: rgba(56, 189, 248, 0.1); font-size: 11px;">
                     <i class="fa-solid fa-chart-area"></i> LIHAT GRAFIK FULL 1 BULAN
                 </button>
-
                 <div style="background: rgba(255,255,255,0.02); padding: 10px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);">
                     <div style="color: var(--text-dim); font-size: 10px; margin-bottom: 5px;">Atau pilih lihat per tanggal:</div>
                     <div class="day-grid-ui" id="graphDayGridUI"></div>
                 </div>
             </div>
         </div>
-
         <div id="graphViewerArea" style="display: none;">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
                 <span style="color: var(--text-main); font-size: 11px; font-weight: bold;" id="graphViewerTitle">DATA SUHU</span>
@@ -920,7 +798,6 @@
                 <canvas id="modalViewChart"></canvas>
             </div>
         </div>
-        
         <div id="graphLoadingMsg" style="display: none; text-align: center; color: var(--accent-blue); margin-top: 15px; font-size: 11px; font-weight: bold;">
             <i class="fa-solid fa-spinner fa-spin" style="margin-right:5px;"></i> Sedang memuat data grafik...
         </div>
@@ -930,24 +807,15 @@
 <!-- Modal Alert Pop Up -->
 <div id="alertPopUp" class="modal-overlay" onclick="closeAlertPopUp(event)">
     <div class="modal-content" id="alertPopUpBox" style="text-align: center; border-color: var(--accent-red); box-shadow: 0 0 60px rgba(239, 68, 68, 0.6); max-width: 350px; transition: 0.3s; position: relative; animation: alertPulse 0.8s ease-in-out infinite;" onclick="event.stopPropagation()">
-        <button onclick="closeAlertPopUp(event, true)" style="position: absolute; top: 15px; right: 15px; background: rgba(239, 68, 68, 0.2); border: 2px solid var(--accent-red); color: var(--accent-red); width: 40px; height: 40px; border-radius: 50%; cursor: pointer; font-size: 20px; font-weight: bold; display: flex; align-items: center; justify-content: center; transition: all 0.3s ease; hover: transform translateY(-2px); box-shadow: 0 0 15px rgba(239, 68, 68, 0.4);" onmouseover="this.style.background='rgba(239, 68, 68, 0.4)'; this.style.transform='scale(1.1)';" onmouseout="this.style.background='rgba(239, 68, 68, 0.2)'; this.style.transform='scale(1)';" title="Klik X untuk menghentikan alarm">
-            ✕
-        </button>
-
+        <button onclick="closeAlertPopUp(event, true)" style="position: absolute; top: 15px; right: 15px; background: rgba(239, 68, 68, 0.2); border: 2px solid var(--accent-red); color: var(--accent-red); width: 40px; height: 40px; border-radius: 50%; cursor: pointer; font-size: 20px; font-weight: bold; display: flex; align-items: center; justify-content: center;" onmouseover="this.style.background='rgba(239, 68, 68, 0.4)'; this.style.transform='scale(1.1)';" onmouseout="this.style.background='rgba(239, 68, 68, 0.2)'; this.style.transform='scale(1)';" title="Klik X untuk menghentikan alarm">✕</button>
         <i id="alertPopUpIcon" class="fa-solid fa-triangle-exclamation" style="font-size: 55px; color: var(--accent-red); margin-bottom: 15px; animation: pulse 0.6s ease-in-out infinite; text-shadow: 0 0 20px rgba(239, 68, 68, 0.8);"></i>
-        <h2 id="alertPopUpTitle" style="margin: 0 0 5px 0; color: var(--text-main); font-weight: 900; font-size: 18px; text-shadow: 0 0 10px rgba(239, 68, 68, 0.5);">THERMAL ALERT TRIGGERED</h2>
-        <p id="alertPopUpMessage" style="font-size: 12px; color: var(--text-dim); line-height: 1.6; margin-bottom: 20px;">
-            Suhu pada RACK menyentuh batas kritis.<br>
-            Perangkat ESP telah mengirimkan notifikasi ke Telegram.<br>
-            <b style="color: var(--accent-red); font-size: 13px;">🔊 ALARM BERULANG - Klik X untuk menghentikan!</b>
-        </p>
-        <button id="alertPopUpBtn" onclick="closeAlertPopUp(event, true)" class="btn-mini" style="width: 100%; padding: 12px 10px; background: rgba(239, 68, 68, 0.15); border: 2px solid var(--accent-red); color: var(--accent-red); font-size: 11px; font-weight: 900; cursor: pointer; border-radius: 8px; transition: all 0.3s ease; box-shadow: 0 0 15px rgba(239, 68, 68, 0.3);" onmouseover="this.style.background='rgba(239, 68, 68, 0.3)'; this.style.boxShadow='0 0 25px rgba(239, 68, 68, 0.5)';" onmouseout="this.style.background='rgba(239, 68, 68, 0.15)'; this.style.boxShadow='0 0 15px rgba(239, 68, 68, 0.3)';">
-            SAYA MENGERTI - STOP ALARM
-        </button>
+        <h2 id="alertPopUpTitle" style="margin: 0 0 5px 0; color: var(--text-main); font-weight: 900; font-size: 18px;">THERMAL ALERT TRIGGERED</h2>
+        <p id="alertPopUpMessage" style="font-size: 12px; color: var(--text-dim); line-height: 1.6; margin-bottom: 20px;">Suhu pada RACK menyentuh batas kritis.</p>
+        <button id="alertPopUpBtn" onclick="closeAlertPopUp(event, true)" class="btn-mini" style="width: 100%; padding: 12px 10px; background: rgba(239, 68, 68, 0.15); border: 2px solid var(--accent-red); color: var(--accent-red); font-size: 11px; font-weight: 900; cursor: pointer; border-radius: 8px;">SAYA MENGERTI - STOP ALARM</button>
     </div>
 </div>
 
-<!-- Audio elements untuk compatibility -->
+<!-- Audio element -->
 <audio id="alarmSound" loop>
     <source src="kalsstockmedia-emergency-alarm-2-353320.mp3" type="audio/mpeg">
 </audio>
@@ -958,208 +826,888 @@
     const db = firebase.database();
 
     let lastUpdateR61 = 0; let lastUpdateR77 = 0; let lastUpdateR139 = 0;
-    const OFFLINE_TIMEOUT = 15000;
+    const OFFLINE_TIMEOUT = 300000; // 5 menit
     let targetRackExport = "";
-    
     let currentSelectedYear = new Date().getFullYear();
     let currentSelectedMonthNum = "";
-
     let targetRackGraph = "";
     let bigChartInstance = null;
     let isAudioEnabled = true; 
     const alarmAudio = document.getElementById('alarmSound');
     
-    // ========== WEB AUDIO API UNTUK BEEPING SOUND ==========
     let audioContext = null;
-    
     function initAudioContext() {
         if (!audioContext) {
-            try {
-                const AudioContext = window.AudioContext || window.webkitAudioContext;
-                audioContext = new AudioContext();
-            } catch (e) {
-                console.warn("Web Audio API tidak tersedia");
-            }
+            try { const AudioContext = window.AudioContext || window.webkitAudioContext; audioContext = new AudioContext(); } 
+            catch (e) { console.warn("Web Audio API tidak tersedia"); }
         }
         return audioContext;
     }
     
     function playPopupBeep() {
-        const ctx = initAudioContext();
-        if (!ctx) return;
-        
+        const ctx = initAudioContext(); if (!ctx) return;
         try {
             const now = ctx.currentTime;
-            const oscillator = ctx.createOscillator();
-            const gainNode = ctx.createGain();
-            
-            oscillator.connect(gainNode);
-            gainNode.connect(ctx.destination);
-            
-            oscillator.frequency.setValueAtTime(800, now);
-            gainNode.gain.setValueAtTime(0.3, now);
-            gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.2);
-            oscillator.start(now);
-            oscillator.stop(now + 0.2);
-            
-            const osc2 = ctx.createOscillator();
-            const gain2 = ctx.createGain();
-            osc2.connect(gain2);
-            gain2.connect(ctx.destination);
-            
-            osc2.frequency.setValueAtTime(600, now + 0.25);
-            gain2.gain.setValueAtTime(0.3, now + 0.25);
+            const osc1 = ctx.createOscillator(); const gain1 = ctx.createGain();
+            osc1.connect(gain1); gain1.connect(ctx.destination);
+            osc1.frequency.setValueAtTime(800, now); gain1.gain.setValueAtTime(0.3, now);
+            gain1.gain.exponentialRampToValueAtTime(0.01, now + 0.2);
+            osc1.start(now); osc1.stop(now + 0.2);
+            const osc2 = ctx.createOscillator(); const gain2 = ctx.createGain();
+            osc2.connect(gain2); gain2.connect(ctx.destination);
+            osc2.frequency.setValueAtTime(600, now + 0.25); gain2.gain.setValueAtTime(0.3, now + 0.25);
             gain2.gain.exponentialRampToValueAtTime(0.01, now + 0.45);
-            osc2.start(now + 0.25);
-            osc2.stop(now + 0.45);
-        } catch (e) {
-            console.warn("Error playing beep:", e);
-        }
+            osc2.start(now + 0.25); osc2.stop(now + 0.45);
+        } catch (e) {}
     }
     
     function playWarningBeep() {
-        const ctx = initAudioContext();
-        if (!ctx) return;
-        
+        const ctx = initAudioContext(); if (!ctx) return;
         try {
             const now = ctx.currentTime;
             for (let i = 0; i < 3; i++) {
-                const osc = ctx.createOscillator();
-                const gain = ctx.createGain();
-                
-                osc.connect(gain);
-                gain.connect(ctx.destination);
-                
-                const startTime = now + (i * 0.25);
-                osc.frequency.setValueAtTime(900, startTime);
-                gain.gain.setValueAtTime(0.3, startTime);
-                gain.gain.exponentialRampToValueAtTime(0.01, startTime + 0.15);
-                osc.start(startTime);
-                osc.stop(startTime + 0.15);
+                const osc = ctx.createOscillator(); const gain = ctx.createGain();
+                osc.connect(gain); gain.connect(ctx.destination);
+                const t = now + (i * 0.25);
+                osc.frequency.setValueAtTime(900, t); gain.gain.setValueAtTime(0.3, t);
+                gain.gain.exponentialRampToValueAtTime(0.01, t + 0.15);
+                osc.start(t); osc.stop(t + 0.15);
             }
-        } catch (e) {
-            console.warn("Error playing warning beep:", e);
-        }
+        } catch (e) {}
     }
     
     function playCriticalBeep30() {
-        const ctx = initAudioContext();
-        if (!ctx) return;
-        
+        const ctx = initAudioContext(); if (!ctx) return;
         try {
             const now = ctx.currentTime;
-            const frequencies = [1000, 500, 1000, 500];
-            for (let i = 0; i < frequencies.length; i++) {
-                const osc = ctx.createOscillator();
-                const gain = ctx.createGain();
-                
-                osc.connect(gain);
-                gain.connect(ctx.destination);
-                
-                const startTime = now + (i * 0.2);
-                osc.frequency.setValueAtTime(frequencies[i], startTime);
-                gain.gain.setValueAtTime(0.4, startTime);
-                gain.gain.exponentialRampToValueAtTime(0.01, startTime + 0.15);
-                osc.start(startTime);
-                osc.stop(startTime + 0.15);
+            const freqs = [1000, 500, 1000, 500];
+            for (let i = 0; i < freqs.length; i++) {
+                const osc = ctx.createOscillator(); const gain = ctx.createGain();
+                osc.connect(gain); gain.connect(ctx.destination);
+                const t = now + (i * 0.2);
+                osc.frequency.setValueAtTime(freqs[i], t); gain.gain.setValueAtTime(0.4, t);
+                gain.gain.exponentialRampToValueAtTime(0.01, t + 0.15);
+                osc.start(t); osc.stop(t + 0.15);
             }
-        } catch (e) {
-            console.warn("Error playing critical beep 30:", e);
-        }
+        } catch (e) {}
     }
     
     function playCriticalBeep45() {
-        const ctx = initAudioContext();
-        if (!ctx) return;
-        
+        const ctx = initAudioContext(); if (!ctx) return;
         try {
             const now = ctx.currentTime;
-            const frequencies = [2200, 800, 2200, 800, 2200];
-            for (let i = 0; i < frequencies.length; i++) {
-                const osc = ctx.createOscillator();
-                const gain = ctx.createGain();
-                
-                osc.connect(gain);
-                gain.connect(ctx.destination);
-                
-                const startTime = now + (i * 0.15);
-                osc.frequency.setValueAtTime(frequencies[i], startTime);
-                gain.gain.setValueAtTime(0.6, startTime);
-                gain.gain.exponentialRampToValueAtTime(0.01, startTime + 0.12);
-                osc.start(startTime);
-                osc.stop(startTime + 0.12);
+            const freqs = [2200, 800, 2200, 800, 2200];
+            for (let i = 0; i < freqs.length; i++) {
+                const osc = ctx.createOscillator(); const gain = ctx.createGain();
+                osc.connect(gain); gain.connect(ctx.destination);
+                const t = now + (i * 0.15);
+                osc.frequency.setValueAtTime(freqs[i], t); gain.gain.setValueAtTime(0.6, t);
+                gain.gain.exponentialRampToValueAtTime(0.01, t + 0.12);
+                osc.start(t); osc.stop(t + 0.12);
             }
-        } catch (e) {
-            console.warn("Error playing critical beep 45:", e);
-        }
+        } catch (e) {}
     }
     
     function playCriticalBeep60() {
-        const ctx = initAudioContext();
-        if (!ctx) return;
-        
+        const ctx = initAudioContext(); if (!ctx) return;
         try {
             const now = ctx.currentTime;
-            const frequencies = [2500, 600, 2500, 600, 2500, 600, 2500, 600];
-            for (let i = 0; i < frequencies.length; i++) {
-                const osc = ctx.createOscillator();
-                const gain = ctx.createGain();
-                
-                osc.connect(gain);
-                gain.connect(ctx.destination);
-                
-                const startTime = now + (i * 0.12);
-                osc.frequency.setValueAtTime(frequencies[i], startTime);
-                gain.gain.setValueAtTime(0.9, startTime);
-                gain.gain.exponentialRampToValueAtTime(0.01, startTime + 0.1);
-                osc.start(startTime);
-                osc.stop(startTime + 0.1);
+            const freqs = [2500, 600, 2500, 600, 2500, 600, 2500, 600];
+            for (let i = 0; i < freqs.length; i++) {
+                const osc = ctx.createOscillator(); const gain = ctx.createGain();
+                osc.connect(gain); gain.connect(ctx.destination);
+                const t = now + (i * 0.12);
+                osc.frequency.setValueAtTime(freqs[i], t); gain.gain.setValueAtTime(0.9, t);
+                gain.gain.exponentialRampToValueAtTime(0.01, t + 0.1);
+                osc.start(t); osc.stop(t + 0.1);
             }
-        } catch (e) {
-            console.warn("Error playing critical beep 60:", e);
+        } catch (e) {}
+    }
+
+    let alarmLoopId = null;
+    function startAlarmLoop(alarmType) {
+        if (alarmLoopId) clearInterval(alarmLoopId);
+        const play = () => alarmType === "WARNING" ? playWarningAlarmSound() : playCriticalAlarmSound();
+        play();
+        const interval = alarmType === "WARNING" ? 1900 : 2200;
+        alarmLoopId = setInterval(play, interval);
+    }
+    function stopAlarmLoop() { if (alarmLoopId) { clearInterval(alarmLoopId); alarmLoopId = null; } }
+    
+    function playWarningAlarmSound() {
+        const ctx = initAudioContext(); if (!ctx) return;
+        try {
+            const now = ctx.currentTime;
+            for (let r = 0; r < 4; r++) {
+                const bt = now + (r * 0.45);
+                const o1 = ctx.createOscillator(); const g1 = ctx.createGain();
+                o1.connect(g1); g1.connect(ctx.destination);
+                o1.frequency.setValueAtTime(1400, bt); g1.gain.setValueAtTime(0.7, bt);
+                g1.gain.exponentialRampToValueAtTime(0.01, bt + 0.2);
+                o1.start(bt); o1.stop(bt + 0.2);
+                const o2 = ctx.createOscillator(); const g2 = ctx.createGain();
+                o2.connect(g2); g2.connect(ctx.destination);
+                o2.frequency.setValueAtTime(700, bt + 0.22); g2.gain.setValueAtTime(0.7, bt + 0.22);
+                g2.gain.exponentialRampToValueAtTime(0.01, bt + 0.4);
+                o2.start(bt + 0.22); o2.stop(bt + 0.4);
+            }
+        } catch (e) {}
+    }
+    
+    function playCriticalAlarmSound() {
+        const ctx = initAudioContext(); if (!ctx) return;
+        try {
+            const now = ctx.currentTime;
+            for (let r = 0; r < 6; r++) {
+                const bt = now + (r * 0.35);
+                const o1 = ctx.createOscillator(); const g1 = ctx.createGain();
+                o1.connect(g1); g1.connect(ctx.destination);
+                o1.frequency.setValueAtTime(1800, bt); g1.gain.setValueAtTime(0.8, bt);
+                g1.gain.exponentialRampToValueAtTime(0.01, bt + 0.15);
+                o1.start(bt); o1.stop(bt + 0.15);
+                const o2 = ctx.createOscillator(); const g2 = ctx.createGain();
+                o2.connect(g2); g2.connect(ctx.destination);
+                o2.frequency.setValueAtTime(500, bt + 0.17); g2.gain.setValueAtTime(0.8, bt + 0.17);
+                g2.gain.exponentialRampToValueAtTime(0.01, bt + 0.3);
+                o2.start(bt + 0.17); o2.stop(bt + 0.3);
+            }
+        } catch (e) {}
+    }
+
+    db.ref('notifications').limitToLast(50).on('child_added', (snap) => {
+        addNotificationItemToDOM(snap.key, snap.val());
+    });
+    ['61', '77', '139'].forEach(rackId => {
+        db.ref(`records/rack${rackId}`).on('value', (snap) => updateRecordsUI(rackId, snap.val()));
+    });
+
+    function formatTimestamp(ms) {
+        const d = new Date(ms);
+        return `${d.getDate().toString().padStart(2,'0')}/${(d.getMonth()+1).toString().padStart(2,'0')}/${d.getFullYear()} ${d.getHours().toString().padStart(2,'0')}:${d.getMinutes().toString().padStart(2,'0')}:${d.getSeconds().toString().padStart(2,'0')}`;
+    }
+    function formatTimeRange(start, end) {
+        const pad = n => n.toString().padStart(2, '0');
+        const sd = new Date(start); const ed = new Date(end);
+        return `${pad(sd.getHours())}:${pad(sd.getMinutes())} - ${pad(ed.getHours())}:${pad(ed.getMinutes())}`;
+    }
+
+    function addNotificationItemToDOM(key, data) {
+        const listEl = document.getElementById('notificationList');
+        if (!listEl) return;
+        let typeClass = 'warning';
+        if (data.type === '30 menit') typeClass = 'critical';
+        else if (data.type === '45 menit') typeClass = 'verycritical';
+        else if (data.type === '60 menit') typeClass = 'emergency';
+        const periodText = data.period ? ` | ${data.period}` : '';
+        const itemDiv = document.createElement('div');
+        itemDiv.className = 'notification-item';
+        itemDiv.id = `notif-${key}`;
+        itemDiv.innerHTML = `
+            <span class="notification-time">${formatTimestamp(data.timestamp)}</span>
+            <span class="notification-detail">
+                <span style="margin-right:10px;">RACK ${data.rackId} · ${data.temp}°C${periodText}</span>
+                <span class="notification-type ${typeClass}">${data.type}</span>
+            </span>`;
+        listEl.prepend(itemDiv);
+        while (listEl.children.length > 50) listEl.lastElementChild.remove();
+    }
+
+    function addNotificationHistory(rackId, temp, alertType, period = '') {
+        db.ref('notifications').push({
+            rackId: rackId, temp: temp.toFixed(1), type: alertType,
+            timestamp: Date.now(), period: period
+        });
+    }
+
+    function clearNotificationHistory(event) {
+        event.stopPropagation();
+        if (confirm('Hapus semua riwayat notifikasi?')) {
+            db.ref('notifications').remove();
+            document.getElementById('notificationList').innerHTML = '<div style="text-align:center; color:var(--text-dim); padding:10px;">Belum ada notifikasi</div>';
         }
     }
 
-    // ========== ALARM LOOP SYSTEM ==========
-    let alarmLoopId = null;
-    let currentAlarmType = null;
-    let isAlarmPlaying = false;
+    function toggleNotificationHistory() {
+        const body = document.getElementById('panelBody');
+        const arrow = document.getElementById('panelArrow');
+        if (body.style.display === 'none') {
+            body.style.display = 'block'; arrow.classList.add('rotated');
+        } else {
+            body.style.display = 'none'; arrow.classList.remove('rotated');
+        }
+    }
+
+    function updateRecordIfNeeded(rackId, currentTemp, stampStr) {
+        const recordRef = db.ref(`records/rack${rackId}`);
+        recordRef.once('value').then((snap) => {
+            const record = snap.val() || {};
+            const updates = {}; let changed = false;
+            if (record.min === undefined || currentTemp < record.min) { updates.min = currentTemp; updates.timeMin = stampStr; changed = true; }
+            if (record.max === undefined || currentTemp > record.max) { updates.max = currentTemp; updates.timeMax = stampStr; changed = true; }
+            if (changed) recordRef.update(updates);
+        });
+    }
+
+    function updateRecordsUI(rackId, data) {
+        const minEl = document.getElementById(`min${rackId}`);
+        const maxEl = document.getElementById(`max${rackId}`);
+        const timeMinEl = document.getElementById(`timeMin${rackId}`);
+        const timeMaxEl = document.getElementById(`timeMax${rackId}`);
+        const dateRekorEl = document.getElementById(`dateRekor${rackId}`);
+        if (data) {
+            minEl.innerText = data.min !== undefined ? data.min.toFixed(1) : '--';
+            maxEl.innerText = data.max !== undefined ? data.max.toFixed(1) : '--';
+            timeMinEl.innerText = data.timeMin ? data.timeMin.split(' ')[0] : '--:--';
+            timeMaxEl.innerText = data.timeMax ? data.timeMax.split(' ')[0] : '--:--';
+            const dMin = data.timeMin ? data.timeMin.split('(')[1]?.replace(')','') : '--/--/--';
+            const dMax = data.timeMax ? data.timeMax.split('(')[1]?.replace(')','') : '--/--/--';
+            dateRekorEl.innerText = dMax || dMin || '--/--/--';
+        } else {
+            minEl.innerText = '--'; maxEl.innerText = '--';
+            timeMinEl.innerText = '--:--'; timeMaxEl.innerText = '--:--';
+            dateRekorEl.innerText = '--/--/--';
+        }
+    }
+
+    function resetRekor(rackId) {
+        if(confirm("Reset rekor Rack " + rackId + "?")) db.ref(`records/rack${rackId}`).remove();
+    }
+
+    const tempTrendTrackers = {
+        '61': { lastTemp: null, riseStartTime: null, baseTemp: null, alerted15: false, alerted30: false, alerted45: false, alerted60: false },
+        '77': { lastTemp: null, riseStartTime: null, baseTemp: null, alerted15: false, alerted30: false, alerted45: false, alerted60: false },
+        '139': { lastTemp: null, riseStartTime: null, baseTemp: null, alerted15: false, alerted30: false, alerted45: false, alerted60: false }
+    };
+
+    function evaluateTemperatureTrend(rackId, currentTemp) {
+        const tracker = tempTrendTrackers[rackId]; const now = Date.now();
+        if (tracker.lastTemp === null) {
+            tracker.lastTemp = currentTemp; tracker.baseTemp = currentTemp; tracker.riseStartTime = now; return;
+        }
+        if (currentTemp > tracker.lastTemp) {
+            if (!tracker.riseStartTime) { tracker.riseStartTime = now; tracker.baseTemp = tracker.lastTemp; }
+        } else if (currentTemp < tracker.lastTemp - 0.2) {
+            tracker.riseStartTime = null; tracker.baseTemp = currentTemp;
+            tracker.alerted15 = false; tracker.alerted30 = false;
+            tracker.alerted45 = false; tracker.alerted60 = false;
+            hideToast(rackId);
+        }
+        tracker.lastTemp = currentTemp;
+        if (tracker.riseStartTime && (now - tracker.riseStartTime >= 15 * 60 * 1000)) {
+            if (currentTemp >= tracker.baseTemp && !tracker.alerted15) {
+                const period = formatTimeRange(tracker.riseStartTime, now);
+                showToast(rackId, 1, period, true);
+                addNotificationHistory(rackId, currentTemp, '15 menit', period);
+                tracker.alerted15 = true;
+            }
+        }
+        if (tracker.riseStartTime && (now - tracker.riseStartTime >= 30 * 60 * 1000)) {
+            if (currentTemp >= tracker.baseTemp && !tracker.alerted30) {
+                const period = formatTimeRange(tracker.riseStartTime, now);
+                showToast(rackId, 2, period, true);
+                addNotificationHistory(rackId, currentTemp, '30 menit', period);
+                tracker.alerted30 = true;
+            }
+        }
+        if (tracker.riseStartTime && (now - tracker.riseStartTime >= 45 * 60 * 1000)) {
+            if (currentTemp >= tracker.baseTemp && !tracker.alerted45) {
+                const period = formatTimeRange(tracker.riseStartTime, now);
+                showToast(rackId, 3, period, false);
+                sendBrowserNotification(rackId, currentTemp, 3);
+                addNotificationHistory(rackId, currentTemp, '45 menit', period);
+                tracker.alerted45 = true;
+            }
+        }
+        if (tracker.riseStartTime && (now - tracker.riseStartTime >= 60 * 60 * 1000)) {
+            if (currentTemp >= tracker.baseTemp && !tracker.alerted60) {
+                const period = formatTimeRange(tracker.riseStartTime, now);
+                showToast(rackId, 4, period, false);
+                sendBrowserNotification(rackId, currentTemp, 4);
+                addNotificationHistory(rackId, currentTemp, '60 menit', period);
+                tracker.alerted60 = true;
+            }
+        }
+    }
+
+    function sendBrowserNotification(rackId, temp, alertLevel) {
+        if ('Notification' in window) {
+            if (Notification.permission === 'granted') triggerNotificationDisplay(rackId, temp, alertLevel);
+            else if (Notification.permission !== 'denied') {
+                Notification.requestPermission().then(p => { if (p === 'granted') triggerNotificationDisplay(rackId, temp, alertLevel); });
+            }
+        }
+    }
+
+    function triggerNotificationDisplay(rackId, temp, alertLevel) {
+        let title, body;
+        if (alertLevel === 1) { title = `⚠️ RACK ${rackId} - Alert (15 Min)`; body = `${temp.toFixed(1)}°C`; }
+        else if (alertLevel === 2) { title = `🔴 RACK ${rackId} - CRITICAL (30 Min)`; body = `${temp.toFixed(1)}°C`; }
+        else if (alertLevel === 3) { title = `🔴🔴 RACK ${rackId} - SANGAT KRITIS (45 Min)`; body = `${temp.toFixed(1)}°C`; }
+        else if (alertLevel === 4) { title = `🔴🔴🔴 RACK ${rackId} - DARURAT (60 Min)`; body = `${temp.toFixed(1)}°C`; }
+        new Notification(title, { body, tag: `rack-${rackId}-alert-${alertLevel}`, requireInteraction: true });
+    }
+
+    function showToast(rackId, alertLevel, period = '', silent = false) {
+        for (let lvl = 1; lvl <= 4; lvl++) {
+            const oldToast = document.getElementById(`toast-${rackId}-${lvl}`);
+            if (oldToast) oldToast.style.display = 'none';
+        }
+        const toast = document.getElementById(`toast-${rackId}-${alertLevel}`);
+        if (toast) {
+            const msgEl = document.getElementById(`toast-msg-${rackId}-${alertLevel}`);
+            if (msgEl && period) {
+                let baseMsg = '';
+                if (alertLevel === 1) baseMsg = `⏱️ Suhu tidak kunjung turun sejak ${period}.`;
+                else if (alertLevel === 2) baseMsg = `🔴 KONDISI KRITIS! Sejak ${period}.`;
+                else if (alertLevel === 3) baseMsg = `🔴🔴 SANGAT KRITIS! Sejak ${period}.`;
+                else if (alertLevel === 4) baseMsg = `🔴🔴🔴 DARURAT! Sejak ${period} (1 jam penuh)!`;
+                msgEl.innerHTML = baseMsg;
+            }
+            toast.style.display = 'block';
+            if (!silent) {
+                if (alertLevel === 1) playWarningBeep();
+                else if (alertLevel === 2) playCriticalBeep30();
+                else if (alertLevel === 3) playCriticalBeep45();
+                else if (alertLevel === 4) playCriticalBeep60();
+            }
+        }
+    }
+
+    function hideToast(rackId) {
+        for (let level = 1; level <= 4; level++) {
+            const toast = document.getElementById(`toast-${rackId}-${level}`);
+            if (toast) toast.style.display = 'none';
+        }
+    }
+
+    let lastFakeHumi61 = 51.0 + (Math.random() * 8); 
+    let lastFakeHumiUpdate = 0; 
+    const FAKE_HUMI_INTERVAL = 30000; 
+
+    window.addEventListener('click', () => {
+        const ctx = initAudioContext();
+        if (ctx && ctx.state === 'suspended') ctx.resume().then(() => {});
+    });
     
-    function startAlarmLoop(alarmType) {
-        if (alarmLoopId) {
-            clearInterval(alarmLoopId);
+    const popUpState = { '61': 0, '77': 0, '139': 0 };
+
+    let history61 = JSON.parse(localStorage.getItem('hist61')) || Array(25).fill(null);
+    let history77 = JSON.parse(localStorage.getItem('hist77')) || Array(25).fill(null);
+    let history139 = JSON.parse(localStorage.getItem('hist139')) || Array(25).fill(null);
+    history61 = history61.map(v => v === 0 ? null : v);
+    history77 = history77.map(v => v === 0 ? null : v);
+    history139 = history139.map(v => v === 0 ? null : v);
+
+    const pluginBackground = {
+        id: 'customCanvasBackgroundColor',
+        beforeDraw: (chart) => {
+            const {ctx} = chart;
+            ctx.save(); ctx.globalCompositeOperation = 'destination-over';
+            ctx.fillStyle = '#050a10'; ctx.fillRect(0, 0, chart.width, chart.height); ctx.restore();
         }
-        
-        currentAlarmType = alarmType;
-        isAlarmPlaying = true;
-        
-        if (alarmType === "WARNING") {
-            playWarningAlarmSound();
-        } else if (alarmType === "CRITICAL") {
-            playCriticalAlarmSound();
+    };
+
+    function buildChart(ctxId, color, storedData) {
+        const initialData = (storedData && storedData.length === 25) ? storedData : Array(25).fill(null);
+        return new Chart(document.getElementById(ctxId), {
+            type: 'line',
+            data: { labels: Array(25).fill(''), datasets: [{ data: initialData, borderColor: color, backgroundColor: color + '15', fill: true, tension: 0, pointRadius: 0, borderWidth: 2 }] },
+            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false }, tooltip: { enabled: false } }, scales: { x: { display: false }, y: { grid: { color: '#1e293b' }, ticks: { color: '#64748b', font: { size: 9 }, callback: v => v.toFixed(3) } } } }
+        });
+    }
+
+    const c1 = buildChart('chart1', '#38bdf8', history61);
+    const c3 = buildChart('chart77', '#24bbbd', history77);
+    const c2 = buildChart('chart2', '#10b981', history139);
+
+    function toggleAudio() {
+        isAudioEnabled = !isAudioEnabled;
+        const btn = document.getElementById('audioToggle');
+        const icon = document.getElementById('audioIcon');
+        const statusText = document.getElementById('audioStatusText');
+        if (isAudioEnabled) {
+            btn.style.borderColor = 'rgba(16, 185, 129, 0.5)'; icon.className = 'fa-solid fa-volume-high'; icon.style.color = 'var(--accent-green)'; statusText.innerText = 'ACTIVE'; statusText.style.color = 'var(--accent-green)';
+            const t1 = parseFloat(document.getElementById('val1').innerText) || 0;
+            const t77 = parseFloat(document.getElementById('val77').innerText) || 0;
+            const t2 = parseFloat(document.getElementById('val2').innerText) || 0;
+            if (t1 > 26.0 || t77 > 26.0 || t2 > 26.0) alarmAudio.play().catch(e => {});
+            else alarmAudio.play().then(() => { alarmAudio.pause(); alarmAudio.currentTime = 0; }).catch(e => {});
+        } else {
+            btn.style.borderColor = 'rgba(239, 68, 68, 0.5)'; icon.className = 'fa-solid fa-volume-xmark'; icon.style.color = 'var(--accent-red)'; statusText.innerText = 'OFF'; statusText.style.color = 'var(--accent-red)';
+            alarmAudio.pause(); alarmAudio.currentTime = 0;
         }
+    }
+
+    function triggerPopUpAlarm(rackId, temp, status) {
+        const modal = document.getElementById('alertPopUp');
+        const box = document.getElementById('alertPopUpBox');
+        const icon = document.getElementById('alertPopUpIcon');
+        const title = document.getElementById('alertPopUpTitle');
+        const msg = document.getElementById('alertPopUpMessage');
+        const btn = document.getElementById('alertPopUpBtn');
+        if (status === "WARNING") startAlarmLoop("WARNING");
+        else if (status === "CRITICAL") startAlarmLoop("CRITICAL");
+        else playPopupBeep();
+        if (status === "WARNING") {
+            box.style.borderColor = "var(--accent-orange)"; 
+            box.style.boxShadow = "0 0 30px rgba(245, 158, 11, 0.3)"; 
+            icon.style.color = "var(--accent-orange)"; 
+            title.innerText = "⚠️ WARNING ALERT TRIGGERED";
+            msg.innerHTML = `Suhu pada <b style="color:#fff;">RACK ${rackId}</b> mencapai <b style="color:var(--accent-orange);">${temp.toFixed(1)}°C</b>.<br><br>Sistem ESP telah mengirim notifikasi ke Telegram.<br><br><b style="color: var(--accent-orange);">🔊 ALARM BERULANG - Klik X untuk menghentikan!</b>`;
+            btn.style.background = "rgba(245, 158, 11, 0.1)"; 
+            btn.style.borderColor = "var(--accent-orange)"; 
+            btn.style.color = "var(--accent-orange)";
+        } else if (status === "CRITICAL") {
+            box.style.borderColor = "var(--accent-red)"; 
+            box.style.boxShadow = "0 0 60px rgba(239, 68, 68, 0.6), inset 0 0 20px rgba(239, 68, 68, 0.3)"; 
+            box.style.animation = "alertPulse 0.8s ease-in-out infinite";
+            icon.style.color = "var(--accent-red)"; 
+            title.innerText = "🔴 CRITICAL THERMAL ALERT!";
+            msg.innerHTML = `Suhu pada <b style="color:#fff;">RACK ${rackId}</b> mencapai <b style="color:var(--accent-red);">${temp.toFixed(1)}°C</b>!<br><br>Kondisi kritis! Sistem ESP telah mengirim alarm darurat ke Telegram. <b>Harap segera lakukan pengecekan!</b><br><br><b style="color: var(--accent-red);">🔊 ALARM KERAS & BERULANG - Klik X untuk menghentikan!</b>`;
+            btn.style.background = "linear-gradient(135deg, rgba(239, 68, 68, 0.2) 0%, rgba(239, 68, 68, 0.1) 100%)"; 
+            btn.style.borderColor = "var(--accent-red)"; 
+            btn.style.color = "var(--accent-red)";
+        }
+        modal.style.display = 'flex';
+    }
+
+    function closeAlertPopUp(e, force = false) {
+        if (force || e.target.id === 'alertPopUp') {
+            stopAlarmLoop();
+            const box = document.getElementById('alertPopUpBox');
+            box.style.animation = "";
+            document.getElementById('alertPopUp').style.display = 'none';
+        }
+    }
+
+    // ================================================================
+    // ✅ checkDeviceStatus() — Lingkaran nomor merah + Tanda seru
+    // ================================================================
+    function checkDeviceStatus() {
+        const now = Date.now();
+        const racks = [
+            { indId: 'ind1',  group: '.r61-group',  label: '61',  num: '1', last: lastUpdateR61  },
+            { indId: 'ind77', group: '.r77-group',  label: '77',  num: '2', last: lastUpdateR77  },
+            { indId: 'ind2',  group: '.r139-group', label: '139', num: '3', last: lastUpdateR139 }
+        ];
+        const onlineCount = racks.filter(r => (now - r.last) < OFFLINE_TIMEOUT).length;
+        const allOffline = (onlineCount === 0);
         
-        const repeatInterval = alarmType === "WARNING" ? 1900 : 2200;
-        
-        alarmLoopId = setInterval(() => {
-            if (isAlarmPlaying) {
-                if (alarmType === "WARNING") {
-                    playWarningAlarmSound();
-                } else if (alarmType === "CRITICAL") {
-                    playCriticalAlarmSound();
+        racks.forEach(r => {
+            const ind = document.getElementById(r.indId);
+            const cards = document.querySelectorAll(r.group);
+            const isOnline = (now - r.last) < OFFLINE_TIMEOUT;
+            if (!isOnline) {
+                if (allOffline) {
+                    ind.innerHTML = `<span class='dot-icon offline-exclaim'>!</span> RACK ${r.label} OFFLINE`;
+                } else {
+                    ind.innerHTML = `<span class='dot-icon offline-circle'>${r.num}</span> RACK ${r.label} OFFLINE`;
+                }
+                ind.classList.add('offline');
+                ind.style.color = ''; ind.style.borderColor = ''; ind.style.borderTopColor = '';
+                ind.style.background = ''; ind.style.boxShadow = '';
+                cards.forEach(c => {
+                    c.classList.add('device-offline');
+                    c.classList.remove('glow-blue','glow-green','glow-yellow','glow-red');
+                    c.classList.add('glow-red');
+                });
+            } else {
+                ind.innerHTML = `<span class='dot-icon'>●</span> RACK ${r.label} ONLINE`;
+                ind.classList.remove('offline');
+                ind.style.color = ''; ind.style.borderColor = ''; ind.style.borderTopColor = '';
+                ind.style.background = ''; ind.style.boxShadow = '';
+                cards.forEach(c => c.classList.remove('device-offline'));
+            }
+        });
+        updateTabTitle();
+    }
+    setInterval(checkDeviceStatus, 5000);
+
+    function pushLog(id, temp, humi) {
+        const now = new Date();
+        const ts = now.getHours().toString().padStart(2, '0') + ":" + now.getMinutes().toString().padStart(2, '0') + ":" + now.getSeconds().toString().padStart(2, '0');
+        const entry = `<div style="margin-bottom:2px;">[${ts}] Temperature ${temp.toFixed(1)}°C | Humidity ${humi.toFixed(0)}%</div>`;
+        const list = document.getElementById(id);
+        list.innerHTML = entry + list.innerHTML;
+        if (list.children.length > 5) list.lastElementChild.remove();
+    }
+
+    function updateAnalytic(rackId, temp, historyArr) {
+        historyArr.push(temp); historyArr.shift();
+        evaluateTemperatureTrend(rackId, temp);
+        const cardEl = document.getElementById(`card-temp-${rackId}`);
+        const statusEl = document.getElementById(`status-${rackId}`);
+        const trendEl = document.getElementById(`trend-${rackId}`);
+        cardEl.classList.remove('glow-blue', 'glow-green', 'glow-yellow', 'glow-red');
+        if (temp < 17.0) { 
+            statusEl.innerText = "COOLTEMP"; statusEl.style.color = "var(--accent-blue)"; 
+            statusEl.style.background = "rgba(56, 189, 248, 0.1)"; 
+            cardEl.classList.add('glow-blue'); popUpState[rackId] = 0;
+        } else if (temp < 25.0) { 
+            statusEl.innerText = "OPTIMAL"; statusEl.style.color = "var(--accent-green)"; 
+            statusEl.style.background = "rgba(16, 185, 129, 0.1)"; 
+            cardEl.classList.add('glow-green'); popUpState[rackId] = 0;
+        } else if (temp <= 26.0) { 
+            statusEl.innerText = "WARNING"; statusEl.style.color = "var(--accent-orange)"; 
+            statusEl.style.background = "rgba(245, 158, 11, 0.2)"; 
+            cardEl.classList.add('glow-yellow');
+            if (popUpState[rackId] < 1) { triggerPopUpAlarm(rackId, temp, "WARNING"); popUpState[rackId] = 1; }
+        } else { 
+            statusEl.innerText = "CRITICAL"; statusEl.style.color = "var(--accent-red)"; 
+            statusEl.style.background = "rgba(239, 68, 68, 0.2)"; 
+            cardEl.classList.add('glow-red');
+            if (popUpState[rackId] < 2) { triggerPopUpAlarm(rackId, temp, "CRITICAL"); popUpState[rackId] = 2; }
+        }
+        const diff = Number((temp - historyArr[0]).toFixed(1));
+        trendEl.innerText = diff >= 0.1 ? "↑" : diff <= -0.1 ? "↓" : "—";
+        trendEl.style.color = diff >= 0.1 ? "var(--accent-red)" : diff <= -0.1 ? "var(--accent-blue)" : "var(--text-dim)";
+        if (isAudioEnabled) {
+            const t1 = parseFloat(document.getElementById('val1').innerText) || 0;
+            const t77 = parseFloat(document.getElementById('val77').innerText) || 0;
+            const t2 = parseFloat(document.getElementById('val2').innerText) || 0;
+            if (t1 > 26.0 || t77 > 26.0 || t2 > 26.0) {
+                if (alarmAudio.paused) alarmAudio.play().catch(e => {});
+            } else { alarmAudio.pause(); alarmAudio.currentTime = 0; }
+        }
+    }
+
+    // ========== FLOATING MONITORING (PICTURE-IN-PICTURE) ==========
+    let pipWindow = null;
+    async function togglePiPWidget() {
+        if (pipWindow && !pipWindow.closed) { pipWindow.close(); return; }
+        if (!('documentPictureInPicture' in window)) {
+            alert('⚠️ Floating Monitoring butuh Chrome / Edge versi 116+.');
+            return;
+        }
+        try {
+            pipWindow = await documentPictureInPicture.requestWindow({ width: 240, height: 175 });
+            const style = pipWindow.document.createElement('style');
+            style.textContent = `
+                * { box-sizing: border-box; margin: 0; padding: 0; }
+                body { background: #050a10; color: #fff; font-family: 'Segoe UI', sans-serif; overflow: hidden; height: 100vh; display: flex; flex-direction: column; user-select: none; }
+                .pip-head { text-align: center; font-size: 9px; color: #64748b; letter-spacing: 2px; padding: 6px 0; font-weight: 700; background: rgba(56,189,248,0.05); border-bottom: 1px solid rgba(56,189,248,0.15); }
+                .rack-row { flex: 1; display: flex; justify-content: space-between; align-items: center; padding: 0 14px; border-bottom: 1px solid rgba(255,255,255,0.03); }
+                .rack-row:last-child { border-bottom: none; }
+                .rack-label { font-size: 10px; font-weight: 800; color: #94a3b8; letter-spacing: 1px; }
+                .rack-temp { font-size: 30px; font-weight: 800; letter-spacing: -1.5px; transition: color .3s, text-shadow .3s; line-height: 1; }
+                .ok   { color: #10b981; text-shadow: 0 0 10px rgba(16,185,129,0.4); }
+                .warn { color: #f59e0b; text-shadow: 0 0 12px rgba(245,158,11,0.5); }
+                .crit { color: #ef4444; text-shadow: 0 0 18px rgba(239,68,68,0.9); animation: pipBlink 1s ease-in-out infinite; }
+                .cool { color: #38bdf8; text-shadow: 0 0 12px rgba(56,189,248,0.6); }
+                @keyframes pipBlink { 0%,100% { opacity: 1; } 50% { opacity: 0.55; } }
+            `;
+            pipWindow.document.head.appendChild(style);
+            pipWindow.document.body.innerHTML = `
+                <div class="pip-head">DC-SDI · LIVE THERMAL TELEMETRY WIDGET</div>
+                <div class="rack-row"><span class="rack-label">RACK 61</span><span class="rack-temp" id="pip-t61">--</span></div>
+                <div class="rack-row"><span class="rack-label">RACK 77</span><span class="rack-temp" id="pip-t77">--</span></div>
+                <div class="rack-row"><span class="rack-label">RACK 139</span><span class="rack-temp" id="pip-t139">--</span></div>
+            `;
+            pipWindow.addEventListener('pagehide', () => {
+                pipWindow = null;
+                const s = document.getElementById('pipStatusText');
+                if (s) { s.innerText = 'OFF'; s.style.color = 'var(--text-dim)'; }
+                const btn = document.getElementById('pipToggleBtn');
+                if (btn) { btn.style.borderColor = 'rgba(56, 189, 248, 0.3)'; btn.style.borderTopColor = 'rgba(56, 189, 248, 0.5)'; }
+                const icon = document.getElementById('pipIcon');
+                if (icon) { icon.style.color = 'var(--accent-blue)'; }
+            });
+            const s = document.getElementById('pipStatusText');
+            if (s) { s.innerText = 'ON'; s.style.color = 'var(--accent-green)'; }
+            const btn = document.getElementById('pipToggleBtn');
+            if (btn) { btn.style.borderColor = 'rgba(16, 185, 129, 0.5)'; btn.style.borderTopColor = 'rgba(16, 185, 129, 0.8)'; }
+            const icon = document.getElementById('pipIcon');
+            if (icon) { icon.style.color = 'var(--accent-green)'; }
+            syncPiPWidget();
+        } catch(e) { console.error('PiP error:', e); alert('Gagal membuka floating monitor: ' + e.message); }
+    }
+
+    function syncPiPWidget() {
+        if (!pipWindow || pipWindow.closed) return;
+        const racks = [
+            { valId: 'val1',  tempId: 'pip-t61'  },
+            { valId: 'val77', tempId: 'pip-t77'  },
+            { valId: 'val2',  tempId: 'pip-t139' }
+        ];
+        racks.forEach(r => {
+            const val = document.getElementById(r.valId)?.innerText || '--';
+            const tempEl = pipWindow.document.getElementById(r.tempId);
+            if (!tempEl) return;
+            const t = parseFloat(val);
+            if (isNaN(t)) { tempEl.innerText = '--'; tempEl.className = 'rack-temp'; return; }
+            tempEl.innerText = t.toFixed(1) + '°';
+            let cls = 'ok';
+            if (t < 17.0) cls = 'cool';
+            else if (t < 25.0) cls = 'ok';
+            else if (t <= 26.0) cls = 'warn';
+            else cls = 'crit';
+            tempEl.className = 'rack-temp ' + cls;
+        });
+    }
+
+    // ================================================================
+    // ✅ updateTabTitle() — Tab title dengan status koneksi
+    // ================================================================
+    function updateTabTitle() {
+        const now = Date.now();
+        const online61  = (now - lastUpdateR61)  < OFFLINE_TIMEOUT;
+        const online77  = (now - lastUpdateR77)  < OFFLINE_TIMEOUT;
+        const online139 = (now - lastUpdateR139) < OFFLINE_TIMEOUT;
+        const onlineCount = [online61, online77, online139].filter(Boolean).length;
+        const t1   = parseFloat(document.getElementById('val1')?.innerText)  || 0;
+        const t77  = parseFloat(document.getElementById('val77')?.innerText) || 0;
+        const t139 = parseFloat(document.getElementById('val2')?.innerText)  || 0;
+        const maxTemp = Math.max(t1, t77, t139);
+        let offlineNums = [];
+        if (!online61)  offlineNums.push('1');
+        if (!online77)  offlineNums.push('2');
+        if (!online139) offlineNums.push('3');
+        let titleText;
+        if (onlineCount === 0) {
+            titleText = `❗ SYSTEM DOWN | DC-SDI`;
+        } else if (offlineNums.length > 0) {
+            titleText = `🔴${offlineNums.join(',')} ${maxTemp.toFixed(1)}°C | DC-SDI`;
+        } else if (maxTemp > 26.0) {
+            titleText = `🔴 ${maxTemp.toFixed(1)}°C | DC-SDI`;
+        } else if (maxTemp > 25.0) {
+            titleText = `🟡 ${maxTemp.toFixed(1)}°C | DC-SDI`;
+        } else if (maxTemp < 17.0) {
+            titleText = `🔵 ${maxTemp.toFixed(1)}°C | DC-SDI`;
+        } else {
+            titleText = `🟢 ${maxTemp.toFixed(1)}°C | DC-SDI`;
+        }
+        document.title = titleText;
+    }
+
+    function openModal(rack) {
+        targetRackExport = rack;
+        document.getElementById('modalTargetRack').innerText = rack.toUpperCase().replace('_', ' ');
+        document.getElementById('viewBulan').style.display = 'block'; document.getElementById('viewHari').style.display = 'none';
+        document.getElementById('monthModal').style.display = 'flex';
+    }
+    function closeModal() { document.getElementById('monthModal').style.display = 'none'; }
+    
+    function selectMonth(monthNum, monthName) {
+        currentSelectedMonthNum = monthNum;
+        document.getElementById('labelBulanTerpilih').innerText = `${monthName} ${currentSelectedYear}`;
+        document.getElementById('viewBulan').style.display = 'none'; 
+        document.getElementById('viewHari').style.display = 'block';
+        const daysInMonth = new Date(currentSelectedYear, parseInt(monthNum), 0).getDate();
+        const dayNames = ['Min', 'Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab'];
+        let html = "";
+        for(let i = 1; i <= daysInMonth; i++) {
+            const dayStr = i.toString().padStart(2, '0');
+            const dName = dayNames[new Date(`${currentSelectedYear}-${monthNum}-${dayStr}`).getDay()];
+            html += `<button class="btn-day" onclick="executeDownloadDailyNum('${dayStr}')"><span class="d-num">${i}</span><span class="d-name">${dName}</span></button>`;
+        }
+        document.getElementById('csvDayGridUI').innerHTML = html;
+    }
+    function backToBulan() {
+        document.getElementById('viewHari').style.display = 'none'; document.getElementById('viewBulan').style.display = 'block';
+    }
+
+    function tarikDataFirebase(prefixKeyword, fileNameSuffix) {
+        let btnText = event.target; let originalText = btnText.innerText; btnText.innerText = "Loading...";
+        db.ref('history_suhu/' + targetRackExport).once('value').then((snap) => {
+            btnText.innerText = originalText;
+            if (!snap.exists()) { alert(`Data riwayat untuk rak ini belum tersedia.`); return; }
+            let csv = "Hari, Tanggal, Jam, Suhu, Kelembaban\n";
+            let hasData = false;
+            snap.forEach(c => { 
+                let fullKey = c.key; 
+                if (fullKey.startsWith(prefixKeyword)) {
+                    hasData = true;
+                    let datePart = "-"; let timePart = fullKey;
+                    if (fullKey.includes('_')) { let p = fullKey.split('_'); datePart = p[0]; timePart = p[1].replace('-', ':'); }
+                    else if (fullKey.includes(' ')) { let p = fullKey.split(' '); datePart = p[0]; timePart = p[1]; }
+                    let hariStr = "";
+                    if(datePart !== "-") {
+                        let d = new Date(datePart);
+                        if(!isNaN(d)) {
+                            const hArr = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
+                            hariStr = hArr[d.getDay()] + ", ";
+                        }
+                    }
+                    let t = c.val().suhu ? c.val().suhu.toString() : "0.000";
+                    let h = c.val().kelembaban || "0";
+                    csv += `"${hariStr}${datePart}", ${timePart}, ${t}, ${h}\n`; 
+                }
+            });
+            if(!hasData) { alert(`Tidak ditemukan data pada periode: ${prefixKeyword}`); return; }
+            const blob = new Blob(["\ufeff" + csv], { type: 'text/csv;charset=utf-8;' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a'); a.href = url; a.download = `Log_${targetRackExport}_${fileNameSuffix}.csv`;
+            a.click(); window.URL.revokeObjectURL(url); closeModal();
+        });
+    }
+    function executeDownloadMonthFull() { tarikDataFirebase(`${currentSelectedYear}-${currentSelectedMonthNum}`, `Bulan_${currentSelectedYear}-${currentSelectedMonthNum}`); }
+    function executeDownloadDailyNum(dayStr) { tarikDataFirebase(`${currentSelectedYear}-${currentSelectedMonthNum}-${dayStr}`, `Tanggal_${currentSelectedYear}-${currentSelectedMonthNum}-${dayStr}`); }
+
+    let currentGraphFilename = "";
+    function openGraphModal(rack) {
+        targetRackGraph = rack;
+        document.getElementById('graphModalTargetRack').innerText = rack.toUpperCase().replace('_', ' ');
+        document.getElementById('graphSelectionArea').style.display = 'block';
+        document.getElementById('graphViewerArea').style.display = 'none';
+        document.getElementById('graphViewBulan').style.display = 'block'; 
+        document.getElementById('graphViewHari').style.display = 'none';
+        document.getElementById('graphModal').style.display = 'flex';
+    }
+    function closeGraphModal() { document.getElementById('graphModal').style.display = 'none'; }
+    
+    function selectGraphMonth(monthNum, monthName) {
+        currentSelectedMonthNum = monthNum;
+        document.getElementById('graphLabelBulanTerpilih').innerText = `${monthName} ${currentSelectedYear}`;
+        document.getElementById('graphViewBulan').style.display = 'none'; 
+        document.getElementById('graphViewHari').style.display = 'block';
+        const daysInMonth = new Date(currentSelectedYear, parseInt(monthNum), 0).getDate();
+        const dayNames = ['Min', 'Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab'];
+        let html = "";
+        for(let i = 1; i <= daysInMonth; i++) {
+            const dayStr = i.toString().padStart(2, '0');
+            const dName = dayNames[new Date(`${currentSelectedYear}-${monthNum}-${dayStr}`).getDay()];
+            html += `<button class="btn-day" onclick="renderGraphData('${dayStr}')"><span class="d-num">${i}</span><span class="d-name">${dName}</span></button>`;
+        }
+        document.getElementById('graphDayGridUI').innerHTML = html;
+    }
+    function backToGraphBulan() {
+        document.getElementById('graphViewHari').style.display = 'none'; 
+        document.getElementById('graphViewBulan').style.display = 'block';
+    }
+    function backToGraphSelection() {
+        document.getElementById('graphViewerArea').style.display = 'none';
+        document.getElementById('graphSelectionArea').style.display = 'block';
+    }
+
+    function renderGraphData(dayStr) {
+        let prefix = ""; let isFullMonth = false; let namaFileDate = "";
+        if (dayStr === "FULL") {
+            prefix = `${currentSelectedYear}-${currentSelectedMonthNum}`;
+            namaFileDate = `Bulan_${prefix}`; isFullMonth = true;
+        } else {
+            prefix = `${currentSelectedYear}-${currentSelectedMonthNum}-${dayStr}`;
+            namaFileDate = `Tanggal_${prefix}`;
+        }
+        document.getElementById('graphLoadingMsg').style.display = 'block';
+        db.ref('history_suhu/' + targetRackGraph).once('value').then((snap) => {
+            if (!snap.exists()) { alert("Data riwayat tidak ditemukan."); document.getElementById('graphLoadingMsg').style.display = 'none'; return; }
+            let labelsTime = []; let dataTemp = [];
+            snap.forEach(c => {
+                let fullKey = c.key;
+                if (fullKey.startsWith(prefix)) {
+                    let timePart = fullKey;
+                    if (fullKey.includes('_')) {
+                        timePart = isFullMonth ? fullKey.replace('_', ' ') : fullKey.split('_')[1].replace('-', ':');
+                        if (isFullMonth) { 
+                            let p = fullKey.split('_');
+                            let dPart = p[0].split('-')[2];
+                            let tPart = p[1].replace('-', ':').substring(0,5);
+                            timePart = `${dPart} ${tPart}`;
+                        }
+                    }
+                    labelsTime.push(timePart); dataTemp.push(c.val().suhu);
+                }
+            });
+            if (labelsTime.length === 0) {
+                alert(`Tidak ada data tersimpan pada periode: ${prefix}`); document.getElementById('graphLoadingMsg').style.display = 'none'; return;
+            }
+            document.getElementById('graphSelectionArea').style.display = 'none';
+            document.getElementById('graphViewerArea').style.display = 'block';
+            document.getElementById('graphViewerTitle').innerText = `DATA SUHU TANGGAL: ${isFullMonth ? currentSelectedYear + '-' + currentSelectedMonthNum : prefix}`;
+            currentGraphFilename = `Grafik_Suhu_${targetRackGraph}_${namaFileDate}.png`;
+            if (bigChartInstance) { bigChartInstance.destroy(); }
+            let lineColor = '#38bdf8'; let bgColor = 'rgba(56, 189, 248, 0.1)';
+            if(targetRackGraph === 'rack_77') { lineColor = '#24bbbd'; bgColor = 'rgba(36, 187, 189, 0.1)'; }
+            else if(targetRackGraph === 'rack_139') { lineColor = '#10b981'; bgColor = 'rgba(16, 185, 129, 0.1)'; }
+            const ctxModal = document.getElementById('modalViewChart').getContext('2d');
+            bigChartInstance = new Chart(ctxModal, {
+                type: 'line', plugins: [pluginBackground],
+                data: {
+                    labels: labelsTime,
+                    datasets: [{
+                        label: `Suhu RACK ${targetRackGraph.replace('rack_','')}`,
+                        data: dataTemp, borderColor: lineColor, backgroundColor: bgColor,
+                        borderWidth: 2, fill: true, tension: 0, 
+                        pointRadius: isFullMonth ? 0 : 2, pointBackgroundColor: '#fff'
+                    }]
+                },
+                options: {
+                    animation: false, responsive: true, maintainAspectRatio: false,
+                    plugins: { legend: { display: true, labels: {color: '#fff'} }, tooltip: { mode: 'index', intersect: false } },
+                    scales: { 
+                        x: { ticks: { color: '#94a3b8', font: { size: 10 }, maxTicksLimit: 12 }, grid: { color: 'rgba(255,255,255,0.05)' } },
+                        y: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#ffffff', font: { size: 12, weight: 'bold' }, callback: v => v.toFixed(3) } }
+                    }
+                }
+            });
+            document.getElementById('graphLoadingMsg').style.display = 'none';
+        });
+    }
+
+    function downloadGraphImage() {
+        const canvas = document.getElementById('modalViewChart');
+        const link = document.createElement('a');
+        link.download = currentGraphFilename || 'Grafik_Suhu.png';
+        link.href = canvas.toDataURL('image/png');
+        link.click();
+    }
+
+    db.ref('live_data').on('value', (snap) => {
+        const d = snap.val();
+        if (d) {
+            const now = new Date();
+            const timeStr = now.getHours().toString().padStart(2, '0') + ":" + now.getMinutes().toString().padStart(2, '0');
+            const dateStr = now.getDate().toString().padStart(2, '0') + "/" + (now.getMonth() + 1).toString().padStart(2, '0') + "/" + now.getFullYear().toString().slice(-2);
+            const stampStr = `${timeStr} (${dateStr})`;
+
+            if (d.ruangan !== undefined) {
+                lastUpdateR61 = Date.now();
+                const t = d.ruangan;
+                document.getElementById('val1').innerText = t.toFixed(1);
+                if (Date.now() - lastFakeHumiUpdate > FAKE_HUMI_INTERVAL) {
+                    lastFakeHumi61 = 51.0 + (Math.random() * 8); 
+                    lastFakeHumiUpdate = Date.now(); 
+                }
+                document.getElementById('hum1').innerText = lastFakeHumi61.toFixed(1);
+                updateAnalytic('61', t, history61);
+                updateRecordIfNeeded('61', t, stampStr);
+                c1.data.datasets[0].data.push(t); c1.data.datasets[0].data.shift(); c1.update('none');
+                localStorage.setItem('hist61', JSON.stringify(history61));
+                pushLog('logList1', t, lastFakeHumi61);
+            }
+            
+            const rack77Data = d.rack_77;
+            if (rack77Data !== undefined) {
+                const t = typeof rack77Data === 'number' ? rack77Data : rack77Data.suhu;
+                const h = typeof rack77Data === 'number' ? 0 : (rack77Data.kelembaban || 0);
+                if (t !== undefined && !isNaN(t)) {
+                    lastUpdateR77 = Date.now();
+                    document.getElementById('val77').innerText = t.toFixed(1);
+                    document.getElementById('hum77').innerText = h.toFixed(1);
+                    updateAnalytic('77', t, history77);
+                    updateRecordIfNeeded('77', t, stampStr);
+                    c3.data.datasets[0].data.push(t); c3.data.datasets[0].data.shift(); c3.update('none');
+                    localStorage.setItem('hist77', JSON.stringify(history77));
+                    pushLog('logList77', t, h);
                 }
             }
-        }, repeatInterval);
-    }
-    
-    function stopAlarmLoop() {
-        if (alarmLoopId) {
-            clearInterval(alarmLoopId);
-            alarmLoopId = null;
+
+            if (d.pac !== undefined) {
+                lastUpdateR139 = Date.now();
+                const t = d.pac;
+                document.getElementById('val2').innerText = t.toFixed(1);
+                document.getElementById('hum2').innerText = (d.kelembaban || 0).toFixed(1);
+                updateAnalytic('139', t, history139);
+                updateRecordIfNeeded('139', t, stampStr);
+                c2.data.datasets[0].data.push(t); c2.data.datasets[0].data.shift(); c2.update('none');
+                localStorage.setItem('hist139', JSON.stringify(history139));
+                pushLog('logList2', t, d.kelembaban || 0);
+            }
+            
+            updateTabTitle();
+            syncPiPWidget();
         }
-        currentAlarmType = null;
-        isAlarmPlaying = false;
-    }
-    
-    function playWarningAlarmSound() {
-        const ctx
+    });
+</script>
+</body>
+</html>
