@@ -76,6 +76,56 @@
         }
         .dot-icon { font-size: 13px; line-height: 1; display: flex; align-items: center; text-shadow: 0 0 8px currentColor;}
 
+        /* ========== LINGKARAN MERAH NOMOR ESP (PERUBAHAN #1) ========== */
+        .dot-icon.offline-circle {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 16px;
+            height: 16px;
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+            color: #ffffff;
+            border-radius: 50%;
+            font-size: 10px;
+            font-weight: 900;
+            line-height: 1;
+            text-shadow: none;
+            box-shadow: 0 0 8px rgba(239, 68, 68, 0.9), inset 0 1px 1px rgba(255,255,255,0.4);
+            animation: redCirclePulse 1.5s ease-in-out infinite;
+        }
+        @keyframes redCirclePulse {
+            0%, 100% { box-shadow: 0 0 8px rgba(239, 68, 68, 0.9), inset 0 1px 1px rgba(255,255,255,0.4); }
+            50%      { box-shadow: 0 0 16px rgba(239, 68, 68, 1), inset 0 1px 1px rgba(255,255,255,0.6); }
+        }
+
+        /* ========== TANDA SERU MERAH — SEMUA ESP MATI (PERUBAHAN #1) ========== */
+        .dot-icon.offline-exclaim {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 18px;
+            height: 18px;
+            background: linear-gradient(135deg, #ef4444 0%, #b91c1c 100%);
+            color: #ffffff;
+            border-radius: 50%;
+            font-size: 14px;
+            font-weight: 900;
+            line-height: 1;
+            text-shadow: 0 0 4px rgba(0,0,0,0.5);
+            box-shadow: 0 0 10px rgba(239, 68, 68, 1), inset 0 1px 1px rgba(255,255,255,0.4);
+            animation: exclaimPulse 0.8s ease-in-out infinite;
+        }
+        @keyframes exclaimPulse {
+            0%, 100% { 
+                box-shadow: 0 0 10px rgba(239, 68, 68, 0.9), inset 0 1px 1px rgba(255,255,255,0.4); 
+                transform: scale(1);
+            }
+            50%      { 
+                box-shadow: 0 0 20px rgba(239, 68, 68, 1), inset 0 1px 1px rgba(255,255,255,0.6); 
+                transform: scale(1.15);
+            }
+        }
+
         .audio-btn { 
             background: linear-gradient(135deg, rgba(239, 68, 68, 0.1) 0%, rgba(239, 68, 68, 0.02) 100%); 
             border: 1px solid rgba(239, 68, 68, 0.3); border-top: 1px solid rgba(239, 68, 68, 0.5);
@@ -252,7 +302,7 @@
 
         /* ========== PANEL RIWAYAT NOTIFIKASI ========== */
         .notification-history-panel {
-            grid-column: 1 / -1; /* Full width dalam grid */
+            grid-column: 1 / -1;
             background-color: var(--card-color);
             backdrop-filter: blur(12px);
             -webkit-backdrop-filter: blur(12px);
@@ -465,7 +515,6 @@
                     <span id="audioStatusText" style="color: var(--accent-green); font-weight: 800;">ACTIVE</span>
                 </div>
             </div>
-            <!-- TOMBOL MINI WIDGET -->
             <button class="audio-btn" id="pipToggleBtn" onclick="togglePiPWidget()" style="background: linear-gradient(135deg, rgba(56, 189, 248, 0.1) 0%, rgba(56, 189, 248, 0.02) 100%); border-color: rgba(56, 189, 248, 0.3); border-top-color: rgba(56, 189, 248, 0.5);">
                 <div style="display: flex; align-items: center; gap: 6px;">
                     <i class="fa-solid fa-window-restore" id="pipIcon" style="color: var(--accent-blue);"></i>
@@ -958,7 +1007,8 @@
     const db = firebase.database();
 
     let lastUpdateR61 = 0; let lastUpdateR77 = 0; let lastUpdateR139 = 0;
-    const OFFLINE_TIMEOUT = 15000;
+    // ✅ PERUBAHAN #2: Timeout 15 detik → 5 menit (300000 ms)
+    const OFFLINE_TIMEOUT = 300000;
     let targetRackExport = "";
     
     let currentSelectedYear = new Date().getFullYear();
@@ -987,137 +1037,102 @@
     function playPopupBeep() {
         const ctx = initAudioContext();
         if (!ctx) return;
-        
         try {
             const now = ctx.currentTime;
             const oscillator = ctx.createOscillator();
             const gainNode = ctx.createGain();
-            
             oscillator.connect(gainNode);
             gainNode.connect(ctx.destination);
-            
             oscillator.frequency.setValueAtTime(800, now);
             gainNode.gain.setValueAtTime(0.3, now);
             gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.2);
             oscillator.start(now);
             oscillator.stop(now + 0.2);
-            
             const osc2 = ctx.createOscillator();
             const gain2 = ctx.createGain();
             osc2.connect(gain2);
             gain2.connect(ctx.destination);
-            
             osc2.frequency.setValueAtTime(600, now + 0.25);
             gain2.gain.setValueAtTime(0.3, now + 0.25);
             gain2.gain.exponentialRampToValueAtTime(0.01, now + 0.45);
             osc2.start(now + 0.25);
             osc2.stop(now + 0.45);
-        } catch (e) {
-            console.warn("Error playing beep:", e);
-        }
+        } catch (e) { console.warn("Error playing beep:", e); }
     }
     
     function playWarningBeep() {
         const ctx = initAudioContext();
         if (!ctx) return;
-        
         try {
             const now = ctx.currentTime;
             for (let i = 0; i < 3; i++) {
                 const osc = ctx.createOscillator();
                 const gain = ctx.createGain();
-                
-                osc.connect(gain);
-                gain.connect(ctx.destination);
-                
+                osc.connect(gain); gain.connect(ctx.destination);
                 const startTime = now + (i * 0.25);
                 osc.frequency.setValueAtTime(900, startTime);
                 gain.gain.setValueAtTime(0.3, startTime);
                 gain.gain.exponentialRampToValueAtTime(0.01, startTime + 0.15);
-                osc.start(startTime);
-                osc.stop(startTime + 0.15);
+                osc.start(startTime); osc.stop(startTime + 0.15);
             }
-        } catch (e) {
-            console.warn("Error playing warning beep:", e);
-        }
+        } catch (e) { console.warn("Error playing warning beep:", e); }
     }
     
     function playCriticalBeep30() {
         const ctx = initAudioContext();
         if (!ctx) return;
-        
         try {
             const now = ctx.currentTime;
             const frequencies = [1000, 500, 1000, 500];
             for (let i = 0; i < frequencies.length; i++) {
                 const osc = ctx.createOscillator();
                 const gain = ctx.createGain();
-                
-                osc.connect(gain);
-                gain.connect(ctx.destination);
-                
+                osc.connect(gain); gain.connect(ctx.destination);
                 const startTime = now + (i * 0.2);
                 osc.frequency.setValueAtTime(frequencies[i], startTime);
                 gain.gain.setValueAtTime(0.4, startTime);
                 gain.gain.exponentialRampToValueAtTime(0.01, startTime + 0.15);
-                osc.start(startTime);
-                osc.stop(startTime + 0.15);
+                osc.start(startTime); osc.stop(startTime + 0.15);
             }
-        } catch (e) {
-            console.warn("Error playing critical beep 30:", e);
-        }
+        } catch (e) { console.warn("Error playing critical beep 30:", e); }
     }
     
     function playCriticalBeep45() {
         const ctx = initAudioContext();
         if (!ctx) return;
-        
         try {
             const now = ctx.currentTime;
             const frequencies = [2200, 800, 2200, 800, 2200];
             for (let i = 0; i < frequencies.length; i++) {
                 const osc = ctx.createOscillator();
                 const gain = ctx.createGain();
-                
-                osc.connect(gain);
-                gain.connect(ctx.destination);
-                
+                osc.connect(gain); gain.connect(ctx.destination);
                 const startTime = now + (i * 0.15);
                 osc.frequency.setValueAtTime(frequencies[i], startTime);
                 gain.gain.setValueAtTime(0.6, startTime);
                 gain.gain.exponentialRampToValueAtTime(0.01, startTime + 0.12);
-                osc.start(startTime);
-                osc.stop(startTime + 0.12);
+                osc.start(startTime); osc.stop(startTime + 0.12);
             }
-        } catch (e) {
-            console.warn("Error playing critical beep 45:", e);
-        }
+        } catch (e) { console.warn("Error playing critical beep 45:", e); }
     }
     
     function playCriticalBeep60() {
         const ctx = initAudioContext();
         if (!ctx) return;
-        
         try {
             const now = ctx.currentTime;
             const frequencies = [2500, 600, 2500, 600, 2500, 600, 2500, 600];
             for (let i = 0; i < frequencies.length; i++) {
                 const osc = ctx.createOscillator();
                 const gain = ctx.createGain();
-                
-                osc.connect(gain);
-                gain.connect(ctx.destination);
-                
+                osc.connect(gain); gain.connect(ctx.destination);
                 const startTime = now + (i * 0.12);
                 osc.frequency.setValueAtTime(frequencies[i], startTime);
                 gain.gain.setValueAtTime(0.9, startTime);
                 gain.gain.exponentialRampToValueAtTime(0.01, startTime + 0.1);
-                osc.start(startTime);
-                osc.stop(startTime + 0.1);
+                osc.start(startTime); osc.stop(startTime + 0.1);
             }
-        } catch (e) {
-            console.warn("Error playing critical beep 60:", e);
-        }
+        } catch (e) { console.warn("Error playing critical beep 60:", e); }
     }
 
     // ========== ALARM LOOP SYSTEM ==========
@@ -1126,37 +1141,22 @@
     let isAlarmPlaying = false;
     
     function startAlarmLoop(alarmType) {
-        if (alarmLoopId) {
-            clearInterval(alarmLoopId);
-        }
-        
+        if (alarmLoopId) clearInterval(alarmLoopId);
         currentAlarmType = alarmType;
         isAlarmPlaying = true;
-        
-        if (alarmType === "WARNING") {
-            playWarningAlarmSound();
-        } else if (alarmType === "CRITICAL") {
-            playCriticalAlarmSound();
-        }
-        
+        if (alarmType === "WARNING") playWarningAlarmSound();
+        else if (alarmType === "CRITICAL") playCriticalAlarmSound();
         const repeatInterval = alarmType === "WARNING" ? 1900 : 2200;
-        
         alarmLoopId = setInterval(() => {
             if (isAlarmPlaying) {
-                if (alarmType === "WARNING") {
-                    playWarningAlarmSound();
-                } else if (alarmType === "CRITICAL") {
-                    playCriticalAlarmSound();
-                }
+                if (alarmType === "WARNING") playWarningAlarmSound();
+                else if (alarmType === "CRITICAL") playCriticalAlarmSound();
             }
         }, repeatInterval);
     }
     
     function stopAlarmLoop() {
-        if (alarmLoopId) {
-            clearInterval(alarmLoopId);
-            alarmLoopId = null;
-        }
+        if (alarmLoopId) { clearInterval(alarmLoopId); alarmLoopId = null; }
         currentAlarmType = null;
         isAlarmPlaying = false;
     }
@@ -1164,73 +1164,51 @@
     function playWarningAlarmSound() {
         const ctx = initAudioContext();
         if (!ctx) return;
-        
         try {
             const now = ctx.currentTime;
             for (let repeat = 0; repeat < 4; repeat++) {
                 const baseTime = now + (repeat * 0.45);
-                
                 const osc1 = ctx.createOscillator();
                 const gain1 = ctx.createGain();
-                osc1.connect(gain1);
-                gain1.connect(ctx.destination);
-                
+                osc1.connect(gain1); gain1.connect(ctx.destination);
                 osc1.frequency.setValueAtTime(1400, baseTime);
                 gain1.gain.setValueAtTime(0.7, baseTime);
                 gain1.gain.exponentialRampToValueAtTime(0.01, baseTime + 0.2);
-                osc1.start(baseTime);
-                osc1.stop(baseTime + 0.2);
-                
+                osc1.start(baseTime); osc1.stop(baseTime + 0.2);
                 const osc2 = ctx.createOscillator();
                 const gain2 = ctx.createGain();
-                osc2.connect(gain2);
-                gain2.connect(ctx.destination);
-                
+                osc2.connect(gain2); gain2.connect(ctx.destination);
                 osc2.frequency.setValueAtTime(700, baseTime + 0.22);
                 gain2.gain.setValueAtTime(0.7, baseTime + 0.22);
                 gain2.gain.exponentialRampToValueAtTime(0.01, baseTime + 0.4);
-                osc2.start(baseTime + 0.22);
-                osc2.stop(baseTime + 0.4);
+                osc2.start(baseTime + 0.22); osc2.stop(baseTime + 0.4);
             }
-        } catch (e) {
-            console.warn("Error playing warning alarm:", e);
-        }
+        } catch (e) { console.warn("Error playing warning alarm:", e); }
     }
     
     function playCriticalAlarmSound() {
         const ctx = initAudioContext();
         if (!ctx) return;
-        
         try {
             const now = ctx.currentTime;
             for (let repeat = 0; repeat < 6; repeat++) {
                 const baseTime = now + (repeat * 0.35);
-                
                 const osc1 = ctx.createOscillator();
                 const gain1 = ctx.createGain();
-                osc1.connect(gain1);
-                gain1.connect(ctx.destination);
-                
+                osc1.connect(gain1); gain1.connect(ctx.destination);
                 osc1.frequency.setValueAtTime(1800, baseTime);
                 gain1.gain.setValueAtTime(0.8, baseTime);
                 gain1.gain.exponentialRampToValueAtTime(0.01, baseTime + 0.15);
-                osc1.start(baseTime);
-                osc1.stop(baseTime + 0.15);
-                
+                osc1.start(baseTime); osc1.stop(baseTime + 0.15);
                 const osc2 = ctx.createOscillator();
                 const gain2 = ctx.createGain();
-                osc2.connect(gain2);
-                gain2.connect(ctx.destination);
-                
+                osc2.connect(gain2); gain2.connect(ctx.destination);
                 osc2.frequency.setValueAtTime(500, baseTime + 0.17);
                 gain2.gain.setValueAtTime(0.8, baseTime + 0.17);
                 gain2.gain.exponentialRampToValueAtTime(0.01, baseTime + 0.3);
-                osc2.start(baseTime + 0.17);
-                osc2.stop(baseTime + 0.3);
+                osc2.start(baseTime + 0.17); osc2.stop(baseTime + 0.3);
             }
-        } catch (e) {
-            console.warn("Error playing critical alarm:", e);
-        }
+        } catch (e) { console.warn("Error playing critical alarm:", e); }
     }
 
     // ========== RIWAYAT NOTIFIKASI (Firebase) ==========
@@ -1261,14 +1239,11 @@
     function addNotificationItemToDOM(key, data) {
         const listEl = document.getElementById('notificationList');
         if (!listEl) return;
-
         let typeClass = 'warning';
         if (data.type === '30 menit') typeClass = 'critical';
         else if (data.type === '45 menit') typeClass = 'verycritical';
         else if (data.type === '60 menit') typeClass = 'emergency';
-
         let periodText = data.period ? ` | ${data.period}` : '';
-
         const itemDiv = document.createElement('div');
         itemDiv.className = 'notification-item';
         itemDiv.id = `notif-${key}`;
@@ -1280,19 +1255,13 @@
             </span>
         `;
         listEl.prepend(itemDiv);
-
-        while (listEl.children.length > 50) {
-            listEl.lastElementChild.remove();
-        }
+        while (listEl.children.length > 50) listEl.lastElementChild.remove();
     }
 
     function addNotificationHistory(rackId, temp, alertType, period = '') {
         db.ref('notifications').push({
-            rackId: rackId,
-            temp: temp.toFixed(1),
-            type: alertType,
-            timestamp: Date.now(),
-            period: period
+            rackId: rackId, temp: temp.toFixed(1), type: alertType,
+            timestamp: Date.now(), period: period
         });
     }
 
@@ -1323,7 +1292,6 @@
             const record = snap.val() || {};
             let updates = {};
             let changed = false;
-
             if (record.min === undefined || currentTemp < record.min) {
                 updates.min = currentTemp;
                 updates.timeMin = stampStr;
@@ -1334,10 +1302,7 @@
                 updates.timeMax = stampStr;
                 changed = true;
             }
-
-            if (changed) {
-                recordRef.update(updates);
-            }
+            if (changed) recordRef.update(updates);
         });
     }
 
@@ -1347,7 +1312,6 @@
         const timeMinEl = document.getElementById(`timeMin${rackId}`);
         const timeMaxEl = document.getElementById(`timeMax${rackId}`);
         const dateRekorEl = document.getElementById(`dateRekor${rackId}`);
-
         if (data) {
             minEl.innerText = data.min !== undefined ? data.min.toFixed(1) : '--';
             maxEl.innerText = data.max !== undefined ? data.max.toFixed(1) : '--';
@@ -1357,10 +1321,8 @@
             const dateMax = data.timeMax ? data.timeMax.split('(')[1]?.replace(')','') : '--/--/--';
             dateRekorEl.innerText = dateMax || dateMin || '--/--/--';
         } else {
-            minEl.innerText = '--';
-            maxEl.innerText = '--';
-            timeMinEl.innerText = '--:--';
-            timeMaxEl.innerText = '--:--';
+            minEl.innerText = '--'; maxEl.innerText = '--';
+            timeMinEl.innerText = '--:--'; timeMaxEl.innerText = '--:--';
             dateRekorEl.innerText = '--/--/--';
         }
     }
@@ -1381,14 +1343,12 @@
     function evaluateTemperatureTrend(rackId, currentTemp) {
         let tracker = tempTrendTrackers[rackId];
         let now = Date.now();
-
         if (tracker.lastTemp === null) {
             tracker.lastTemp = currentTemp;
             tracker.baseTemp = currentTemp;
             tracker.riseStartTime = now;
             return;
         }
-
         if (currentTemp > tracker.lastTemp) {
             if (!tracker.riseStartTime) {
                 tracker.riseStartTime = now;
@@ -1397,15 +1357,11 @@
         } else if (currentTemp < tracker.lastTemp - 0.2) {
             tracker.riseStartTime = null;
             tracker.baseTemp = currentTemp;
-            tracker.alerted15 = false;
-            tracker.alerted30 = false;
-            tracker.alerted45 = false;
-            tracker.alerted60 = false;
+            tracker.alerted15 = false; tracker.alerted30 = false;
+            tracker.alerted45 = false; tracker.alerted60 = false;
             hideToast(rackId);
         }
-
         tracker.lastTemp = currentTemp;
-
         if (tracker.riseStartTime && (now - tracker.riseStartTime >= 15 * 60 * 1000)) {
             if (currentTemp >= tracker.baseTemp && !tracker.alerted15) {
                 const period = formatTimeRange(tracker.riseStartTime, now);
@@ -1414,7 +1370,6 @@
                 tracker.alerted15 = true;
             }
         }
-
         if (tracker.riseStartTime && (now - tracker.riseStartTime >= 30 * 60 * 1000)) {
             if (currentTemp >= tracker.baseTemp && !tracker.alerted30) {
                 const period = formatTimeRange(tracker.riseStartTime, now);
@@ -1423,7 +1378,6 @@
                 tracker.alerted30 = true;
             }
         }
-
         if (tracker.riseStartTime && (now - tracker.riseStartTime >= 45 * 60 * 1000)) {
             if (currentTemp >= tracker.baseTemp && !tracker.alerted45) {
                 const period = formatTimeRange(tracker.riseStartTime, now);
@@ -1433,7 +1387,6 @@
                 tracker.alerted45 = true;
             }
         }
-
         if (tracker.riseStartTime && (now - tracker.riseStartTime >= 60 * 60 * 1000)) {
             if (currentTemp >= tracker.baseTemp && !tracker.alerted60) {
                 const period = formatTimeRange(tracker.riseStartTime, now);
@@ -1451,9 +1404,7 @@
                 triggerNotificationDisplay(rackId, temp, alertLevel);
             } else if (Notification.permission !== 'denied') {
                 Notification.requestPermission().then(permission => {
-                    if (permission === 'granted') {
-                        triggerNotificationDisplay(rackId, temp, alertLevel);
-                    }
+                    if (permission === 'granted') triggerNotificationDisplay(rackId, temp, alertLevel);
                 });
             }
         }
@@ -1461,20 +1412,10 @@
 
     function triggerNotificationDisplay(rackId, temp, alertLevel) {
         let title, body;
-        if (alertLevel === 1) {
-            title = `⚠️ RACK ${rackId} - Temperature Alert (15 Min)`;
-            body = `Temperature: ${temp.toFixed(1)}°C\nExtended high temperature detected!`;
-        } else if (alertLevel === 2) {
-            title = `🔴 RACK ${rackId} - CRITICAL Alert (30 Min)`;
-            body = `Temperature: ${temp.toFixed(1)}°C\nCritical high temperature!`;
-        } else if (alertLevel === 3) {
-            title = `🔴🔴 RACK ${rackId} - SANGAT KRITIS (45 Min)`;
-            body = `Temperature: ${temp.toFixed(1)}°C\nVery critical high temperature!`;
-        } else if (alertLevel === 4) {
-            title = `🔴🔴🔴 RACK ${rackId} - DARURAT (60 Min)`;
-            body = `Temperature: ${temp.toFixed(1)}°C\nEmergency! Temperature persisted for 1 hour!`;
-        }
-
+        if (alertLevel === 1) { title = `⚠️ RACK ${rackId} - Temperature Alert (15 Min)`; body = `Temperature: ${temp.toFixed(1)}°C\nExtended high temperature detected!`; }
+        else if (alertLevel === 2) { title = `🔴 RACK ${rackId} - CRITICAL Alert (30 Min)`; body = `Temperature: ${temp.toFixed(1)}°C\nCritical high temperature!`; }
+        else if (alertLevel === 3) { title = `🔴🔴 RACK ${rackId} - SANGAT KRITIS (45 Min)`; body = `Temperature: ${temp.toFixed(1)}°C\nVery critical high temperature!`; }
+        else if (alertLevel === 4) { title = `🔴🔴🔴 RACK ${rackId} - DARURAT (60 Min)`; body = `Temperature: ${temp.toFixed(1)}°C\nEmergency! Temperature persisted for 1 hour!`; }
         const options = {
             body: body,
             icon: 'data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Crect fill=%2338bdf8%22 width=%22100%22 height=%22100%22/%3E%3Ctext x=%2750%27 y=%2750%27 font-size=%2750%27 fill=%22white%22 text-anchor=%22middle%22 dominant-baseline=%22middle%22%3E⚠%3C/text%3E%3C/svg%3E',
@@ -1485,19 +1426,11 @@
         new Notification(title, options);
     }
 
-    // ================================================================
-    // ✅ PERUBAHAN 1: showToast() — TOAST TIDAK MENUMPUK LAGI
-    // Semua toast lama untuk rak yang sama disembunyikan dulu,
-    // baru tampilkan toast baru (level tertinggi menggantikan lama)
-    // ================================================================
     function showToast(rackId, alertLevel, period = '', silent = false) {
-        // === SEMBUNYIKAN SEMUA TOAST LAMA UNTUK RAK INI DULU ===
         for (let lvl = 1; lvl <= 4; lvl++) {
             const oldToast = document.getElementById(`toast-${rackId}-${lvl}`);
             if (oldToast) oldToast.style.display = 'none';
         }
-        // ========================================================
-
         const toastId = `toast-${rackId}-${alertLevel}`;
         const toast = document.getElementById(toastId);
         if (toast) {
@@ -1527,7 +1460,6 @@
         }
     }
 
-    // VARIABLE UNTUK SIMULASI HUMIDITY RACK 61
     let lastFakeHumi61 = 51.0 + (Math.random() * 8); 
     let lastFakeHumiUpdate = 0; 
     const FAKE_HUMI_INTERVAL = 30000; 
@@ -1535,20 +1467,14 @@
     window.addEventListener('click', () => {
         const ctx = initAudioContext();
         if (ctx && ctx.state === 'suspended') {
-            ctx.resume().then(() => {
-                console.log('AudioContext resumed');
-            });
+            ctx.resume().then(() => console.log('AudioContext resumed'));
         }
         if (isAudioEnabled) {
             const t1 = parseFloat(document.getElementById('val1').innerText) || 0;
             const t77 = parseFloat(document.getElementById('val77').innerText) || 0;
             const t2 = parseFloat(document.getElementById('val2').innerText) || 0;
-            
-            if (t1 > 26.0 || t77 > 26.0 || t2 > 26.0) {
-                alarmAudio.play().catch(e => {}); 
-            } else {
-                alarmAudio.play().then(() => alarmAudio.pause()).catch(e => {}); 
-            }
+            if (t1 > 26.0 || t77 > 26.0 || t2 > 26.0) alarmAudio.play().catch(e => {}); 
+            else alarmAudio.play().then(() => alarmAudio.pause()).catch(e => {}); 
         }
     });
     
@@ -1589,19 +1515,13 @@
         const btn = document.getElementById('audioToggle');
         const icon = document.getElementById('audioIcon');
         const statusText = document.getElementById('audioStatusText');
-
         if (isAudioEnabled) {
             btn.style.borderColor = 'rgba(16, 185, 129, 0.5)'; icon.className = 'fa-solid fa-volume-high'; icon.style.color = 'var(--accent-green)'; statusText.innerText = 'ACTIVE'; statusText.style.color = 'var(--accent-green)';
-            
             const t1 = parseFloat(document.getElementById('val1').innerText) || 0;
             const t77 = parseFloat(document.getElementById('val77').innerText) || 0;
             const t2 = parseFloat(document.getElementById('val2').innerText) || 0;
-            
-            if (t1 > 26.0 || t77 > 26.0 || t2 > 26.0) {
-                alarmAudio.play().catch(e => console.log("Menunggu interaksi user"));
-            } else {
-                alarmAudio.play().then(() => { alarmAudio.pause(); alarmAudio.currentTime = 0; }).catch(e => {});
-            }
+            if (t1 > 26.0 || t77 > 26.0 || t2 > 26.0) alarmAudio.play().catch(e => console.log("Menunggu interaksi user"));
+            else alarmAudio.play().then(() => { alarmAudio.pause(); alarmAudio.currentTime = 0; }).catch(e => {});
         } else {
             btn.style.borderColor = 'rgba(239, 68, 68, 0.5)'; icon.className = 'fa-solid fa-volume-xmark'; icon.style.color = 'var(--accent-red)'; statusText.innerText = 'OFF'; statusText.style.color = 'var(--accent-red)';
             alarmAudio.pause(); alarmAudio.currentTime = 0;
@@ -1615,15 +1535,9 @@
         const title = document.getElementById('alertPopUpTitle');
         const msg = document.getElementById('alertPopUpMessage');
         const btn = document.getElementById('alertPopUpBtn');
-        
-        if (status === "WARNING") {
-            startAlarmLoop("WARNING");
-        } else if (status === "CRITICAL") {
-            startAlarmLoop("CRITICAL");
-        } else {
-            playPopupBeep();
-        }
-        
+        if (status === "WARNING") startAlarmLoop("WARNING");
+        else if (status === "CRITICAL") startAlarmLoop("CRITICAL");
+        else playPopupBeep();
         if (status === "WARNING") {
             box.style.borderColor = "var(--accent-orange)"; 
             box.style.boxShadow = "0 0 30px rgba(245, 158, 11, 0.3)"; 
@@ -1656,20 +1570,64 @@
         }
     }
 
+    // ================================================================
+    // ✅ PERUBAHAN #3: checkDeviceStatus() — Lingkaran nomor merah + Tanda seru
+    // ================================================================
     function checkDeviceStatus() {
         const now = Date.now();
-        const updateStatus = (indId, groupClass, label, lastUpdate) => {
-            const ind = document.getElementById(indId);
-            const cards = document.querySelectorAll(groupClass);
-            if (now - lastUpdate > OFFLINE_TIMEOUT) {
-                ind.innerHTML = `<span class='dot-icon'>●</span> RACK ${label} OFFLINE`; ind.classList.add('offline'); cards.forEach(c => c.classList.add('device-offline'));
+        
+        const racks = [
+            { indId: 'ind1',  group: '.r61-group',  label: '61',  num: '1', last: lastUpdateR61  },
+            { indId: 'ind77', group: '.r77-group',  label: '77',  num: '2', last: lastUpdateR77  },
+            { indId: 'ind2',  group: '.r139-group', label: '139', num: '3', last: lastUpdateR139 }
+        ];
+        
+        // Cek apakah SEMUA ESP mati
+        const onlineCount = racks.filter(r => (now - r.last) < OFFLINE_TIMEOUT).length;
+        const allOffline = (onlineCount === 0);
+        
+        racks.forEach(r => {
+            const ind = document.getElementById(r.indId);
+            const cards = document.querySelectorAll(r.group);
+            const isOnline = (now - r.last) < OFFLINE_TIMEOUT;
+            
+            if (!isOnline) {
+                if (allOffline) {
+                    // ❗ SEMUA MATI → TANDA SERU MERAH
+                    ind.innerHTML = `<span class='dot-icon offline-exclaim'>!</span> RACK ${r.label} OFFLINE`;
+                } else {
+                    // ❶❷❸ 1-2 MATI → LINGKARAN NOMOR MERAH
+                    ind.innerHTML = `<span class='dot-icon offline-circle'>${r.num}</span> RACK ${r.label} OFFLINE`;
+                }
+                
+                ind.classList.add('offline');
+                ind.style.color = '';
+                ind.style.borderColor = '';
+                ind.style.borderTopColor = '';
+                ind.style.background = '';
+                ind.style.boxShadow = '';
+                
+                cards.forEach(c => {
+                    c.classList.add('device-offline');
+                    c.classList.remove('glow-blue','glow-green','glow-yellow','glow-red');
+                    c.classList.add('glow-red');
+                });
             } else {
-                ind.innerHTML = `<span class='dot-icon'>●</span> RACK ${label} ONLINE`; ind.classList.remove('offline'); cards.forEach(c => c.classList.remove('device-offline'));
+                ind.innerHTML = `<span class='dot-icon'>●</span> RACK ${r.label} ONLINE`;
+                ind.classList.remove('offline');
+                ind.style.color = '';
+                ind.style.borderColor = '';
+                ind.style.borderTopColor = '';
+                ind.style.background = '';
+                ind.style.boxShadow = '';
+                
+                cards.forEach(c => {
+                    c.classList.remove('device-offline');
+                });
             }
-        };
-        updateStatus('ind1', '.r61-group', '61', lastUpdateR61);
-        updateStatus('ind77', '.r77-group', '77', lastUpdateR77);
-        updateStatus('ind2', '.r139-group', '139', lastUpdateR139);
+        });
+        
+        updateTabTitle();
     }
     setInterval(checkDeviceStatus, 5000);
 
@@ -1684,15 +1642,11 @@
 
     function updateAnalytic(rackId, temp, historyArr) {
         historyArr.push(temp); historyArr.shift();
-        
         evaluateTemperatureTrend(rackId, temp);
-
         const cardEl = document.getElementById(`card-temp-${rackId}`);
         const statusEl = document.getElementById(`status-${rackId}`);
         const trendEl = document.getElementById(`trend-${rackId}`);
-        
         cardEl.classList.remove('glow-blue', 'glow-green', 'glow-yellow', 'glow-red');
-        
         if (temp < 17.0) { 
             statusEl.innerText = "COOLTEMP"; 
             statusEl.style.color = "var(--accent-blue)"; 
@@ -1712,40 +1666,26 @@
             statusEl.style.color = "var(--accent-orange)"; 
             statusEl.style.background = "rgba(245, 158, 11, 0.2)"; 
             cardEl.classList.add('glow-yellow');
-            
-            if (popUpState[rackId] < 1) { 
-                triggerPopUpAlarm(rackId, temp, "WARNING"); 
-                popUpState[rackId] = 1; 
-            }
+            if (popUpState[rackId] < 1) { triggerPopUpAlarm(rackId, temp, "WARNING"); popUpState[rackId] = 1; }
         } 
         else { 
             statusEl.innerText = "CRITICAL"; 
             statusEl.style.color = "var(--accent-red)"; 
             statusEl.style.background = "rgba(239, 68, 68, 0.2)"; 
             cardEl.classList.add('glow-red');
-            
-            if (popUpState[rackId] < 2) { 
-                triggerPopUpAlarm(rackId, temp, "CRITICAL"); 
-                popUpState[rackId] = 2; 
-            }
+            if (popUpState[rackId] < 2) { triggerPopUpAlarm(rackId, temp, "CRITICAL"); popUpState[rackId] = 2; }
         }
-        
         const diff = Number((temp - historyArr[0]).toFixed(1));
         trendEl.innerText = diff >= 0.1 ? "↑" : diff <= -0.1 ? "↓" : "—";
         trendEl.style.color = diff >= 0.1 ? "var(--accent-red)" : diff <= -0.1 ? "var(--accent-blue)" : "var(--text-dim)";
-
         if (isAudioEnabled) {
             const t1 = parseFloat(document.getElementById('val1').innerText) || 0;
             const t77 = parseFloat(document.getElementById('val77').innerText) || 0;
             const t2 = parseFloat(document.getElementById('val2').innerText) || 0;
-
             if (t1 > 26.0 || t77 > 26.0 || t2 > 26.0) {
-                if (alarmAudio.paused) {
-                    alarmAudio.play().catch(e => console.log("Menunggu klik user"));
-                }
+                if (alarmAudio.paused) alarmAudio.play().catch(e => console.log("Menunggu klik user"));
             } else {
-                alarmAudio.pause();
-                alarmAudio.currentTime = 0;
+                alarmAudio.pause(); alarmAudio.currentTime = 0;
             }
         }
     }
@@ -1755,92 +1695,34 @@
 
     async function togglePiPWidget() {
         if (pipWindow && !pipWindow.closed) { pipWindow.close(); return; }
-        
         if (!('documentPictureInPicture' in window)) {
             alert('⚠️ Mini Widget butuh Chrome / Edge versi 116+.\n\nAlternatif: buka dashboard di window terpisah (Shift + klik bookmark), lalu resize dan pin di pojok layar.');
             return;
         }
-        
         try {
-            pipWindow = await documentPictureInPicture.requestWindow({ 
-                width: 240, 
-                height: 175 
-            });
-            
+            pipWindow = await documentPictureInPicture.requestWindow({ width: 240, height: 175 });
             const style = pipWindow.document.createElement('style');
-            // ================================================================
-            // ✅ PERUBAHAN 2a: Tambah class .cool (biru) untuk suhu dingin
-            // ================================================================
             style.textContent = `
                 * { box-sizing: border-box; margin: 0; padding: 0; }
-                body { 
-                    background: #050a10; 
-                    color: #fff; 
-                    font-family: 'Segoe UI', sans-serif;
-                    overflow: hidden;
-                    height: 100vh;
-                    display: flex;
-                    flex-direction: column;
-                    user-select: none;
-                }
-                .pip-head { 
-                    text-align: center; 
-                    font-size: 9px; 
-                    color: #64748b; 
-                    letter-spacing: 2px; 
-                    padding: 6px 0; 
-                    font-weight: 700;
-                    background: rgba(56,189,248,0.05);
-                    border-bottom: 1px solid rgba(56,189,248,0.15);
-                }
-                .rack-row { 
-                    flex: 1;
-                    display: flex; 
-                    justify-content: space-between; 
-                    align-items: center; 
-                    padding: 0 14px;
-                    border-bottom: 1px solid rgba(255,255,255,0.03);
-                }
+                body { background: #050a10; color: #fff; font-family: 'Segoe UI', sans-serif; overflow: hidden; height: 100vh; display: flex; flex-direction: column; user-select: none; }
+                .pip-head { text-align: center; font-size: 9px; color: #64748b; letter-spacing: 2px; padding: 6px 0; font-weight: 700; background: rgba(56,189,248,0.05); border-bottom: 1px solid rgba(56,189,248,0.15); }
+                .rack-row { flex: 1; display: flex; justify-content: space-between; align-items: center; padding: 0 14px; border-bottom: 1px solid rgba(255,255,255,0.03); }
                 .rack-row:last-child { border-bottom: none; }
-                .rack-label { 
-                    font-size: 10px; 
-                    font-weight: 800; 
-                    color: #94a3b8; 
-                    letter-spacing: 1px;
-                }
-                .rack-temp { 
-                    font-size: 30px; 
-                    font-weight: 800; 
-                    letter-spacing: -1.5px;
-                    transition: color .3s, text-shadow .3s;
-                    line-height: 1;
-                }
+                .rack-label { font-size: 10px; font-weight: 800; color: #94a3b8; letter-spacing: 1px; }
+                .rack-temp { font-size: 30px; font-weight: 800; letter-spacing: -1.5px; transition: color .3s, text-shadow .3s; line-height: 1; }
                 .ok   { color: #10b981; text-shadow: 0 0 10px rgba(16,185,129,0.4); }
                 .warn { color: #f59e0b; text-shadow: 0 0 12px rgba(245,158,11,0.5); }
                 .crit { color: #ef4444; text-shadow: 0 0 18px rgba(239,68,68,0.9); animation: pipBlink 1s ease-in-out infinite; }
                 .cool { color: #38bdf8; text-shadow: 0 0 12px rgba(56,189,248,0.6); }
-                @keyframes pipBlink { 
-                    0%,100% { opacity: 1; } 
-                    50%     { opacity: 0.55; } 
-                }
+                @keyframes pipBlink { 0%,100% { opacity: 1; } 50% { opacity: 0.55; } }
             `;
             pipWindow.document.head.appendChild(style);
             pipWindow.document.body.innerHTML = `
                 <div class="pip-head">DC-SDI · LIVE THERMAL TELEMETRY WIDGET</div>
-                <div class="rack-row">
-                    <span class="rack-label">RACK 61</span>
-                    <span class="rack-temp" id="pip-t61">--</span>
-                </div>
-                <div class="rack-row">
-                    <span class="rack-label">RACK 77</span>
-                    <span class="rack-temp" id="pip-t77">--</span>
-                </div>
-                <div class="rack-row">
-                    <span class="rack-label">RACK 139</span>
-                    <span class="rack-temp" id="pip-t139">--</span>
-                </div>
+                <div class="rack-row"><span class="rack-label">RACK 61</span><span class="rack-temp" id="pip-t61">--</span></div>
+                <div class="rack-row"><span class="rack-label">RACK 77</span><span class="rack-temp" id="pip-t77">--</span></div>
+                <div class="rack-row"><span class="rack-label">RACK 139</span><span class="rack-temp" id="pip-t139">--</span></div>
             `;
-            
             pipWindow.addEventListener('pagehide', () => {
                 pipWindow = null;
                 const s = document.getElementById('pipStatusText');
@@ -1850,14 +1732,12 @@
                 const icon = document.getElementById('pipIcon');
                 if (icon) { icon.style.color = 'var(--accent-blue)'; }
             });
-            
             const s = document.getElementById('pipStatusText');
             if (s) { s.innerText = 'ON'; s.style.color = 'var(--accent-green)'; }
             const btn = document.getElementById('pipToggleBtn');
             if (btn) { btn.style.borderColor = 'rgba(16, 185, 129, 0.5)'; btn.style.borderTopColor = 'rgba(16, 185, 129, 0.8)'; }
             const icon = document.getElementById('pipIcon');
             if (icon) { icon.style.color = 'var(--accent-green)'; }
-            
             syncPiPWidget();
         } catch(e) {
             console.error('PiP error:', e);
@@ -1865,11 +1745,6 @@
         }
     }
 
-    // ================================================================
-    // ✅ PERUBAHAN 2b: syncPiPWidget() — Warna angka sesuai suhu
-    // Biru (COOLTEMP) / Hijau (OPTIMAL) / Kuning (WARNING) / Merah (CRITICAL)
-    // Sinkron dengan aura glow di kartu suhu utama
-    // ================================================================
     function syncPiPWidget() {
         if (!pipWindow || pipWindow.closed) return;
         const racks = [
@@ -1882,33 +1757,55 @@
             const tempEl = pipWindow.document.getElementById(r.tempId);
             if (!tempEl) return;
             const t = parseFloat(val);
-            if (isNaN(t)) {
-                tempEl.innerText = '--';
-                tempEl.className = 'rack-temp';
-                return;
-            }
+            if (isNaN(t)) { tempEl.innerText = '--'; tempEl.className = 'rack-temp'; return; }
             tempEl.innerText = t.toFixed(1) + '°';
-            // Logika warna identik dengan aura glow di dashboard utama
-            let cls = 'ok';                     // default: hijau (OPTIMAL)
-            if (t < 17.0)       cls = 'cool';   // 🔵 biru — COOLTEMP
-            else if (t < 25.0)  cls = 'ok';     // 🟢 hijau — OPTIMAL
-            else if (t <= 26.0) cls = 'warn';   // 🟡 kuning — WARNING
-            else                cls = 'crit';   // 🔴 merah (blinking) — CRITICAL
+            let cls = 'ok';
+            if (t < 17.0) cls = 'cool';
+            else if (t < 25.0) cls = 'ok';
+            else if (t <= 26.0) cls = 'warn';
+            else cls = 'crit';
             tempEl.className = 'rack-temp ' + cls;
         });
     }
 
-    // ========== TAB TITLE DINAMIS ==========
+    // ================================================================
+    // ✅ PERUBAHAN #4: updateTabTitle() — Tab title dengan status koneksi
+    // ================================================================
     function updateTabTitle() {
+        const now = Date.now();
+        
+        const online61  = (now - lastUpdateR61)  < OFFLINE_TIMEOUT;
+        const online77  = (now - lastUpdateR77)  < OFFLINE_TIMEOUT;
+        const online139 = (now - lastUpdateR139) < OFFLINE_TIMEOUT;
+        const onlineCount = [online61, online77, online139].filter(Boolean).length;
+        
         const t1   = parseFloat(document.getElementById('val1')?.innerText)  || 0;
         const t77  = parseFloat(document.getElementById('val77')?.innerText) || 0;
         const t139 = parseFloat(document.getElementById('val2')?.innerText)  || 0;
         const maxTemp = Math.max(t1, t77, t139);
-        let icon = '🟢';
-        if (maxTemp > 26.0) icon = '🔴';
-        else if (maxTemp > 25.0) icon = '🟡';
-        else if (maxTemp < 17.0) icon = '🔵';
-        document.title = `${icon} ${maxTemp.toFixed(1)}°C | DC-SDI`;
+        
+        let offlineNums = [];
+        if (!online61)  offlineNums.push('1');
+        if (!online77)  offlineNums.push('2');
+        if (!online139) offlineNums.push('3');
+        
+        let titleText;
+        
+        if (onlineCount === 0) {
+            titleText = `❗ SYSTEM DOWN | DC-SDI`;
+        } else if (offlineNums.length > 0) {
+            titleText = `🔴${offlineNums.join(',')} ${maxTemp.toFixed(1)}°C | DC-SDI`;
+        } else if (maxTemp > 26.0) {
+            titleText = `🔴 ${maxTemp.toFixed(1)}°C | DC-SDI`;
+        } else if (maxTemp > 25.0) {
+            titleText = `🟡 ${maxTemp.toFixed(1)}°C | DC-SDI`;
+        } else if (maxTemp < 17.0) {
+            titleText = `🔵 ${maxTemp.toFixed(1)}°C | DC-SDI`;
+        } else {
+            titleText = `🟢 ${maxTemp.toFixed(1)}°C | DC-SDI`;
+        }
+        
+        document.title = titleText;
     }
 
     function openModal(rack) {
@@ -1925,7 +1822,6 @@
         document.getElementById('labelBulanTerpilih').innerText = `${monthName} ${currentSelectedYear}`;
         document.getElementById('viewBulan').style.display = 'none'; 
         document.getElementById('viewHari').style.display = 'block';
-
         const daysInMonth = new Date(currentSelectedYear, parseInt(monthNum), 0).getDate();
         const dayNames = ['Min', 'Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab'];
         let html = "";
@@ -1933,10 +1829,7 @@
             const dayStr = i.toString().padStart(2, '0');
             const dObj = new Date(`${currentSelectedYear}-${monthNum}-${dayStr}`);
             const dName = dayNames[dObj.getDay()];
-            html += `<button class="btn-day" onclick="executeDownloadDailyNum('${dayStr}')">
-                        <span class="d-num">${i}</span>
-                        <span class="d-name">${dName}</span>
-                     </button>`;
+            html += `<button class="btn-day" onclick="executeDownloadDailyNum('${dayStr}')"><span class="d-num">${i}</span><span class="d-name">${dName}</span></button>`;
         }
         document.getElementById('csvDayGridUI').innerHTML = html;
     }
@@ -1947,13 +1840,11 @@
 
     function tarikDataFirebase(prefixKeyword, fileNameSuffix) {
         let btnText = event.target; let originalText = btnText.innerText; btnText.innerText = "Loading...";
-
         db.ref('history_suhu/' + targetRackExport).once('value').then((snap) => {
             btnText.innerText = originalText;
             if (!snap.exists()) { alert(`Data riwayat untuk rak ini belum tersedia.`); return; }
             let csv = "Hari, Tanggal, Jam, Suhu, Kelembaban\n";
             let hasData = false;
-            
             snap.forEach(c => { 
                 let fullKey = c.key; 
                 if (fullKey.startsWith(prefixKeyword)) {
@@ -1964,7 +1855,6 @@
                     } else if (fullKey.includes(' ')) {
                         let parts = fullKey.split(' '); datePart = parts[0]; timePart = parts[1];
                     }
-                    
                     let hariStr = "";
                     if(datePart !== "-") {
                         let d = new Date(datePart);
@@ -1973,15 +1863,12 @@
                             hariStr = hariArr[d.getDay()] + ", ";
                         }
                     }
-                    
                     let t = c.val().suhu ? c.val().suhu.toString() : "0.000";
                     let h = c.val().kelembaban || "0";
                     csv += `"${hariStr}${datePart}", ${timePart}, ${t}, ${h}\n`; 
                 }
             });
-
             if(!hasData) { alert(`Tidak ditemukan data pada periode: ${prefixKeyword}`); return; }
-
             const blob = new Blob(["\ufeff" + csv], { type: 'text/csv;charset=utf-8;' });
             const url = window.URL.createObjectURL(blob);
             const a = document.createElement('a'); a.href = url; a.download = `Log_${targetRackExport}_${fileNameSuffix}.csv`;
@@ -2004,16 +1891,13 @@
         document.getElementById('graphModal').style.display = 'flex';
     }
 
-    function closeGraphModal() { 
-        document.getElementById('graphModal').style.display = 'none'; 
-    }
+    function closeGraphModal() { document.getElementById('graphModal').style.display = 'none'; }
     
     function selectGraphMonth(monthNum, monthName) {
         currentSelectedMonthNum = monthNum;
         document.getElementById('graphLabelBulanTerpilih').innerText = `${monthName} ${currentSelectedYear}`;
         document.getElementById('graphViewBulan').style.display = 'none'; 
         document.getElementById('graphViewHari').style.display = 'block';
-
         const daysInMonth = new Date(currentSelectedYear, parseInt(monthNum), 0).getDate();
         const dayNames = ['Min', 'Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab'];
         let html = "";
@@ -2021,10 +1905,7 @@
             const dayStr = i.toString().padStart(2, '0');
             const dObj = new Date(`${currentSelectedYear}-${monthNum}-${dayStr}`);
             const dName = dayNames[dObj.getDay()];
-            html += `<button class="btn-day" onclick="renderGraphData('${dayStr}')">
-                        <span class="d-num">${i}</span>
-                        <span class="d-name">${dName}</span>
-                     </button>`;
+            html += `<button class="btn-day" onclick="renderGraphData('${dayStr}')"><span class="d-num">${i}</span><span class="d-name">${dName}</span></button>`;
         }
         document.getElementById('graphDayGridUI').innerHTML = html;
     }
@@ -2041,7 +1922,6 @@
 
     function renderGraphData(dayStr) {
         let prefix = ""; let isFullMonth = false; let namaFileDate = "";
-        
         if (dayStr === "FULL") {
             prefix = `${currentSelectedYear}-${currentSelectedMonthNum}`;
             namaFileDate = `Bulan_${prefix}`; isFullMonth = true;
@@ -2049,16 +1929,12 @@
             prefix = `${currentSelectedYear}-${currentSelectedMonthNum}-${dayStr}`;
             namaFileDate = `Tanggal_${prefix}`;
         }
-
         document.getElementById('graphLoadingMsg').style.display = 'block';
-
         db.ref('history_suhu/' + targetRackGraph).once('value').then((snap) => {
             if (!snap.exists()) { 
                 alert("Data riwayat tidak ditemukan."); document.getElementById('graphLoadingMsg').style.display = 'none'; return; 
             }
-
             let labelsTime = []; let dataTemp = [];
-
             snap.forEach(c => {
                 let fullKey = c.key;
                 if (fullKey.startsWith(prefix)) {
@@ -2075,29 +1951,18 @@
                     labelsTime.push(timePart); dataTemp.push(c.val().suhu);
                 }
             });
-
             if (labelsTime.length === 0) {
                 alert(`Tidak ada data tersimpan pada periode: ${prefix}`); document.getElementById('graphLoadingMsg').style.display = 'none'; return;
             }
-
             document.getElementById('graphSelectionArea').style.display = 'none';
             document.getElementById('graphViewerArea').style.display = 'block';
             document.getElementById('graphViewerTitle').innerText = `DATA SUHU TANGGAL: ${isFullMonth ? currentSelectedYear + '-' + currentSelectedMonthNum : prefix}`;
             currentGraphFilename = `Grafik_Suhu_${targetRackGraph}_${namaFileDate}.png`;
-
             if (bigChartInstance) { bigChartInstance.destroy(); }
-
             let lineColor = '#38bdf8'; 
             let bgColor = 'rgba(56, 189, 248, 0.1)';
-            
-            if(targetRackGraph === 'rack_77') {
-                lineColor = '#24bbbd'; 
-                bgColor = 'rgba(36, 187, 189, 0.1)';
-            } else if(targetRackGraph === 'rack_139') {
-                lineColor = '#10b981'; 
-                bgColor = 'rgba(16, 185, 129, 0.1)';
-            }
-
+            if(targetRackGraph === 'rack_77') { lineColor = '#24bbbd'; bgColor = 'rgba(36, 187, 189, 0.1)'; }
+            else if(targetRackGraph === 'rack_139') { lineColor = '#10b981'; bgColor = 'rgba(16, 185, 129, 0.1)'; }
             const ctxModal = document.getElementById('modalViewChart').getContext('2d');
             bigChartInstance = new Chart(ctxModal, {
                 type: 'line',
@@ -2113,8 +1978,7 @@
                     }]
                 },
                 options: {
-                    animation: false, 
-                    responsive: true, maintainAspectRatio: false,
+                    animation: false, responsive: true, maintainAspectRatio: false,
                     plugins: { legend: { display: true, labels: {color: '#fff'} }, tooltip: { mode: 'index', intersect: false } },
                     scales: { 
                         x: { ticks: { color: '#94a3b8', font: { size: 10 }, maxTicksLimit: 12 }, grid: { color: 'rgba(255,255,255,0.05)' } },
@@ -2122,7 +1986,6 @@
                     }
                 }
             });
-
             document.getElementById('graphLoadingMsg').style.display = 'none';
         });
     }
@@ -2138,21 +2001,14 @@
 
     function parseStamp(stamp) {
         if (!stamp) return { time: "--:--", date: "--/--/--" };
-        
-        if (stamp.includes('(')) {
-            let parts = stamp.split(' (');
-            return { time: parts[0], date: parts[1].replace(')','') };
-        }
-        
+        if (stamp.includes('(')) { let parts = stamp.split(' ('); return { time: parts[0], date: parts[1].replace(')','') }; }
         let parts = stamp.split(' ');
         if (parts.length > 1) {
             let timePart = parts.find(p => p.includes(':')) || "--:--";
             let datePart = parts.filter(p => !p.includes(':')).join(' ');
             return { time: timePart, date: datePart || "--/--/--" };
         }
-        
         if (stamp.includes(':')) return { time: stamp, date: "--/--/--" };
-        
         return { time: "--:--", date: stamp };
     }
 
@@ -2161,69 +2017,4 @@
         if (d) {
             const now = new Date();
             const timeStr = now.getHours().toString().padStart(2, '0') + ":" + now.getMinutes().toString().padStart(2, '0');
-            const dateStr = now.getDate().toString().padStart(2, '0') + "/" + (now.getMonth() + 1).toString().padStart(2, '0') + "/" + now.getFullYear().toString().slice(-2);
-            const stampStr = `${timeStr} (${dateStr})`;
-
-            if (d.ruangan !== undefined) {
-                lastUpdateR61 = Date.now();
-                const t = d.ruangan;
-                document.getElementById('val1').innerText = t.toFixed(1);
-                
-                if (Date.now() - lastFakeHumiUpdate > FAKE_HUMI_INTERVAL) {
-                    const baseHumi = 51.0; 
-                    lastFakeHumi61 = baseHumi + (Math.random() * 8); 
-                    lastFakeHumiUpdate = Date.now(); 
-                }
-                
-                const fluctuatedHumi = lastFakeHumi61;
-                document.getElementById('hum1').innerText = fluctuatedHumi.toFixed(1);
-                
-                updateAnalytic('61', t, history61);
-                updateRecordIfNeeded('61', t, stampStr);
-                
-                c1.data.datasets[0].data.push(t); c1.data.datasets[0].data.shift(); c1.update('none');
-                localStorage.setItem('hist61', JSON.stringify(history61));
-                
-                pushLog('logList1', t, fluctuatedHumi);
-            }
-            
-            const rack77Data = d.rack_77;
-            if (rack77Data !== undefined) {
-                const t = typeof rack77Data === 'number' ? rack77Data : rack77Data.suhu;
-                const h = typeof rack77Data === 'number' ? 0 : (rack77Data.kelembaban || 0);
-                if (t !== undefined && !isNaN(t)) {
-                    lastUpdateR77 = Date.now();
-                    document.getElementById('val77').innerText = t.toFixed(1);
-                    document.getElementById('hum77').innerText = h.toFixed(1);
-                    updateAnalytic('77', t, history77);
-                    updateRecordIfNeeded('77', t, stampStr);
-                    
-                    c3.data.datasets[0].data.push(t); c3.data.datasets[0].data.shift(); c3.update('none');
-                    localStorage.setItem('hist77', JSON.stringify(history77));
-                    
-                    pushLog('logList77', t, h);
-                }
-            }
-
-            if (d.pac !== undefined) {
-                lastUpdateR139 = Date.now();
-                const t = d.pac;
-                document.getElementById('val2').innerText = t.toFixed(1);
-                document.getElementById('hum2').innerText = (d.kelembaban || 0).toFixed(1);
-                updateAnalytic('139', t, history139);
-                updateRecordIfNeeded('139', t, stampStr);
-                
-                c2.data.datasets[0].data.push(t); c2.data.datasets[0].data.shift(); c2.update('none');
-                localStorage.setItem('hist139', JSON.stringify(history139));
-                
-                pushLog('logList2', t, d.kelembaban || 0);
-            }
-            
-            // === UPDATE MINI WIDGET & TAB TITLE SETIAP ADA DATA BARU ===
-            updateTabTitle();
-            syncPiPWidget();
-        }
-    });
-</script>
-</body>
-</html>
+            const dateStr = now.getDate().toString().padStart(2, '0') + "/" + (now.getMonth() + 1).toString().padStart(2, '0') + "/" + now
