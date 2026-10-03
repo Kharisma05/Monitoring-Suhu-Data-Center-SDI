@@ -1432,7 +1432,12 @@
         }
     }
 
-    // ========== FLOATING MONITORING (PICTURE-IN-PICTURE) ==========
+    // ============================================================
+    // ✅ FLOATING MONITORING (PICTURE-IN-PICTURE) — TRANSPARENT MODE
+    // Background body bisa transparan (tembus pandang).
+    // Teks RACK & Suhu tetap SOLID + text-shadow hitam agar jelas.
+    // Klik header widget untuk toggle antara TRANSPARENT ↔ SOLID.
+    // ============================================================
     let pipWindow = null;
     async function togglePiPWidget() {
         if (pipWindow && !pipWindow.closed) { pipWindow.close(); return; }
@@ -1445,25 +1450,94 @@
             const style = pipWindow.document.createElement('style');
             style.textContent = `
                 * { box-sizing: border-box; margin: 0; padding: 0; }
-                body { background: #050a10; color: #fff; font-family: 'Segoe UI', sans-serif; overflow: hidden; height: 100vh; display: flex; flex-direction: column; user-select: none; }
-                .pip-head { text-align: center; font-size: 9px; color: #64748b; letter-spacing: 2px; padding: 6px 0; font-weight: 700; background: rgba(56,189,248,0.05); border-bottom: 1px solid rgba(56,189,248,0.15); }
-                .rack-row { flex: 1; display: flex; justify-content: space-between; align-items: center; padding: 0 14px; border-bottom: 1px solid rgba(255,255,255,0.03); }
+
+                /* ✅ BACKGROUND TRANSPARAN (tembus pandang) — default */
+                html, body {
+                    background: transparent !important;
+                    color: #fff;
+                    font-family: 'Segoe UI', sans-serif;
+                    overflow: hidden; height: 100vh;
+                    display: flex; flex-direction: column;
+                    user-select: none;
+                    transition: background 0.3s ease;
+                }
+                /* Mode Solid (bisa di-toggle dari header) */
+                body.solid { background: #050a10 !important; }
+
+                .pip-head {
+                    display: flex; justify-content: center; align-items: center;
+                    gap: 6px; text-align: center;
+                    font-size: 9px; color: #94a3b8;
+                    letter-spacing: 1.5px; padding: 6px 8px;
+                    font-weight: 700;
+                    background: rgba(56,189,248,0.06);
+                    border-bottom: 1px solid rgba(56,189,248,0.2);
+                    cursor: pointer;
+                    backdrop-filter: blur(6px);
+                    -webkit-backdrop-filter: blur(6px);
+                }
+                .pip-head:hover { background: rgba(56,189,248,0.15); color: #fff; }
+                .pip-head .mode-badge {
+                    font-size: 8px; padding: 2px 6px; border-radius: 4px;
+                    background: rgba(16,185,129,0.2); color: #10b981;
+                    border: 1px solid rgba(16,185,129,0.5);
+                    font-weight: 800; letter-spacing: 1px;
+                }
+
+                .rack-row {
+                    flex: 1; display: flex; justify-content: space-between;
+                    align-items: center; padding: 0 14px;
+                    border-bottom: 1px solid rgba(255,255,255,0.05);
+                }
                 .rack-row:last-child { border-bottom: none; }
-                .rack-label { font-size: 10px; font-weight: 800; color: #94a3b8; letter-spacing: 1px; }
-                .rack-temp { font-size: 30px; font-weight: 800; letter-spacing: -1.5px; transition: color .3s, text-shadow .3s; line-height: 1; }
-                .ok   { color: #10b981; text-shadow: 0 0 10px rgba(16,185,129,0.4); }
-                .warn { color: #f59e0b; text-shadow: 0 0 12px rgba(245,158,11,0.5); }
-                .crit { color: #ef4444; text-shadow: 0 0 18px rgba(239,68,68,0.9); animation: pipBlink 1s ease-in-out infinite; }
-                .cool { color: #38bdf8; text-shadow: 0 0 12px rgba(56,189,248,0.6); }
+
+                /* ✅ Teks tetap SOLID + text-shadow hitam agar jelas dibaca */
+                .rack-label {
+                    font-size: 10px; font-weight: 800; color: #cbd5e1;
+                    letter-spacing: 1px;
+                    text-shadow: 0 0 6px rgba(0,0,0,0.95), 0 0 3px rgba(0,0,0,1);
+                }
+                .rack-temp {
+                    font-size: 30px; font-weight: 800; letter-spacing: -1.5px;
+                    transition: color .3s, text-shadow .3s;
+                    line-height: 1;
+                    text-shadow: 0 0 6px rgba(0,0,0,0.95), 0 0 3px rgba(0,0,0,1);
+                }
+
+                .ok   { color: #10b981; }
+                .warn { color: #f59e0b; }
+                .crit { color: #ef4444; animation: pipBlink 1s ease-in-out infinite; }
+                .cool { color: #38bdf8; }
                 @keyframes pipBlink { 0%,100% { opacity: 1; } 50% { opacity: 0.55; } }
             `;
             pipWindow.document.head.appendChild(style);
             pipWindow.document.body.innerHTML = `
-                <div class="pip-head">DC-SDI · LIVE THERMAL TELEMETRY WIDGET</div>
+                <div class="pip-head" id="pipHead" title="Klik untuk ubah mode background (Transparent/Solid)">
+                    <span>DC-SDI · LIVE</span>
+                    <span class="mode-badge" id="pipModeBadge">TRANSPARENT</span>
+                </div>
                 <div class="rack-row"><span class="rack-label">RACK 61</span><span class="rack-temp" id="pip-t61">--</span></div>
                 <div class="rack-row"><span class="rack-label">RACK 77</span><span class="rack-temp" id="pip-t77">--</span></div>
                 <div class="rack-row"><span class="rack-label">RACK 139</span><span class="rack-temp" id="pip-t139">--</span></div>
             `;
+
+            // ✅ Toggle Transparent ↔ Solid saat header diklik
+            const head = pipWindow.document.getElementById('pipHead');
+            const badge = pipWindow.document.getElementById('pipModeBadge');
+            head.addEventListener('click', () => {
+                const b = pipWindow.document.body;
+                b.classList.toggle('solid');
+                const isSolid = b.classList.contains('solid');
+                badge.innerText = isSolid ? 'SOLID' : 'TRANSPARENT';
+                badge.style.color = isSolid ? '#38bdf8' : '#10b981';
+                badge.style.background = isSolid
+                    ? 'rgba(56,189,248,0.2)'
+                    : 'rgba(16,185,129,0.2)';
+                badge.style.borderColor = isSolid
+                    ? 'rgba(56,189,248,0.5)'
+                    : 'rgba(16,185,129,0.5)';
+            });
+
             pipWindow.addEventListener('pagehide', () => {
                 pipWindow = null;
                 const s = document.getElementById('pipStatusText');
@@ -1473,12 +1547,14 @@
                 const icon = document.getElementById('pipIcon');
                 if (icon) { icon.style.color = 'var(--accent-blue)'; }
             });
+
             const s = document.getElementById('pipStatusText');
             if (s) { s.innerText = 'ON'; s.style.color = 'var(--accent-green)'; }
             const btn = document.getElementById('pipToggleBtn');
             if (btn) { btn.style.borderColor = 'rgba(16, 185, 129, 0.5)'; btn.style.borderTopColor = 'rgba(16, 185, 129, 0.8)'; }
             const icon = document.getElementById('pipIcon');
             if (icon) { icon.style.color = 'var(--accent-green)'; }
+
             syncPiPWidget();
         } catch(e) { console.error('PiP error:', e); alert('Gagal membuka floating monitor: ' + e.message); }
     }
@@ -1768,4 +1844,4 @@
     });
 </script>
 </body>
-                </html>
+</html>
