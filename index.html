@@ -67,7 +67,6 @@
         }
         .dot-icon { font-size: 13px; line-height: 1; display: flex; align-items: center; text-shadow: 0 0 8px currentColor;}
 
-        /* ========== LINGKARAN MERAH NOMOR ESP ========== */
         .dot-icon.offline-circle {
             display: inline-flex;
             align-items: center;
@@ -89,7 +88,6 @@
             50%      { box-shadow: 0 0 16px rgba(239, 68, 68, 1), inset 0 1px 1px rgba(255,255,255,0.6); }
         }
 
-        /* ========== TANDA SERU MERAH (SEMUA ESP MATI) ========== */
         .dot-icon.offline-exclaim {
             display: inline-flex;
             align-items: center;
@@ -266,7 +264,6 @@
             100% { transform: scale(1); opacity: 1; text-shadow: 0 0 10px var(--accent-red); }
         }
 
-        /* ========== PANEL RIWAYAT NOTIFIKASI ========== */
         .notification-history-panel {
             grid-column: 1 / -1;
             background-color: var(--card-color);
@@ -295,9 +292,6 @@
         .notification-type.verycritical { background: rgba(255, 0, 0, 0.3); color: #ff5555; font-weight: 900; }
         .notification-type.emergency { background: rgba(180, 0, 0, 0.4); color: #ff0000; font-weight: 900; animation: pulse 1s infinite; }
 
-        /* ============================================================
-           ✅ PERUBAHAN #1: HEADER MOBILE SEMUA CENTER
-           ============================================================ */
         @media (max-width: 768px) {
             header { 
                 flex-direction: column !important; 
@@ -1433,75 +1427,178 @@
     }
 
     // ============================================================
-    // ✅ FLOATING MONITORING (PICTURE-IN-PICTURE) — TRANSPARENT MODE
-    // Background body bisa transparan (tembus pandang).
-    // Teks RACK & Suhu tetap SOLID + text-shadow hitam agar jelas.
-    // Klik header widget untuk toggle antara TRANSPARENT ↔ SOLID.
+    // FLOATING MONITORING (DOCUMENT PICTURE-IN-PICTURE)
+    // - Background TRANSPARENT by default (tembus pandang)
+    // - Slider 0-100% untuk atur tingkat transparansi background
+    // - Teks RACK & Suhu SOLID + text-shadow hitam agar jelas
+    // - Tombol ✕ untuk tutup widget
     // ============================================================
     let pipWindow = null;
     async function togglePiPWidget() {
         if (pipWindow && !pipWindow.closed) { pipWindow.close(); return; }
         if (!('documentPictureInPicture' in window)) {
-            alert('⚠️ Floating Monitoring butuh Chrome / Edge versi 116+.');
+            alert('⚠️ Floating Monitoring butuh Chrome / Edge versi 116+.\n\nPastikan browser Anda mendukung Document Picture-in-Picture API.');
             return;
         }
         try {
-            pipWindow = await documentPictureInPicture.requestWindow({ width: 240, height: 175 });
+            pipWindow = await documentPictureInPicture.requestWindow({ width: 300, height: 200 });
+
+            // Force transparent di documentElement & body sebelum CSS lain
+            pipWindow.document.documentElement.style.setProperty('background', 'transparent', 'important');
+            pipWindow.document.documentElement.style.setProperty('background-color', 'transparent', 'important');
+            pipWindow.document.body.style.setProperty('background', 'transparent', 'important');
+            pipWindow.document.body.style.setProperty('background-color', 'transparent', 'important');
+
             const style = pipWindow.document.createElement('style');
             style.textContent = `
                 * { box-sizing: border-box; margin: 0; padding: 0; }
 
-                /* ✅ BACKGROUND TRANSPARAN (tembus pandang) — default */
-                html, body {
+                html {
                     background: transparent !important;
+                    background-color: transparent !important;
+                    height: 100%;
+                }
+                body {
+                    background: transparent !important;
+                    background-color: transparent !important;
                     color: #fff;
                     font-family: 'Segoe UI', sans-serif;
-                    overflow: hidden; height: 100vh;
-                    display: flex; flex-direction: column;
+                    overflow: hidden;
+                    height: 100vh;
+                    display: flex;
+                    flex-direction: column;
                     user-select: none;
-                    transition: background 0.3s ease;
+                    position: relative;
+                    --pip-bg: rgba(5, 10, 16, 0);
                 }
-                /* Mode Solid (bisa di-toggle dari header) */
-                body.solid { background: #050a10 !important; }
+                /* Overlay background semi-transparan, dikontrol slider */
+                body::before {
+                    content: '';
+                    position: absolute;
+                    inset: 0;
+                    background: var(--pip-bg);
+                    pointer-events: none;
+                    z-index: 0;
+                    transition: background 0.15s ease;
+                }
 
                 .pip-head {
-                    display: flex; justify-content: center; align-items: center;
-                    gap: 6px; text-align: center;
-                    font-size: 9px; color: #94a3b8;
-                    letter-spacing: 1.5px; padding: 6px 8px;
-                    font-weight: 700;
-                    background: rgba(56,189,248,0.06);
-                    border-bottom: 1px solid rgba(56,189,248,0.2);
-                    cursor: pointer;
-                    backdrop-filter: blur(6px);
-                    -webkit-backdrop-filter: blur(6px);
+                    position: relative;
+                    z-index: 2;
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                    gap: 6px;
+                    padding: 5px 8px;
+                    background: rgba(56,189,248,0.10);
+                    border-bottom: 1px solid rgba(56,189,248,0.25);
+                    backdrop-filter: blur(4px);
+                    -webkit-backdrop-filter: blur(4px);
                 }
-                .pip-head:hover { background: rgba(56,189,248,0.15); color: #fff; }
-                .pip-head .mode-badge {
-                    font-size: 8px; padding: 2px 6px; border-radius: 4px;
-                    background: rgba(16,185,129,0.2); color: #10b981;
-                    border: 1px solid rgba(16,185,129,0.5);
-                    font-weight: 800; letter-spacing: 1px;
+                .pip-title {
+                    font-size: 8px;
+                    font-weight: 800;
+                    color: #cbd5e1;
+                    letter-spacing: 1px;
+                    white-space: nowrap;
+                    overflow: hidden;
+                    text-overflow: ellipsis;
+                    flex: 1;
+                    text-shadow: 0 0 6px rgba(0,0,0,0.95), 0 0 3px rgba(0,0,0,1);
+                }
+                .pip-controls {
+                    display: flex;
+                    align-items: center;
+                    gap: 4px;
+                    flex-shrink: 0;
+                }
+                .pip-controls input[type="range"] {
+                    width: 55px;
+                    height: 12px;
+                    -webkit-appearance: none;
+                    appearance: none;
+                    background: rgba(0,0,0,0.5);
+                    border-radius: 6px;
+                    outline: none;
+                    cursor: pointer;
+                    border: 1px solid rgba(56,189,248,0.4);
+                }
+                .pip-controls input[type="range"]::-webkit-slider-thumb {
+                    -webkit-appearance: none;
+                    appearance: none;
+                    width: 12px;
+                    height: 12px;
+                    border-radius: 50%;
+                    background: #38bdf8;
+                    cursor: pointer;
+                    box-shadow: 0 0 6px rgba(56,189,248,0.9);
+                }
+                .pip-controls input[type="range"]::-moz-range-thumb {
+                    width: 12px;
+                    height: 12px;
+                    border-radius: 50%;
+                    background: #38bdf8;
+                    cursor: pointer;
+                    border: none;
+                    box-shadow: 0 0 6px rgba(56,189,248,0.9);
+                }
+                .pip-opacity-val {
+                    font-size: 8px;
+                    font-weight: 900;
+                    color: #38bdf8;
+                    min-width: 26px;
+                    text-align: right;
+                    text-shadow: 0 0 4px rgba(0,0,0,0.9);
+                }
+                .pip-close-btn {
+                    background: rgba(239,68,68,0.25);
+                    border: 1px solid rgba(239,68,68,0.6);
+                    color: #ef4444;
+                    width: 16px;
+                    height: 16px;
+                    border-radius: 50%;
+                    cursor: pointer;
+                    font-size: 10px;
+                    font-weight: 900;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    padding: 0;
+                    line-height: 1;
+                    transition: 0.2s;
+                }
+                .pip-close-btn:hover {
+                    background: rgba(239,68,68,0.7);
+                    color: #fff;
                 }
 
                 .rack-row {
-                    flex: 1; display: flex; justify-content: space-between;
-                    align-items: center; padding: 0 14px;
-                    border-bottom: 1px solid rgba(255,255,255,0.05);
+                    position: relative;
+                    z-index: 1;
+                    flex: 1;
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                    padding: 0 14px;
+                    border-bottom: 1px solid rgba(255,255,255,0.08);
                 }
                 .rack-row:last-child { border-bottom: none; }
 
-                /* ✅ Teks tetap SOLID + text-shadow hitam agar jelas dibaca */
+                /* Teks SOLID + text-shadow hitam ganda agar jelas di atas apapun */
                 .rack-label {
-                    font-size: 10px; font-weight: 800; color: #cbd5e1;
+                    font-size: 10px;
+                    font-weight: 800;
+                    color: #e2e8f0;
                     letter-spacing: 1px;
-                    text-shadow: 0 0 6px rgba(0,0,0,0.95), 0 0 3px rgba(0,0,0,1);
+                    text-shadow: 0 0 8px rgba(0,0,0,1), 0 0 4px rgba(0,0,0,1), 0 1px 2px rgba(0,0,0,0.95);
                 }
                 .rack-temp {
-                    font-size: 30px; font-weight: 800; letter-spacing: -1.5px;
-                    transition: color .3s, text-shadow .3s;
+                    font-size: 30px;
+                    font-weight: 800;
+                    letter-spacing: -1.5px;
                     line-height: 1;
-                    text-shadow: 0 0 6px rgba(0,0,0,0.95), 0 0 3px rgba(0,0,0,1);
+                    transition: color .3s;
+                    text-shadow: 0 0 8px rgba(0,0,0,1), 0 0 4px rgba(0,0,0,1), 0 1px 2px rgba(0,0,0,0.95);
                 }
 
                 .ok   { color: #10b981; }
@@ -1511,31 +1608,36 @@
                 @keyframes pipBlink { 0%,100% { opacity: 1; } 50% { opacity: 0.55; } }
             `;
             pipWindow.document.head.appendChild(style);
+
             pipWindow.document.body.innerHTML = `
-                <div class="pip-head" id="pipHead" title="Klik untuk ubah mode background (Transparent/Solid)">
-                    <span>DC-SDI · LIVE</span>
-                    <span class="mode-badge" id="pipModeBadge">TRANSPARENT</span>
+                <div class="pip-head">
+                    <span class="pip-title">DC-SDI · LIVE THERMAL TELEMETRY WIDGET</span>
+                    <div class="pip-controls">
+                        <input type="range" id="pipOpacity" min="0" max="100" value="0" title="Atur transparansi background (0% = transparan penuh)">
+                        <span class="pip-opacity-val" id="pipOpacityVal">0%</span>
+                        <button class="pip-close-btn" id="pipCloseBtn" title="Tutup widget">✕</button>
+                    </div>
                 </div>
                 <div class="rack-row"><span class="rack-label">RACK 61</span><span class="rack-temp" id="pip-t61">--</span></div>
                 <div class="rack-row"><span class="rack-label">RACK 77</span><span class="rack-temp" id="pip-t77">--</span></div>
                 <div class="rack-row"><span class="rack-label">RACK 139</span><span class="rack-temp" id="pip-t139">--</span></div>
             `;
 
-            // ✅ Toggle Transparent ↔ Solid saat header diklik
-            const head = pipWindow.document.getElementById('pipHead');
-            const badge = pipWindow.document.getElementById('pipModeBadge');
-            head.addEventListener('click', () => {
-                const b = pipWindow.document.body;
-                b.classList.toggle('solid');
-                const isSolid = b.classList.contains('solid');
-                badge.innerText = isSolid ? 'SOLID' : 'TRANSPARENT';
-                badge.style.color = isSolid ? '#38bdf8' : '#10b981';
-                badge.style.background = isSolid
-                    ? 'rgba(56,189,248,0.2)'
-                    : 'rgba(16,185,129,0.2)';
-                badge.style.borderColor = isSolid
-                    ? 'rgba(56,189,248,0.5)'
-                    : 'rgba(16,185,129,0.5)';
+            // Slider kontrol transparansi background
+            const slider = pipWindow.document.getElementById('pipOpacity');
+            const sliderVal = pipWindow.document.getElementById('pipOpacityVal');
+            const applyOpacity = (percent) => {
+                const alpha = Math.max(0, Math.min(100, percent)) / 100;
+                pipWindow.document.body.style.setProperty('--pip-bg', `rgba(5, 10, 16, ${alpha})`);
+                sliderVal.innerText = percent + '%';
+            };
+            slider.addEventListener('input', (e) => applyOpacity(parseInt(e.target.value)));
+            applyOpacity(0);
+
+            // Tombol tutup
+            pipWindow.document.getElementById('pipCloseBtn').addEventListener('click', (e) => {
+                e.stopPropagation();
+                pipWindow.close();
             });
 
             pipWindow.addEventListener('pagehide', () => {
@@ -1583,8 +1685,7 @@
     }
 
     // ================================================================
-    // ✅ PERUBAHAN #2: updateTabTitle() — HANYA STATUS ESP + NAMA SITUS
-    // Tidak ada suhu. Suhu tetap tersedia di dashboard & floating monitor.
+    // updateTabTitle() — HANYA STATUS ESP + NAMA SITUS
     // ================================================================
     function updateTabTitle() {
         const now = Date.now();
@@ -1596,17 +1697,14 @@
         let titleText;
         
         if (onlineCount === 0) {
-            // ❗ SEMUA ESP MATI
             titleText = `❗ DC-SDI`;
         } else if (onlineCount < 3) {
-            // 1-2 ESP mati → tampilkan nomor dalam lingkaran
             let offlineNums = [];
             if (!online61)  offlineNums.push('❶');
             if (!online77)  offlineNums.push('❷');
             if (!online139) offlineNums.push('❸');
             titleText = `${offlineNums.join(' ')} DC-SDI`;
         } else {
-            // Semua online → hijau
             titleText = `🟢 DC-SDI`;
         }
         
