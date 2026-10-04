@@ -1259,6 +1259,10 @@
         }
     }
 
+    // ================================================================
+    // checkDeviceStatus — DIPERBAIKI: kartu Humidity & Log tidak lagi
+    // nyangkut aura merah setelah ESP kembali online.
+    // ================================================================
     function checkDeviceStatus() {
         const now = Date.now();
         const racks = [
@@ -1292,7 +1296,10 @@
                 ind.classList.remove('offline');
                 ind.style.color = ''; ind.style.borderColor = ''; ind.style.borderTopColor = '';
                 ind.style.background = ''; ind.style.boxShadow = '';
-                cards.forEach(c => c.classList.remove('device-offline'));
+                cards.forEach(c => {
+                    c.classList.remove('device-offline');
+                    c.classList.remove('glow-red'); // FIX: hilangkan aura merah dari Humidity & Log
+                });
             }
         });
         updateTabTitle();
@@ -1357,15 +1364,9 @@
     }
 
     // ================================================================
-    // FLOATING MONITORING (PiP) — MODE PUTIH (MAX TRANSPARAN) & HITAM (SOLID)
+    // FLOATING MONITORING (PiP) — MODE PUTIH & HITAM
     // ================================================================
-    // Mode PUTIH: seluruh layer (html, body) di-force transparan total, ditambah
-    //             color-scheme: normal supaya Chrome tidak memaksa paint gelap.
-    //             Teks diberi stroke + multi-layer shadow agar tetap terbaca di
-    //             latar apapun (termasuk wallpaper, aplikasi, dokumen).
-    // Mode HITAM: solid dark background, seperti biasa.
-    // ================================================================
-    let pipMode = 'WHITE'; // default PUTIH (max transparan)
+    let pipMode = 'WHITE';
     try {
         const savedMode = localStorage.getItem('pipMode');
         if (savedMode === 'BLACK' || savedMode === 'WHITE') pipMode = savedMode;
@@ -1380,21 +1381,17 @@
         if (!root || !body) return;
 
         if (pipMode === 'BLACK') {
-            // ==== MODE HITAM — solid dark, teks normal ====
             root.style.cssText = 'background:#050a10 !important; color-scheme:dark;';
             body.style.cssText = 'background:#050a10 !important; background-color:#050a10 !important; background-image:none !important; backdrop-filter:none !important; -webkit-backdrop-filter:none !important;';
             body.classList.remove('mode-white');
             body.classList.add('mode-black');
         } else {
-            // ==== MODE PUTIH — transparansi maksimal ====
-            // Force SEMUA layer jadi transparan, matikan color-scheme dark
             root.style.cssText = 'background:transparent !important; background-color:transparent !important; background-image:none !important; color-scheme:normal !important;';
             body.style.cssText = 'background:transparent !important; background-color:rgba(0,0,0,0) !important; background-image:none !important; backdrop-filter:none !important; -webkit-backdrop-filter:none !important;';
             body.classList.remove('mode-black');
             body.classList.add('mode-white');
         }
 
-        // Update tombol aktif
         const btnW = doc.getElementById('pip-btn-white');
         const btnB = doc.getElementById('pip-btn-black');
         if (btnW) btnW.classList.toggle('active', pipMode === 'WHITE');
@@ -1446,7 +1443,6 @@
                     position: relative;
                 }
 
-                /* ============ HEADER ============ */
                 .pip-head { position: relative; height: 26px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; background: transparent; }
                 .pip-title { font-size: 9px; color: #e2e8f0; letter-spacing: 2px; font-weight: 700; white-space: nowrap; transition: opacity .2s ease; text-shadow: 0 0 2px #000, 0 0 3px #000, 0 0 6px #000; }
                 .pip-op-bar { position: absolute; top: 0; left: 0; right: 0; bottom: 0; display: flex; align-items: center; justify-content: center; gap: 6px; opacity: 0; pointer-events: none; transition: opacity .2s ease; }
@@ -1479,12 +1475,10 @@
                 }
                 .pip-mode-btn .dot-preview.dark { background: #050a10; }
 
-                /* ============ RACK ROWS ============ */
                 .rack-row { flex: 1; display: flex; justify-content: space-between; align-items: center; padding: 0 14px; background: transparent; }
                 .rack-label { font-size: 10px; font-weight: 800; color: #f1f5f9; letter-spacing: 1px; }
                 .rack-temp { font-size: 30px; font-weight: 800; letter-spacing: -1.5px; transition: color .3s; line-height: 1; }
 
-                /* ============ WARNA STATUS (default hitam mode) ============ */
                 .ok   { color: #34d399; text-shadow: 0 0 2px #000, 0 0 3px #000, 0 0 6px #000, 0 0 12px rgba(16,185,129,0.5); }
                 .warn { color: #fbbf24; text-shadow: 0 0 2px #000, 0 0 3px #000, 0 0 6px #000, 0 0 12px rgba(245,158,11,0.6); }
                 .crit { color: #f87171; text-shadow: 0 0 2px #000, 0 0 3px #000, 0 0 6px #000, 0 0 16px rgba(239,68,68,0.9); animation: pipBlink 1s ease-in-out infinite; }
@@ -1494,9 +1488,6 @@
 
                 .rack-label { text-shadow: 0 0 2px #000, 0 0 3px #000, 0 0 6px #000; }
 
-                /* ============ MODE PUTIH — TEKS SUPER TERBACA ============ */
-                /* Gunakan stroke hitam tebal + multi-layer shadow putih & hitam
-                   supaya teks tetap terbaca di latar terang / gelap / warna apapun. */
                 body.mode-white .pip-title {
                     -webkit-text-stroke: 0.8px rgba(0,0,0,0.95);
                     paint-order: stroke fill;
@@ -1538,7 +1529,6 @@
                     text-shadow: 0 0 2px #000, 0 0 4px #000, 0 0 8px #000, 0 0 14px rgba(0,0,0,0.85);
                 }
 
-                /* ============ ALARM FRAME ============ */
                 body.alarm-warn { box-shadow: inset 0 0 0 3px rgba(245,158,11,0.95); }
                 body.alarm-crit { animation: pipAlarm .8s ease-in-out infinite; }
                 @keyframes pipAlarm {
