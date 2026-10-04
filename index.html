@@ -433,7 +433,6 @@
 </header>
 
 <div class="dashboard-grid">
-    <!-- RACK 61 -->
     <div class="card r61-group" id="card-temp-61">
         <div class="card-label-row">
             <span class="card-label">TEMPERATURE RACK 61</span>
@@ -496,7 +495,6 @@
         <div id="logList1" class="log-list"></div>
     </div>
 
-    <!-- RACK 77 -->
     <div class="card r77-group" id="card-temp-77">
         <div class="card-label-row">
             <span class="card-label">TEMPERATURE RACK 77</span>
@@ -559,7 +557,6 @@
         <div id="logList77" class="log-list"></div>
     </div>
 
-    <!-- RACK 139 -->
     <div class="card r139-group" id="card-temp-139">
         <div class="card-label-row">
             <span class="card-label">TEMPERATURE RACK 139</span>
@@ -622,7 +619,6 @@
         <div id="logList2" class="log-list"></div>
     </div>
 
-    <!-- PANEL RIWAYAT NOTIFIKASI -->
     <div class="notification-history-panel" id="notificationHistoryPanel">
         <div class="panel-header" onclick="toggleNotificationHistory()">
             <span class="panel-title">
@@ -671,97 +667,23 @@
     </div>
 </div>
 
-<!-- Toast container -->
 <div class="toast-container" id="toastContainer">
-    <div class="toast-card" id="toast-61-1">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
-            <span style="font-weight: 800; font-size: 11px; color: var(--accent-orange);"><i class="fa-solid fa-triangle-exclamation"></i> RACK 61 ALERT (15 MIN)</span>
-            <i class="fa-solid fa-xmark" onclick="hideToast('61')" style="cursor: pointer; font-size: 14px; color: var(--text-dim);"></i>
-        </div>
-        <div id="toast-msg-61-1" style="font-size: 10px; color: var(--text-dim); line-height: 1.4;">⏱️ Suhu tidak kunjung turun selama 15 menit.</div>
-    </div>
-    <div class="toast-card critical" id="toast-61-2">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
-            <span style="font-weight: 800; font-size: 11px; color: var(--accent-red);"><i class="fa-solid fa-circle-exclamation"></i> RACK 61 CRITICAL (30 MIN)</span>
-            <i class="fa-solid fa-xmark" onclick="hideToast('61')" style="cursor: pointer; font-size: 14px; color: var(--text-dim);"></i>
-        </div>
-        <div id="toast-msg-61-2" style="font-size: 10px; color: var(--text-dim); line-height: 1.4;">🔴 KONDISI KRITIS!</div>
-    </div>
-    <div class="toast-card critical" id="toast-61-3">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
-            <span style="font-weight: 800; font-size: 11px; color: var(--accent-red);"><i class="fa-solid fa-circle-exclamation"></i> RACK 61 SANGAT KRITIS (45 MIN)</span>
-            <i class="fa-solid fa-xmark" onclick="hideToast('61')" style="cursor: pointer; font-size: 14px; color: var(--text-dim);"></i>
-        </div>
-        <div id="toast-msg-61-3" style="font-size: 10px; color: var(--text-dim); line-height: 1.4;">🔴🔴 SANGAT KRITIS!</div>
-    </div>
-    <div class="toast-card critical" id="toast-61-4">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
-            <span style="font-weight: 800; font-size: 11px; color: var(--accent-red);"><i class="fa-solid fa-circle-exclamation"></i> RACK 61 DARURAT (60 MIN)</span>
-            <i class="fa-solid fa-xmark" onclick="hideToast('61')" style="cursor: pointer; font-size: 14px; color: var(--text-dim);"></i>
-        </div>
-        <div id="toast-msg-61-4" style="font-size: 10px; color: var(--text-dim); line-height: 1.4;">🔴🔴🔴 DARURAT! 1 jam penuh!</div>
-    </div>
+    <div class="toast-card" id="toast-61-1"><div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;"><span style="font-weight: 800; font-size: 11px; color: var(--accent-orange);"><i class="fa-solid fa-triangle-exclamation"></i> RACK 61 ALERT (15 MIN)</span><i class="fa-solid fa-xmark" onclick="hideToast('61')" style="cursor: pointer; font-size: 14px; color: var(--text-dim);"></i></div><div id="toast-msg-61-1" style="font-size: 10px; color: var(--text-dim); line-height: 1.4;">⏱️ Suhu tidak kunjung turun selama 15 menit.</div></div>
+    <div class="toast-card critical" id="toast-61-2"><div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;"><span style="font-weight: 800; font-size: 11px; color: var(--accent-red);"><i class="fa-solid fa-circle-exclamation"></i> RACK 61 CRITICAL (30 MIN)</span><i class="fa-solid fa-xmark" onclick="hideToast('61')" style="cursor: pointer; font-size: 14px; color: var(--text-dim);"></i></div><div id="toast-msg-61-2" style="font-size: 10px; color: var(--text-dim); line-height: 1.4;">🔴 KONDISI KRITIS!</div></div>
+    <div class="toast-card critical" id="toast-61-3"><div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;"><span style="font-weight: 800; font-size: 11px; color: var(--accent-red);"><i class="fa-solid fa-circle-exclamation"></i> RACK 61 SANGAT KRITIS (45 MIN)</span><i class="fa-solid fa-xmark" onclick="hideToast('61')" style="cursor: pointer; font-size: 14px; color: var(--text-dim);"></i></div><div id="toast-msg-61-3" style="font-size: 10px; color: var(--text-dim); line-height: 1.4;">🔴🔴 SANGAT KRITIS!</div></div>
+    <div class="toast-card critical" id="toast-61-4"><div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;"><span style="font-weight: 800; font-size: 11px; color: var(--accent-red);"><i class="fa-solid fa-circle-exclamation"></i> RACK 61 DARURAT (60 MIN)</span><i class="fa-solid fa-xmark" onclick="hideToast('61')" style="cursor: pointer; font-size: 14px; color: var(--text-dim);"></i></div><div id="toast-msg-61-4" style="font-size: 10px; color: var(--text-dim); line-height: 1.4;">🔴🔴🔴 DARURAT! 1 jam penuh!</div></div>
 
-    <div class="toast-card" id="toast-77-1">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
-            <span style="font-weight: 800; font-size: 11px; color: var(--accent-orange);"><i class="fa-solid fa-triangle-exclamation"></i> RACK 77 ALERT (15 MIN)</span>
-            <i class="fa-solid fa-xmark" onclick="hideToast('77')" style="cursor: pointer; font-size: 14px; color: var(--text-dim);"></i>
-        </div>
-        <div id="toast-msg-77-1" style="font-size: 10px; color: var(--text-dim); line-height: 1.4;">⏱️ Suhu tidak kunjung turun.</div>
-    </div>
-    <div class="toast-card critical" id="toast-77-2">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
-            <span style="font-weight: 800; font-size: 11px; color: var(--accent-red);"><i class="fa-solid fa-circle-exclamation"></i> RACK 77 CRITICAL (30 MIN)</span>
-            <i class="fa-solid fa-xmark" onclick="hideToast('77')" style="cursor: pointer; font-size: 14px; color: var(--text-dim);"></i>
-        </div>
-        <div id="toast-msg-77-2" style="font-size: 10px; color: var(--text-dim); line-height: 1.4;">🔴 KONDISI KRITIS!</div>
-    </div>
-    <div class="toast-card critical" id="toast-77-3">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
-            <span style="font-weight: 800; font-size: 11px; color: var(--accent-red);"><i class="fa-solid fa-circle-exclamation"></i> RACK 77 SANGAT KRITIS (45 MIN)</span>
-            <i class="fa-solid fa-xmark" onclick="hideToast('77')" style="cursor: pointer; font-size: 14px; color: var(--text-dim);"></i>
-        </div>
-        <div id="toast-msg-77-3" style="font-size: 10px; color: var(--text-dim); line-height: 1.4;">🔴🔴 SANGAT KRITIS!</div>
-    </div>
-    <div class="toast-card critical" id="toast-77-4">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
-            <span style="font-weight: 800; font-size: 11px; color: var(--accent-red);"><i class="fa-solid fa-circle-exclamation"></i> RACK 77 DARURAT (60 MIN)</span>
-            <i class="fa-solid fa-xmark" onclick="hideToast('77')" style="cursor: pointer; font-size: 14px; color: var(--text-dim);"></i>
-        </div>
-        <div id="toast-msg-77-4" style="font-size: 10px; color: var(--text-dim); line-height: 1.4;">🔴🔴🔴 DARURAT! 1 jam penuh!</div>
-    </div>
+    <div class="toast-card" id="toast-77-1"><div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;"><span style="font-weight: 800; font-size: 11px; color: var(--accent-orange);"><i class="fa-solid fa-triangle-exclamation"></i> RACK 77 ALERT (15 MIN)</span><i class="fa-solid fa-xmark" onclick="hideToast('77')" style="cursor: pointer; font-size: 14px; color: var(--text-dim);"></i></div><div id="toast-msg-77-1" style="font-size: 10px; color: var(--text-dim); line-height: 1.4;">⏱️ Suhu tidak kunjung turun.</div></div>
+    <div class="toast-card critical" id="toast-77-2"><div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;"><span style="font-weight: 800; font-size: 11px; color: var(--accent-red);"><i class="fa-solid fa-circle-exclamation"></i> RACK 77 CRITICAL (30 MIN)</span><i class="fa-solid fa-xmark" onclick="hideToast('77')" style="cursor: pointer; font-size: 14px; color: var(--text-dim);"></i></div><div id="toast-msg-77-2" style="font-size: 10px; color: var(--text-dim); line-height: 1.4;">🔴 KONDISI KRITIS!</div></div>
+    <div class="toast-card critical" id="toast-77-3"><div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;"><span style="font-weight: 800; font-size: 11px; color: var(--accent-red);"><i class="fa-solid fa-circle-exclamation"></i> RACK 77 SANGAT KRITIS (45 MIN)</span><i class="fa-solid fa-xmark" onclick="hideToast('77')" style="cursor: pointer; font-size: 14px; color: var(--text-dim);"></i></div><div id="toast-msg-77-3" style="font-size: 10px; color: var(--text-dim); line-height: 1.4;">🔴🔴 SANGAT KRITIS!</div></div>
+    <div class="toast-card critical" id="toast-77-4"><div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;"><span style="font-weight: 800; font-size: 11px; color: var(--accent-red);"><i class="fa-solid fa-circle-exclamation"></i> RACK 77 DARURAT (60 MIN)</span><i class="fa-solid fa-xmark" onclick="hideToast('77')" style="cursor: pointer; font-size: 14px; color: var(--text-dim);"></i></div><div id="toast-msg-77-4" style="font-size: 10px; color: var(--text-dim); line-height: 1.4;">🔴🔴🔴 DARURAT! 1 jam penuh!</div></div>
 
-    <div class="toast-card" id="toast-139-1">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
-            <span style="font-weight: 800; font-size: 11px; color: var(--accent-orange);"><i class="fa-solid fa-triangle-exclamation"></i> RACK 139 ALERT (15 MIN)</span>
-            <i class="fa-solid fa-xmark" onclick="hideToast('139')" style="cursor: pointer; font-size: 14px; color: var(--text-dim);"></i>
-        </div>
-        <div id="toast-msg-139-1" style="font-size: 10px; color: var(--text-dim); line-height: 1.4;">⏱️ Suhu tidak kunjung turun.</div>
-    </div>
-    <div class="toast-card critical" id="toast-139-2">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
-            <span style="font-weight: 800; font-size: 11px; color: var(--accent-red);"><i class="fa-solid fa-circle-exclamation"></i> RACK 139 CRITICAL (30 MIN)</span>
-            <i class="fa-solid fa-xmark" onclick="hideToast('139')" style="cursor: pointer; font-size: 14px; color: var(--text-dim);"></i>
-        </div>
-        <div id="toast-msg-139-2" style="font-size: 10px; color: var(--text-dim); line-height: 1.4;">🔴 KONDISI KRITIS!</div>
-    </div>
-    <div class="toast-card critical" id="toast-139-3">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
-            <span style="font-weight: 800; font-size: 11px; color: var(--accent-red);"><i class="fa-solid fa-circle-exclamation"></i> RACK 139 SANGAT KRITIS (45 MIN)</span>
-            <i class="fa-solid fa-xmark" onclick="hideToast('139')" style="cursor: pointer; font-size: 14px; color: var(--text-dim);"></i>
-        </div>
-        <div id="toast-msg-139-3" style="font-size: 10px; color: var(--text-dim); line-height: 1.4;">🔴🔴 SANGAT KRITIS!</div>
-    </div>
-    <div class="toast-card critical" id="toast-139-4">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
-            <span style="font-weight: 800; font-size: 11px; color: var(--accent-red);"><i class="fa-solid fa-circle-exclamation"></i> RACK 139 DARURAT (60 MIN)</span>
-            <i class="fa-solid fa-xmark" onclick="hideToast('139')" style="cursor: pointer; font-size: 14px; color: var(--text-dim);"></i>
-        </div>
-        <div id="toast-msg-139-4" style="font-size: 10px; color: var(--text-dim); line-height: 1.4;">🔴🔴🔴 DARURAT! 1 jam penuh!</div>
-    </div>
+    <div class="toast-card" id="toast-139-1"><div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;"><span style="font-weight: 800; font-size: 11px; color: var(--accent-orange);"><i class="fa-solid fa-triangle-exclamation"></i> RACK 139 ALERT (15 MIN)</span><i class="fa-solid fa-xmark" onclick="hideToast('139')" style="cursor: pointer; font-size: 14px; color: var(--text-dim);"></i></div><div id="toast-msg-139-1" style="font-size: 10px; color: var(--text-dim); line-height: 1.4;">⏱️ Suhu tidak kunjung turun.</div></div>
+    <div class="toast-card critical" id="toast-139-2"><div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;"><span style="font-weight: 800; font-size: 11px; color: var(--accent-red);"><i class="fa-solid fa-circle-exclamation"></i> RACK 139 CRITICAL (30 MIN)</span><i class="fa-solid fa-xmark" onclick="hideToast('139')" style="cursor: pointer; font-size: 14px; color: var(--text-dim);"></i></div><div id="toast-msg-139-2" style="font-size: 10px; color: var(--text-dim); line-height: 1.4;">🔴 KONDISI KRITIS!</div></div>
+    <div class="toast-card critical" id="toast-139-3"><div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;"><span style="font-weight: 800; font-size: 11px; color: var(--accent-red);"><i class="fa-solid fa-circle-exclamation"></i> RACK 139 SANGAT KRITIS (45 MIN)</span><i class="fa-solid fa-xmark" onclick="hideToast('139')" style="cursor: pointer; font-size: 14px; color: var(--text-dim);"></i></div><div id="toast-msg-139-3" style="font-size: 10px; color: var(--text-dim); line-height: 1.4;">🔴🔴 SANGAT KRITIS!</div></div>
+    <div class="toast-card critical" id="toast-139-4"><div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;"><span style="font-weight: 800; font-size: 11px; color: var(--accent-red);"><i class="fa-solid fa-circle-exclamation"></i> RACK 139 DARURAT (60 MIN)</span><i class="fa-solid fa-xmark" onclick="hideToast('139')" style="cursor: pointer; font-size: 14px; color: var(--text-dim);"></i></div><div id="toast-msg-139-4" style="font-size: 10px; color: var(--text-dim); line-height: 1.4;">🔴🔴🔴 DARURAT! 1 jam penuh!</div></div>
 </div>
 
-<!-- Modal Export CSV -->
 <div id="monthModal" class="modal-overlay">
     <div class="modal-content">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
@@ -803,7 +725,6 @@
     </div>
 </div>
 
-<!-- Modal Grafik -->
 <div id="graphModal" class="modal-overlay">
     <div class="modal-content" style="width: 700px; max-width: 95%;">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
@@ -862,10 +783,9 @@
     </div>
 </div>
 
-<!-- Modal Alert Pop Up -->
 <div id="alertPopUp" class="modal-overlay" onclick="closeAlertPopUp(event)">
     <div class="modal-content" id="alertPopUpBox" style="text-align: center; border-color: var(--accent-red); box-shadow: 0 0 60px rgba(239, 68, 68, 0.6); max-width: 350px; transition: 0.3s; position: relative; animation: alertPulse 0.8s ease-in-out infinite;" onclick="event.stopPropagation()">
-        <button onclick="closeAlertPopUp(event, true)" style="position: absolute; top: 15px; right: 15px; background: rgba(239, 68, 68, 0.2); border: 2px solid var(--accent-red); color: var(--accent-red); width: 40px; height: 40px; border-radius: 50%; cursor: pointer; font-size: 20px; font-weight: bold; display: flex; align-items: center; justify-content: center;" onmouseover="this.style.background='rgba(239, 68, 68, 0.4)'; this.style.transform='scale(1.1)';" onmouseout="this.style.background='rgba(239, 68, 68, 0.2)'; this.style.transform='scale(1)';" title="Klik X untuk menghentikan alarm">✕</button>
+        <button onclick="closeAlertPopUp(event, true)" style="position: absolute; top: 15px; right: 15px; background: rgba(239, 68, 68, 0.2); border: 2px solid var(--accent-red); color: var(--accent-red); width: 40px; height: 40px; border-radius: 50%; cursor: pointer; font-size: 20px; font-weight: bold; display: flex; align-items: center; justify-content: center;">✕</button>
         <i id="alertPopUpIcon" class="fa-solid fa-triangle-exclamation" style="font-size: 55px; color: var(--accent-red); margin-bottom: 15px; animation: pulse 0.6s ease-in-out infinite; text-shadow: 0 0 20px rgba(239, 68, 68, 0.8);"></i>
         <h2 id="alertPopUpTitle" style="margin: 0 0 5px 0; color: var(--text-main); font-weight: 900; font-size: 18px;">THERMAL ALERT TRIGGERED</h2>
         <p id="alertPopUpMessage" style="font-size: 12px; color: var(--text-dim); line-height: 1.6; margin-bottom: 20px;">Suhu pada RACK menyentuh batas kritis.</p>
@@ -873,7 +793,6 @@
     </div>
 </div>
 
-<!-- Audio element -->
 <audio id="alarmSound" loop>
     <source src="kalsstockmedia-emergency-alarm-2-353320.mp3" type="audio/mpeg">
 </audio>
@@ -884,7 +803,7 @@
     const db = firebase.database();
 
     let lastUpdateR61 = 0; let lastUpdateR77 = 0; let lastUpdateR139 = 0;
-    const OFFLINE_TIMEOUT = 300000; // 5 menit
+    const OFFLINE_TIMEOUT = 300000;
     let targetRackExport = "";
     let currentSelectedYear = new Date().getFullYear();
     let currentSelectedMonthNum = "";
@@ -1222,6 +1141,7 @@
                 msgEl.innerHTML = baseMsg;
             }
             toast.style.display = 'block';
+            toast.dataset.shownAt = Date.now().toString();
             if (!silent) {
                 if (alertLevel === 1) playWarningBeep();
                 else if (alertLevel === 2) playCriticalBeep30();
@@ -1437,93 +1357,56 @@
     }
 
     // ================================================================
-    // FLOATING MONITORING (PICTURE-IN-PICTURE) — TRANSPARANSI MAKSIMAL
+    // FLOATING MONITORING (PiP) — MODE PUTIH (MAX TRANSPARAN) & HITAM (SOLID)
     // ================================================================
-    // TRANSPARANSI:
-    //   0%   = solid hitam pekat
-    //   100% = background benar-benar hilang (transparan total ke layer OS window)
-    //   >100 = "GHOST MODE" – boost text-shadow + matikan color-scheme
-    //          untuk hasil tembus pandang paling maksimal yang bisa dicapai
-    //          Chrome Document PiP.
+    // Mode PUTIH: seluruh layer (html, body) di-force transparan total, ditambah
+    //             color-scheme: normal supaya Chrome tidak memaksa paint gelap.
+    //             Teks diberi stroke + multi-layer shadow agar tetap terbaca di
+    //             latar apapun (termasuk wallpaper, aplikasi, dokumen).
+    // Mode HITAM: solid dark background, seperti biasa.
     // ================================================================
-    const PIP_TRANSPARENCY_MIN = 0;
-    const PIP_TRANSPARENCY_MAX = 110;   // 101-110 = ghost mode
-    const PIP_TRANSPARENCY_STEP = 5;    // langkah lebih halus
-    let pipTransparency = (function () {
-        try {
-            const saved = parseInt(localStorage.getItem('pipTransparency'), 10);
-            if (!isNaN(saved) && saved >= PIP_TRANSPARENCY_MIN && saved <= PIP_TRANSPARENCY_MAX) {
-                return saved;
-            }
-            const savedOldOpacity = parseInt(localStorage.getItem('pipOpacity'), 10);
-            if (!isNaN(savedOldOpacity) && savedOldOpacity >= 0 && savedOldOpacity <= 100) {
-                return 100 - savedOldOpacity;
-            }
-        } catch (e) {}
-        return 100; // default langsung transparan penuh
-    })();
+    let pipMode = 'WHITE'; // default PUTIH (max transparan)
+    try {
+        const savedMode = localStorage.getItem('pipMode');
+        if (savedMode === 'BLACK' || savedMode === 'WHITE') pipMode = savedMode;
+    } catch (e) {}
     let pipWindow = null;
 
-    function updateOpacityUI() {
+    function applyPipMode() {
         if (!pipWindow || pipWindow.closed) return;
         const doc = pipWindow.document;
         const root = doc.documentElement;
         const body = doc.body;
         if (!root || !body) return;
 
-        const isGhost = pipTransparency > 100;
-        const effective = Math.min(pipTransparency, 100);
-        const alpha = 1 - (effective / 100);
-
-        // Set CSS variable (dipakai body background)
-        root.style.setProperty('--pip-a', alpha.toFixed(3));
-
-        if (effective >= 100) {
-            // === TRANSPARAN TOTAL (dan ghost mode) ===
-            // Paksa semua layer jadi benar-benar transparan
-            root.style.setProperty('background', 'transparent', 'important');
-            root.style.setProperty('background-color', 'transparent', 'important');
-            root.style.setProperty('background-image', 'none', 'important');
-            root.style.setProperty('color-scheme', 'normal');  // ⚠️ KUNCI: matikan dark scheme
-            body.style.setProperty('background', 'transparent', 'important');
-            body.style.setProperty('background-color', 'transparent', 'important');
-            body.style.setProperty('background-image', 'none', 'important');
-            body.style.setProperty('backdrop-filter', 'none', 'important');
-            body.style.setProperty('-webkit-backdrop-filter', 'none', 'important');
+        if (pipMode === 'BLACK') {
+            // ==== MODE HITAM — solid dark, teks normal ====
+            root.style.cssText = 'background:#050a10 !important; color-scheme:dark;';
+            body.style.cssText = 'background:#050a10 !important; background-color:#050a10 !important; background-image:none !important; backdrop-filter:none !important; -webkit-backdrop-filter:none !important;';
+            body.classList.remove('mode-white');
+            body.classList.add('mode-black');
         } else {
-            // === SEMI TRANSPARAN (normal) ===
-            root.style.setProperty('background', 'transparent', 'important');
-            root.style.setProperty('background-color', 'transparent', 'important');
-            root.style.setProperty('color-scheme', 'dark');
-            body.style.setProperty('background', `rgba(5, 10, 16, ${alpha.toFixed(3)})`, 'important');
-            body.style.setProperty('background-color', `rgba(5, 10, 16, ${alpha.toFixed(3)})`, 'important');
-            body.style.setProperty('backdrop-filter', 'none', 'important');
-            body.style.setProperty('-webkit-backdrop-filter', 'none', 'important');
+            // ==== MODE PUTIH — transparansi maksimal ====
+            // Force SEMUA layer jadi transparan, matikan color-scheme dark
+            root.style.cssText = 'background:transparent !important; background-color:transparent !important; background-image:none !important; color-scheme:normal !important;';
+            body.style.cssText = 'background:transparent !important; background-color:rgba(0,0,0,0) !important; background-image:none !important; backdrop-filter:none !important; -webkit-backdrop-filter:none !important;';
+            body.classList.remove('mode-black');
+            body.classList.add('mode-white');
         }
 
-        // Boost text-shadow saat ghost mode supaya tetap terbaca di latar apapun
-        const textShadowBoost = isGhost
-            ? '0 0 1px #000, 0 0 3px #000, 0 0 6px #000, 0 0 10px #000, 0 0 16px rgba(0,0,0,0.9)'
-            : '0 0 2px #000, 0 0 3px #000, 0 0 6px #000';
-        body.style.setProperty('--pip-text-shadow', textShadowBoost);
+        // Update tombol aktif
+        const btnW = doc.getElementById('pip-btn-white');
+        const btnB = doc.getElementById('pip-btn-black');
+        if (btnW) btnW.classList.toggle('active', pipMode === 'WHITE');
+        if (btnB) btnB.classList.toggle('active', pipMode === 'BLACK');
 
-        // Update UI
-        const lbl = doc.getElementById('pip-op-label');
-        const pm = doc.getElementById('pip-op-minus');
-        const pp = doc.getElementById('pip-op-plus');
-        if (lbl) lbl.innerText = isGhost ? '∞ GHOST' : pipTransparency + '%';
-        if (pm) pm.disabled = pipTransparency <= PIP_TRANSPARENCY_MIN;
-        if (pp) pp.disabled = pipTransparency >= PIP_TRANSPARENCY_MAX;
+        try { localStorage.setItem('pipMode', pipMode); } catch (e) {}
     }
 
-    function setPipTransparency(value) {
-        value = Math.round(value / PIP_TRANSPARENCY_STEP) * PIP_TRANSPARENCY_STEP;
-        pipTransparency = Math.max(PIP_TRANSPARENCY_MIN, Math.min(PIP_TRANSPARENCY_MAX, value));
-        try { localStorage.setItem('pipTransparency', String(pipTransparency)); } catch (e) {}
-        updateOpacityUI();
+    function setPipMode(mode) {
+        pipMode = mode;
+        applyPipMode();
     }
-
-    function adjustPipTransparency(delta) { setPipTransparency(pipTransparency + delta); }
 
     function notifyThermal(rackId, temp, status) {
         if (!('Notification' in window) || Notification.permission !== 'granted') return;
@@ -1542,17 +1425,15 @@
     async function togglePiPWidget() {
         if (pipWindow && !pipWindow.closed) { pipWindow.close(); return; }
         if (!('documentPictureInPicture' in window)) {
-            alert('⚠️ Floating Monitoring butuh Chrome / Edge versi 116+ di komputer (desktop).');
+            alert('⚠️ Floating Monitoring butuh Chrome / Edge / Brave versi 116+ di komputer (desktop).');
             return;
         }
         try {
             pipWindow = await documentPictureInPicture.requestWindow({ width: 260, height: 175 });
             const style = pipWindow.document.createElement('style');
             style.textContent = `
-                :root { --pip-a: ${(1 - Math.min(pipTransparency,100) / 100).toFixed(3)}; --pip-text-shadow: 0 0 2px #000, 0 0 3px #000, 0 0 6px #000; }
                 * { box-sizing: border-box; margin: 0; padding: 0; }
                 html { background: transparent !important; }
-                /* ⚠️ color-scheme: dark dimatikan – bikin layer dasar Chrome ikut transparan */
                 body {
                     background: transparent;
                     color: #fff;
@@ -1563,42 +1444,101 @@
                     flex-direction: column;
                     user-select: none;
                     position: relative;
-                    transition: background .25s ease;
                 }
 
-                /* Header: judul biasa, berubah jadi kontrol transparansi saat hover */
-                .pip-head { position: relative; height: 24px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; background: transparent; }
-                .pip-title { font-size: 9px; color: #e2e8f0; letter-spacing: 2px; font-weight: 700; white-space: nowrap; transition: opacity .2s ease; text-shadow: var(--pip-text-shadow); }
+                /* ============ HEADER ============ */
+                .pip-head { position: relative; height: 26px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; background: transparent; }
+                .pip-title { font-size: 9px; color: #e2e8f0; letter-spacing: 2px; font-weight: 700; white-space: nowrap; transition: opacity .2s ease; text-shadow: 0 0 2px #000, 0 0 3px #000, 0 0 6px #000; }
                 .pip-op-bar { position: absolute; top: 0; left: 0; right: 0; bottom: 0; display: flex; align-items: center; justify-content: center; gap: 6px; opacity: 0; pointer-events: none; transition: opacity .2s ease; }
                 body:hover .pip-title { opacity: 0; }
                 body:hover .pip-op-bar { opacity: 1; pointer-events: auto; }
-                .pip-op-ico { font-size: 9px; color: #7dd3fc; font-weight: 800; letter-spacing: .5px; text-shadow: var(--pip-text-shadow); }
-                .pip-op-bar button {
-                    width: 18px; height: 18px; border-radius: 50%;
-                    border: 1px solid rgba(255,255,255,0.55);
-                    background: rgba(0,0,0,0.35);
-                    color: #7dd3fc; font-size: 12px; font-weight: 900;
-                    line-height: 1; cursor: pointer;
-                    display: flex; align-items: center; justify-content: center; padding: 0;
-                }
-                .pip-op-bar button:hover { background: #38bdf8; color: #000; }
-                .pip-op-bar #pip-op-black { color: #fff; font-size: 10px; background: rgba(0,0,0,0.7); }
-                .pip-op-bar #pip-op-black:hover { background: #050a10; color: #fff; border-color: #38bdf8; }
-                .pip-op-bar #pip-op-ghost { color: #ffb703; background: rgba(0,0,0,0.7); font-size: 11px; }
-                .pip-op-bar #pip-op-ghost:hover { background: #ffb703; color: #000; border-color: #fff; }
-                .pip-op-bar button:disabled { opacity: .3; cursor: not-allowed; pointer-events: none; }
-                .pip-op-lbl { min-width: 44px; text-align: center; font-size: 10px; font-weight: 800; color: #fff; font-variant-numeric: tabular-nums; text-shadow: var(--pip-text-shadow); }
 
+                .pip-op-ico { font-size: 8px; color: #7dd3fc; font-weight: 800; letter-spacing: 1px; text-shadow: 0 0 2px #000, 0 0 3px #000, 0 0 6px #000; }
+                .pip-mode-btn {
+                    padding: 3px 10px;
+                    border-radius: 4px;
+                    border: 1px solid rgba(255,255,255,0.5);
+                    background: rgba(0,0,0,0.55);
+                    color: #fff;
+                    font-size: 8px;
+                    font-weight: 900;
+                    cursor: pointer;
+                    letter-spacing: 1.5px;
+                    transition: all .15s ease;
+                    text-shadow: 0 0 2px #000, 0 0 3px #000, 0 0 5px #000;
+                    display: inline-flex; align-items: center; gap: 3px;
+                }
+                .pip-mode-btn:hover { background: rgba(56,189,248,0.85); color: #000; border-color: #38bdf8; text-shadow: none; }
+                .pip-mode-btn.active { background: #38bdf8; color: #000; border-color: #fff; text-shadow: none; }
+                .pip-mode-btn.active:hover { background: #7dd3fc; }
+
+                .pip-mode-btn .dot-preview {
+                    display: inline-block; width: 8px; height: 8px; border-radius: 50%;
+                    border: 1px solid rgba(255,255,255,0.7);
+                    background: #fff;
+                }
+                .pip-mode-btn .dot-preview.dark { background: #050a10; }
+
+                /* ============ RACK ROWS ============ */
                 .rack-row { flex: 1; display: flex; justify-content: space-between; align-items: center; padding: 0 14px; background: transparent; }
-                .rack-label { font-size: 10px; font-weight: 800; color: #f1f5f9; letter-spacing: 1px; text-shadow: var(--pip-text-shadow); }
-                .rack-temp { font-size: 30px; font-weight: 800; letter-spacing: -1.5px; transition: color .3s, text-shadow .3s; line-height: 1; }
-                .ok   { color: #34d399; text-shadow: var(--pip-text-shadow), 0 0 12px rgba(16,185,129,0.5); }
-                .warn { color: #fbbf24; text-shadow: var(--pip-text-shadow), 0 0 12px rgba(245,158,11,0.6); }
-                .crit { color: #f87171; text-shadow: var(--pip-text-shadow), 0 0 16px rgba(239,68,68,0.9); animation: pipBlink 1s ease-in-out infinite; }
-                .cool { color: #7dd3fc; text-shadow: var(--pip-text-shadow), 0 0 12px rgba(56,189,248,0.6); }
-                .off  { color: #e2e8f0; font-size: 22px; letter-spacing: 1px; text-shadow: var(--pip-text-shadow); }
+                .rack-label { font-size: 10px; font-weight: 800; color: #f1f5f9; letter-spacing: 1px; }
+                .rack-temp { font-size: 30px; font-weight: 800; letter-spacing: -1.5px; transition: color .3s; line-height: 1; }
+
+                /* ============ WARNA STATUS (default hitam mode) ============ */
+                .ok   { color: #34d399; text-shadow: 0 0 2px #000, 0 0 3px #000, 0 0 6px #000, 0 0 12px rgba(16,185,129,0.5); }
+                .warn { color: #fbbf24; text-shadow: 0 0 2px #000, 0 0 3px #000, 0 0 6px #000, 0 0 12px rgba(245,158,11,0.6); }
+                .crit { color: #f87171; text-shadow: 0 0 2px #000, 0 0 3px #000, 0 0 6px #000, 0 0 16px rgba(239,68,68,0.9); animation: pipBlink 1s ease-in-out infinite; }
+                .cool { color: #7dd3fc; text-shadow: 0 0 2px #000, 0 0 3px #000, 0 0 6px #000, 0 0 12px rgba(56,189,248,0.6); }
+                .off  { color: #e2e8f0; font-size: 22px; letter-spacing: 1px; text-shadow: 0 0 2px #000, 0 0 3px #000, 0 0 6px #000; }
                 @keyframes pipBlink { 0%,100% { opacity: 1; } 50% { opacity: 0.55; } }
 
+                .rack-label { text-shadow: 0 0 2px #000, 0 0 3px #000, 0 0 6px #000; }
+
+                /* ============ MODE PUTIH — TEKS SUPER TERBACA ============ */
+                /* Gunakan stroke hitam tebal + multi-layer shadow putih & hitam
+                   supaya teks tetap terbaca di latar terang / gelap / warna apapun. */
+                body.mode-white .pip-title {
+                    -webkit-text-stroke: 0.8px rgba(0,0,0,0.95);
+                    paint-order: stroke fill;
+                    text-shadow: 0 0 2px #000, 0 0 4px #000, 0 0 8px #000, 0 0 12px #000;
+                }
+                body.mode-white .rack-label {
+                    -webkit-text-stroke: 1px rgba(0,0,0,0.95);
+                    paint-order: stroke fill;
+                    text-shadow: 0 0 2px #000, 0 0 4px #000, 0 0 8px #000, 0 0 12px #000;
+                }
+                body.mode-white .rack-temp.ok {
+                    color: #6ee7b7;
+                    -webkit-text-stroke: 1.2px rgba(0,0,0,0.95);
+                    paint-order: stroke fill;
+                    text-shadow: 0 0 2px #000, 0 0 4px #000, 0 0 8px #000, 0 0 14px rgba(0,0,0,0.85);
+                }
+                body.mode-white .rack-temp.warn {
+                    color: #fcd34d;
+                    -webkit-text-stroke: 1.2px rgba(0,0,0,0.95);
+                    paint-order: stroke fill;
+                    text-shadow: 0 0 2px #000, 0 0 4px #000, 0 0 8px #000, 0 0 14px rgba(0,0,0,0.85);
+                }
+                body.mode-white .rack-temp.crit {
+                    color: #fca5a5;
+                    -webkit-text-stroke: 1.2px rgba(0,0,0,0.95);
+                    paint-order: stroke fill;
+                    text-shadow: 0 0 2px #000, 0 0 4px #000, 0 0 8px #000, 0 0 14px rgba(0,0,0,0.85), 0 0 20px rgba(239,68,68,0.9);
+                }
+                body.mode-white .rack-temp.cool {
+                    color: #bae6fd;
+                    -webkit-text-stroke: 1.2px rgba(0,0,0,0.95);
+                    paint-order: stroke fill;
+                    text-shadow: 0 0 2px #000, 0 0 4px #000, 0 0 8px #000, 0 0 14px rgba(0,0,0,0.85);
+                }
+                body.mode-white .rack-temp.off {
+                    color: #e2e8f0;
+                    -webkit-text-stroke: 1.2px rgba(0,0,0,0.95);
+                    paint-order: stroke fill;
+                    text-shadow: 0 0 2px #000, 0 0 4px #000, 0 0 8px #000, 0 0 14px rgba(0,0,0,0.85);
+                }
+
+                /* ============ ALARM FRAME ============ */
                 body.alarm-warn { box-shadow: inset 0 0 0 3px rgba(245,158,11,0.95); }
                 body.alarm-crit { animation: pipAlarm .8s ease-in-out infinite; }
                 @keyframes pipAlarm {
@@ -1611,13 +1551,14 @@
             pipWindow.document.body.innerHTML = `
                 <div class="pip-head">
                     <span class="pip-title">DC-SDI · LIVE THERMAL TELEMETRY</span>
-                    <div class="pip-op-bar" title="Atur transparansi widget">
-                        <span class="pip-op-ico">TRANSPARANSI</span>
-                        <button id="pip-op-minus" title="Kurangi transparansi (lebih pekat)">−</button>
-                        <span class="pip-op-lbl" id="pip-op-label">${pipTransparency}%</span>
-                        <button id="pip-op-plus" title="Tambah transparansi">+</button>
-                        <button id="pip-op-ghost" title="GHOST MODE — tembus pandang maksimal">👻</button>
-                        <button id="pip-op-black" title="Kembali ke hitam penuh">●</button>
+                    <div class="pip-op-bar" title="Pilih mode tampilan widget">
+                        <span class="pip-op-ico">MODE:</span>
+                        <button id="pip-btn-white" class="pip-mode-btn" title="Transparansi maksimal (tembus pandang)">
+                            <span class="dot-preview"></span> PUTIH
+                        </button>
+                        <button id="pip-btn-black" class="pip-mode-btn" title="Solid hitam">
+                            <span class="dot-preview dark"></span> HITAM
+                        </button>
                     </div>
                 </div>
                 <div class="rack-row"><span class="rack-label">RACK 61</span><span class="rack-temp" id="pip-t61">--</span></div>
@@ -1625,18 +1566,8 @@
                 <div class="rack-row"><span class="rack-label">RACK 139</span><span class="rack-temp" id="pip-t139">--</span></div>
             `;
 
-            pipWindow.document.getElementById('pip-op-minus').addEventListener('click', () => adjustPipTransparency(-PIP_TRANSPARENCY_STEP));
-            pipWindow.document.getElementById('pip-op-plus').addEventListener('click', () => adjustPipTransparency(PIP_TRANSPARENCY_STEP));
-            pipWindow.document.getElementById('pip-op-ghost').addEventListener('click', () => {
-                // Toggle ghost mode (110%) <-> solid (0%)
-                if (pipTransparency > 100) setPipTransparency(0);
-                else setPipTransparency(PIP_TRANSPARENCY_MAX);
-            });
-            pipWindow.document.getElementById('pip-op-black').addEventListener('click', () => setPipTransparency(0));
-            pipWindow.document.body.addEventListener('wheel', (ev) => {
-                ev.preventDefault();
-                adjustPipTransparency(ev.deltaY < 0 ? PIP_TRANSPARENCY_STEP : -PIP_TRANSPARENCY_STEP);
-            }, { passive: false });
+            pipWindow.document.getElementById('pip-btn-white').addEventListener('click', () => setPipMode('WHITE'));
+            pipWindow.document.getElementById('pip-btn-black').addEventListener('click', () => setPipMode('BLACK'));
 
             pipWindow.addEventListener('pagehide', () => {
                 pipWindow = null;
@@ -1658,7 +1589,7 @@
                 try { Notification.requestPermission(); } catch (e) {}
             }
 
-            updateOpacityUI();
+            applyPipMode();
             syncPiPWidget();
         } catch(e) { console.error('PiP error:', e); alert('Gagal membuka floating monitor: ' + e.message); }
     }
@@ -1852,4 +1783,135 @@
             document.getElementById('graphViewerArea').style.display = 'block';
             document.getElementById('graphViewerTitle').innerText = `DATA SUHU TANGGAL: ${isFullMonth ? currentSelectedYear + '-' + currentSelectedMonthNum : prefix}`;
             currentGraphFilename = `Grafik_Suhu_${targetRackGraph}_${namaFileDate}.png`;
-            if (bigChartInstance)
+            if (bigChartInstance) { bigChartInstance.destroy(); }
+            let lineColor = '#38bdf8'; let bgColor = 'rgba(56, 189, 248, 0.1)';
+            if(targetRackGraph === 'rack_77') { lineColor = '#24bbbd'; bgColor = 'rgba(36, 187, 189, 0.1)'; }
+            else if(targetRackGraph === 'rack_139') { lineColor = '#10b981'; bgColor = 'rgba(16, 185, 129, 0.1)'; }
+            const ctxModal = document.getElementById('modalViewChart').getContext('2d');
+            bigChartInstance = new Chart(ctxModal, {
+                type: 'line', plugins: [pluginBackground],
+                data: {
+                    labels: labelsTime,
+                    datasets: [{
+                        label: `Suhu RACK ${targetRackGraph.replace('rack_','')}`,
+                        data: dataTemp, borderColor: lineColor, backgroundColor: bgColor,
+                        borderWidth: 2, fill: true, tension: 0, 
+                        pointRadius: isFullMonth ? 0 : 2, pointBackgroundColor: '#fff'
+                    }]
+                },
+                options: {
+                    animation: false, responsive: true, maintainAspectRatio: false,
+                    plugins: { legend: { display: true, labels: {color: '#fff'} }, tooltip: { mode: 'index', intersect: false } },
+                    scales: { 
+                        x: { ticks: { color: '#94a3b8', font: { size: 10 }, maxTicksLimit: 12 }, grid: { color: 'rgba(255,255,255,0.05)' } },
+                        y: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#ffffff', font: { size: 12, weight: 'bold' }, callback: v => v.toFixed(3) } }
+                    }
+                }
+            });
+            document.getElementById('graphLoadingMsg').style.display = 'none';
+        });
+    }
+
+    function downloadGraphImage() {
+        const canvas = document.getElementById('modalViewChart');
+        const link = document.createElement('a');
+        link.download = currentGraphFilename || 'Grafik_Suhu.png';
+        link.href = canvas.toDataURL('image/png');
+        link.click();
+    }
+
+    db.ref('live_data').on('value', (snap) => {
+        const d = snap.val();
+        if (d) {
+            const now = new Date();
+            const timeStr = now.getHours().toString().padStart(2, '0') + ":" + now.getMinutes().toString().padStart(2, '0');
+            const dateStr = now.getDate().toString().padStart(2, '0') + "/" + (now.getMonth() + 1).toString().padStart(2, '0') + "/" + now.getFullYear().toString().slice(-2);
+            const stampStr = `${timeStr} (${dateStr})`;
+
+            if (d.ruangan !== undefined) {
+                lastUpdateR61 = Date.now();
+                const t = d.ruangan;
+                document.getElementById('val1').innerText = t.toFixed(1);
+                if (Date.now() - lastFakeHumiUpdate > FAKE_HUMI_INTERVAL) {
+                    lastFakeHumi61 = 51.0 + (Math.random() * 8); 
+                    lastFakeHumiUpdate = Date.now(); 
+                }
+                document.getElementById('hum1').innerText = lastFakeHumi61.toFixed(1);
+                updateAnalytic('61', t, history61);
+                updateRecordIfNeeded('61', t, stampStr);
+                c1.data.datasets[0].data.push(t); c1.data.datasets[0].data.shift(); c1.update('none');
+                localStorage.setItem('hist61', JSON.stringify(history61));
+                pushLog('logList1', t, lastFakeHumi61);
+            }
+            
+            const rack77Data = d.rack_77;
+            if (rack77Data !== undefined) {
+                const t = typeof rack77Data === 'number' ? rack77Data : rack77Data.suhu;
+                const h = typeof rack77Data === 'number' ? 0 : (rack77Data.kelembaban || 0);
+                if (t !== undefined && !isNaN(t)) {
+                    lastUpdateR77 = Date.now();
+                    document.getElementById('val77').innerText = t.toFixed(1);
+                    document.getElementById('hum77').innerText = h.toFixed(1);
+                    updateAnalytic('77', t, history77);
+                    updateRecordIfNeeded('77', t, stampStr);
+                    c3.data.datasets[0].data.push(t); c3.data.datasets[0].data.shift(); c3.update('none');
+                    localStorage.setItem('hist77', JSON.stringify(history77));
+                    pushLog('logList77', t, h);
+                }
+            }
+
+            if (d.pac !== undefined) {
+                lastUpdateR139 = Date.now();
+                const t = d.pac;
+                document.getElementById('val2').innerText = t.toFixed(1);
+                document.getElementById('hum2').innerText = (d.kelembaban || 0).toFixed(1);
+                updateAnalytic('139', t, history139);
+                updateRecordIfNeeded('139', t, stampStr);
+                c2.data.datasets[0].data.push(t); c2.data.datasets[0].data.shift(); c2.update('none');
+                localStorage.setItem('hist139', JSON.stringify(history139));
+                pushLog('logList2', t, d.kelembaban || 0);
+            }
+            
+            updateTabTitle();
+            syncPiPWidget();
+        }
+    });
+
+    // ================================================================
+    // INISIALISASI AWAL
+    // ================================================================
+    checkDeviceStatus();
+    updateTabTitle();
+
+    if ('Notification' in window && Notification.permission === 'default') {
+        try { Notification.requestPermission(); } catch (e) {}
+    }
+
+    window.addEventListener('resize', () => { syncPiPWidget(); });
+
+    document.addEventListener('click', function resumeAudioOnce() {
+        const ctx = initAudioContext();
+        if (ctx && ctx.state === 'suspended') ctx.resume().catch(() => {});
+        document.removeEventListener('click', resumeAudioOnce);
+    }, { once: true });
+
+    setInterval(() => {
+        ['61', '77', '139'].forEach(rackId => {
+            const t1 = document.getElementById(`toast-${rackId}-1`);
+            if (t1 && t1.style.display === 'block') {
+                const shownAt = parseInt(t1.dataset.shownAt || '0', 10);
+                if (shownAt && (Date.now() - shownAt > 8000)) {
+                    t1.style.display = 'none';
+                }
+            }
+        });
+    }, 2000);
+
+    console.log('%c✅ DC-SDI Monitoring Ready', 'color: #38bdf8; font-size: 14px; font-weight: bold;');
+    console.log('%c💡 Tips Floating Monitor:', 'color: #10b981; font-weight: bold;');
+    console.log('   • Klik PUTIH  = transparansi maksimal (tembus pandang)');
+    console.log('   • Klik HITAM  = solid black background');
+    console.log('   • Hover widget untuk melihat tombol mode');
+</script>
+</body>
+</html>
