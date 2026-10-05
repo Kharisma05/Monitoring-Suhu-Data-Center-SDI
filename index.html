@@ -68,18 +68,11 @@
         .dot-icon { font-size: 13px; line-height: 1; display: flex; align-items: center; text-shadow: 0 0 8px currentColor;}
 
         .dot-icon.offline-circle {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            width: 16px;
-            height: 16px;
+            display: inline-flex; align-items: center; justify-content: center;
+            width: 16px; height: 16px;
             background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
-            color: #ffffff;
-            border-radius: 50%;
-            font-size: 10px;
-            font-weight: 900;
-            line-height: 1;
-            text-shadow: none;
+            color: #ffffff; border-radius: 50%; font-size: 10px; font-weight: 900;
+            line-height: 1; text-shadow: none;
             box-shadow: 0 0 8px rgba(239, 68, 68, 0.9), inset 0 1px 1px rgba(255,255,255,0.4);
             animation: redCirclePulse 1.5s ease-in-out infinite;
         }
@@ -89,18 +82,11 @@
         }
 
         .dot-icon.offline-exclaim {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            width: 18px;
-            height: 18px;
+            display: inline-flex; align-items: center; justify-content: center;
+            width: 18px; height: 18px;
             background: linear-gradient(135deg, #ef4444 0%, #b91c1c 100%);
-            color: #ffffff;
-            border-radius: 50%;
-            font-size: 14px;
-            font-weight: 900;
-            line-height: 1;
-            text-shadow: 0 0 4px rgba(0,0,0,0.5);
+            color: #ffffff; border-radius: 50%; font-size: 14px; font-weight: 900;
+            line-height: 1; text-shadow: 0 0 4px rgba(0,0,0,0.5);
             box-shadow: 0 0 10px rgba(239, 68, 68, 1), inset 0 1px 1px rgba(255,255,255,0.4);
             animation: exclaimPulse 0.8s ease-in-out infinite;
         }
@@ -1259,10 +1245,6 @@
         }
     }
 
-    // ================================================================
-    // checkDeviceStatus — DIPERBAIKI: kartu Humidity & Log tidak lagi
-    // nyangkut aura merah setelah ESP kembali online.
-    // ================================================================
     function checkDeviceStatus() {
         const now = Date.now();
         const racks = [
@@ -1298,7 +1280,7 @@
                 ind.style.background = ''; ind.style.boxShadow = '';
                 cards.forEach(c => {
                     c.classList.remove('device-offline');
-                    c.classList.remove('glow-red'); // FIX: hilangkan aura merah dari Humidity & Log
+                    c.classList.remove('glow-red');
                 });
             }
         });
@@ -1364,14 +1346,26 @@
     }
 
     // ================================================================
-    // FLOATING MONITORING (PiP) — MODE PUTIH & HITAM
+    // FLOATING MONITORING (PiP) — 2 ORIENTASI + 2 MODE WARNA
+    // UKURAN DEFAULT: HORIZONTAL 420×68 (tipis & lebar)
     // ================================================================
     let pipMode = 'WHITE';
+    let pipOrientation = 'HORIZONTAL';
     try {
         const savedMode = localStorage.getItem('pipMode');
         if (savedMode === 'BLACK' || savedMode === 'WHITE') pipMode = savedMode;
+        const savedOri = localStorage.getItem('pipOrientation');
+        if (savedOri === 'HORIZONTAL' || savedOri === 'VERTICAL') pipOrientation = savedOri;
     } catch (e) {}
     let pipWindow = null;
+
+    // ==== UKURAN WINDOW PER ORIENTASI ====
+    // HORIZONTAL dibuat tipis & lebar (seperti screenshot)
+    // VERTICAL kotak standar (seperti semula)
+    const PIP_SIZE = {
+        HORIZONTAL: { w: 420, h: 68 },
+        VERTICAL:   { w: 260, h: 175 }
+    };
 
     function applyPipMode() {
         if (!pipWindow || pipWindow.closed) return;
@@ -1405,6 +1399,33 @@
         applyPipMode();
     }
 
+    function applyPipOrientation() {
+        if (!pipWindow || pipWindow.closed) return;
+        const doc = pipWindow.document;
+        const strip = doc.getElementById('rack-strip');
+        if (strip) {
+            strip.classList.toggle('horizontal', pipOrientation === 'HORIZONTAL');
+            strip.classList.toggle('vertical', pipOrientation === 'VERTICAL');
+        }
+
+        try {
+            const size = PIP_SIZE[pipOrientation];
+            pipWindow.resizeTo(size.w, size.h);
+        } catch (e) { /* resizeTo bisa di-block di beberapa browser */ }
+
+        const btnH = doc.getElementById('pip-btn-horizontal');
+        const btnV = doc.getElementById('pip-btn-vertical');
+        if (btnH) btnH.classList.toggle('active', pipOrientation === 'HORIZONTAL');
+        if (btnV) btnV.classList.toggle('active', pipOrientation === 'VERTICAL');
+
+        try { localStorage.setItem('pipOrientation', pipOrientation); } catch (e) {}
+    }
+
+    function setPipOrientation(ori) {
+        pipOrientation = ori;
+        applyPipOrientation();
+    }
+
     function notifyThermal(rackId, temp, status) {
         if (!('Notification' in window) || Notification.permission !== 'granted') return;
         if (!document.hidden && document.hasFocus()) return;
@@ -1426,7 +1447,10 @@
             return;
         }
         try {
-            pipWindow = await documentPictureInPicture.requestWindow({ width: 260, height: 175 });
+            // Ukuran awal mengikuti orientasi terakhir yang dipilih
+            const initialSize = PIP_SIZE[pipOrientation] || PIP_SIZE.HORIZONTAL;
+            pipWindow = await documentPictureInPicture.requestWindow({ width: initialSize.w, height: initialSize.h });
+
             const style = pipWindow.document.createElement('style');
             style.textContent = `
                 * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -1443,121 +1467,207 @@
                     position: relative;
                 }
 
-                .pip-head { position: relative; height: 26px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; background: transparent; }
-                .pip-title { font-size: 9px; color: #e2e8f0; letter-spacing: 2px; font-weight: 700; white-space: nowrap; transition: opacity .2s ease; text-shadow: 0 0 2px #000, 0 0 3px #000, 0 0 6px #000; }
-                .pip-op-bar { position: absolute; top: 0; left: 0; right: 0; bottom: 0; display: flex; align-items: center; justify-content: center; gap: 6px; opacity: 0; pointer-events: none; transition: opacity .2s ease; }
+                /* ===== HEADER SUPER TIPIS ===== */
+                .pip-head {
+                    position: relative;
+                    height: 14px;
+                    flex-shrink: 0;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    background: transparent;
+                }
+                .pip-title {
+                    font-size: 7px;
+                    color: #e2e8f0;
+                    letter-spacing: 1px;
+                    font-weight: 700;
+                    white-space: nowrap;
+                    transition: opacity .2s ease;
+                    text-shadow: 0 0 2px #000, 0 0 3px #000, 0 0 6px #000;
+                }
+                .pip-op-bar {
+                    position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+                    display: flex; align-items: center; justify-content: center; gap: 3px;
+                    opacity: 0; pointer-events: none; transition: opacity .2s ease;
+                    flex-wrap: nowrap;
+                }
                 body:hover .pip-title { opacity: 0; }
                 body:hover .pip-op-bar { opacity: 1; pointer-events: auto; }
 
-                .pip-op-ico { font-size: 8px; color: #7dd3fc; font-weight: 800; letter-spacing: 1px; text-shadow: 0 0 2px #000, 0 0 3px #000, 0 0 6px #000; }
+                .pip-op-ico { font-size: 6px; color: #7dd3fc; font-weight: 800; letter-spacing: 0.8px; text-shadow: 0 0 2px #000; }
                 .pip-mode-btn {
-                    padding: 3px 10px;
-                    border-radius: 4px;
+                    padding: 1px 5px; border-radius: 3px;
                     border: 1px solid rgba(255,255,255,0.5);
                     background: rgba(0,0,0,0.55);
-                    color: #fff;
-                    font-size: 8px;
-                    font-weight: 900;
-                    cursor: pointer;
-                    letter-spacing: 1.5px;
+                    color: #fff; font-size: 6.5px; font-weight: 900;
+                    cursor: pointer; letter-spacing: 0.8px;
                     transition: all .15s ease;
-                    text-shadow: 0 0 2px #000, 0 0 3px #000, 0 0 5px #000;
-                    display: inline-flex; align-items: center; gap: 3px;
+                    text-shadow: 0 0 2px #000;
+                    display: inline-flex; align-items: center; gap: 2px;
+                    white-space: nowrap;
                 }
                 .pip-mode-btn:hover { background: rgba(56,189,248,0.85); color: #000; border-color: #38bdf8; text-shadow: none; }
                 .pip-mode-btn.active { background: #38bdf8; color: #000; border-color: #fff; text-shadow: none; }
                 .pip-mode-btn.active:hover { background: #7dd3fc; }
-
                 .pip-mode-btn .dot-preview {
-                    display: inline-block; width: 8px; height: 8px; border-radius: 50%;
-                    border: 1px solid rgba(255,255,255,0.7);
-                    background: #fff;
+                    display: inline-block; width: 5px; height: 5px; border-radius: 50%;
+                    border: 1px solid rgba(255,255,255,0.7); background: #fff;
                 }
                 .pip-mode-btn .dot-preview.dark { background: #050a10; }
 
-                .rack-row { flex: 1; display: flex; justify-content: space-between; align-items: center; padding: 0 14px; background: transparent; }
-                .rack-label { font-size: 10px; font-weight: 800; color: #f1f5f9; letter-spacing: 1px; }
-                .rack-temp { font-size: 30px; font-weight: 800; letter-spacing: -1.5px; transition: color .3s; line-height: 1; }
+                /* ===== RACK STRIP (2 ORIENTASI) ===== */
+                .rack-strip {
+                    flex: 1;
+                    display: flex;
+                    min-height: 0;
+                    overflow: hidden;
+                    gap: 4px;
+                }
+                /* HORIZONTAL: satu baris memanjang */
+                .rack-strip.horizontal {
+                    flex-direction: row;
+                    align-items: center;
+                    justify-content: space-evenly;
+                    padding: 0 10px 2px 10px;
+                }
+                /* VERTICAL: menumpuk ke bawah */
+                .rack-strip.vertical {
+                    flex-direction: column;
+                    align-items: stretch;
+                    justify-content: space-evenly;
+                    padding: 0 14px 4px 14px;
+                }
 
-                .ok   { color: #34d399; text-shadow: 0 0 2px #000, 0 0 3px #000, 0 0 6px #000, 0 0 12px rgba(16,185,129,0.5); }
-                .warn { color: #fbbf24; text-shadow: 0 0 2px #000, 0 0 3px #000, 0 0 6px #000, 0 0 12px rgba(245,158,11,0.6); }
-                .crit { color: #f87171; text-shadow: 0 0 2px #000, 0 0 3px #000, 0 0 6px #000, 0 0 16px rgba(239,68,68,0.9); animation: pipBlink 1s ease-in-out infinite; }
-                .cool { color: #7dd3fc; text-shadow: 0 0 2px #000, 0 0 3px #000, 0 0 6px #000, 0 0 12px rgba(56,189,248,0.6); }
-                .off  { color: #e2e8f0; font-size: 22px; letter-spacing: 1px; text-shadow: 0 0 2px #000, 0 0 3px #000, 0 0 6px #000; }
+                .rack-item {
+                    display: flex;
+                    align-items: baseline;
+                    gap: 4px;
+                    flex: 0 0 auto;
+                    white-space: nowrap;
+                }
+                .rack-strip.vertical .rack-item {
+                    justify-content: space-between;
+                    width: 100%;
+                }
+
+                .rack-label {
+                    font-size: 9px;
+                    font-weight: 800;
+                    color: #f1f5f9;
+                    letter-spacing: 0.5px;
+                    text-shadow: 0 0 2px #000, 0 0 3px #000, 0 0 6px #000;
+                }
+                .rack-temp {
+                    font-size: 18px;
+                    font-weight: 800;
+                    letter-spacing: -0.8px;
+                    transition: color .3s;
+                    line-height: 1;
+                }
+                /* Di mode vertical, temp lebih besar */
+                .rack-strip.vertical .rack-temp {
+                    font-size: 26px;
+                }
+
+                .ok   { color: #34d399; text-shadow: 0 0 2px #000, 0 0 3px #000, 0 0 6px #000, 0 0 10px rgba(16,185,129,0.5); }
+                .warn { color: #fbbf24; text-shadow: 0 0 2px #000, 0 0 3px #000, 0 0 6px #000, 0 0 10px rgba(245,158,11,0.6); }
+                .crit { color: #f87171; text-shadow: 0 0 2px #000, 0 0 3px #000, 0 0 6px #000, 0 0 14px rgba(239,68,68,0.9); animation: pipBlink 1s ease-in-out infinite; }
+                .cool { color: #7dd3fc; text-shadow: 0 0 2px #000, 0 0 3px #000, 0 0 6px #000, 0 0 10px rgba(56,189,248,0.6); }
+                .off  { color: #e2e8f0; font-size: 12px; letter-spacing: 1px; text-shadow: 0 0 2px #000, 0 0 3px #000, 0 0 6px #000; }
                 @keyframes pipBlink { 0%,100% { opacity: 1; } 50% { opacity: 0.55; } }
 
-                .rack-label { text-shadow: 0 0 2px #000, 0 0 3px #000, 0 0 6px #000; }
-
-                body.mode-white .pip-title {
-                    -webkit-text-stroke: 0.8px rgba(0,0,0,0.95);
-                    paint-order: stroke fill;
-                    text-shadow: 0 0 2px #000, 0 0 4px #000, 0 0 8px #000, 0 0 12px #000;
-                }
+                /* Mode PUTIH: outline hitam tebal biar tembus pandang tapi tetap kebaca */
+                body.mode-white .pip-title,
                 body.mode-white .rack-label {
-                    -webkit-text-stroke: 1px rgba(0,0,0,0.95);
+                    -webkit-text-stroke: 0.9px rgba(0,0,0,0.95);
                     paint-order: stroke fill;
                     text-shadow: 0 0 2px #000, 0 0 4px #000, 0 0 8px #000, 0 0 12px #000;
                 }
                 body.mode-white .rack-temp.ok {
                     color: #6ee7b7;
-                    -webkit-text-stroke: 1.2px rgba(0,0,0,0.95);
+                    -webkit-text-stroke: 1px rgba(0,0,0,0.95);
                     paint-order: stroke fill;
-                    text-shadow: 0 0 2px #000, 0 0 4px #000, 0 0 8px #000, 0 0 14px rgba(0,0,0,0.85);
+                    text-shadow: 0 0 2px #000, 0 0 4px #000, 0 0 8px #000, 0 0 12px rgba(0,0,0,0.85);
                 }
                 body.mode-white .rack-temp.warn {
                     color: #fcd34d;
-                    -webkit-text-stroke: 1.2px rgba(0,0,0,0.95);
+                    -webkit-text-stroke: 1px rgba(0,0,0,0.95);
                     paint-order: stroke fill;
-                    text-shadow: 0 0 2px #000, 0 0 4px #000, 0 0 8px #000, 0 0 14px rgba(0,0,0,0.85);
+                    text-shadow: 0 0 2px #000, 0 0 4px #000, 0 0 8px #000, 0 0 12px rgba(0,0,0,0.85);
                 }
                 body.mode-white .rack-temp.crit {
                     color: #fca5a5;
-                    -webkit-text-stroke: 1.2px rgba(0,0,0,0.95);
+                    -webkit-text-stroke: 1px rgba(0,0,0,0.95);
                     paint-order: stroke fill;
-                    text-shadow: 0 0 2px #000, 0 0 4px #000, 0 0 8px #000, 0 0 14px rgba(0,0,0,0.85), 0 0 20px rgba(239,68,68,0.9);
+                    text-shadow: 0 0 2px #000, 0 0 4px #000, 0 0 8px #000, 0 0 12px rgba(0,0,0,0.85), 0 0 20px rgba(239,68,68,0.9);
                 }
                 body.mode-white .rack-temp.cool {
                     color: #bae6fd;
-                    -webkit-text-stroke: 1.2px rgba(0,0,0,0.95);
+                    -webkit-text-stroke: 1px rgba(0,0,0,0.95);
                     paint-order: stroke fill;
-                    text-shadow: 0 0 2px #000, 0 0 4px #000, 0 0 8px #000, 0 0 14px rgba(0,0,0,0.85);
+                    text-shadow: 0 0 2px #000, 0 0 4px #000, 0 0 8px #000, 0 0 12px rgba(0,0,0,0.85);
                 }
                 body.mode-white .rack-temp.off {
                     color: #e2e8f0;
-                    -webkit-text-stroke: 1.2px rgba(0,0,0,0.95);
+                    -webkit-text-stroke: 1px rgba(0,0,0,0.95);
                     paint-order: stroke fill;
-                    text-shadow: 0 0 2px #000, 0 0 4px #000, 0 0 8px #000, 0 0 14px rgba(0,0,0,0.85);
+                    text-shadow: 0 0 2px #000, 0 0 4px #000, 0 0 8px #000, 0 0 12px rgba(0,0,0,0.85);
                 }
 
-                body.alarm-warn { box-shadow: inset 0 0 0 3px rgba(245,158,11,0.95); }
+                /* Border alarm di tepi window */
+                body.alarm-warn { box-shadow: inset 0 0 0 2px rgba(245,158,11,0.95); }
                 body.alarm-crit { animation: pipAlarm .8s ease-in-out infinite; }
                 @keyframes pipAlarm {
-                    0%,100% { box-shadow: inset 0 0 0 3px rgba(239,68,68,1), inset 0 0 22px rgba(239,68,68,0.6); }
-                    50%     { box-shadow: inset 0 0 0 3px rgba(239,68,68,0.3), inset 0 0 6px rgba(239,68,68,0.2); }
+                    0%,100% { box-shadow: inset 0 0 0 2px rgba(239,68,68,1), inset 0 0 22px rgba(239,68,68,0.6); }
+                    50%     { box-shadow: inset 0 0 0 2px rgba(239,68,68,0.3), inset 0 0 6px rgba(239,68,68,0.2); }
                 }
             `;
             pipWindow.document.head.appendChild(style);
             pipWindow.document.title = 'DC-SDI Monitor';
+
+            // ==== HTML: rack-strip dengan 2 mode, tanpa pemisah titik-titik ====
             pipWindow.document.body.innerHTML = `
                 <div class="pip-head">
                     <span class="pip-title">DC-SDI · LIVE THERMAL TELEMETRY</span>
-                    <div class="pip-op-bar" title="Pilih mode tampilan widget">
-                        <span class="pip-op-ico">MODE:</span>
-                        <button id="pip-btn-white" class="pip-mode-btn" title="Transparansi maksimal (tembus pandang)">
+                    <div class="pip-op-bar" title="Atur tampilan widget">
+                        <span class="pip-op-ico">WARNA:</span>
+                        <button id="pip-btn-white" class="pip-mode-btn" title="Transparansi maksimal">
                             <span class="dot-preview"></span> PUTIH
                         </button>
                         <button id="pip-btn-black" class="pip-mode-btn" title="Solid hitam">
                             <span class="dot-preview dark"></span> HITAM
                         </button>
+                        <span class="pip-op-ico" style="margin-left:4px;">ORIENTASI:</span>
+                        <button id="pip-btn-horizontal" class="pip-mode-btn" title="Memanjang ke samping">
+                            ➡ HORIZ
+                        </button>
+                        <button id="pip-btn-vertical" class="pip-mode-btn" title="Menumpuk ke bawah">
+                            ⬇ VERT
+                        </button>
                     </div>
                 </div>
-                <div class="rack-row"><span class="rack-label">RACK 61</span><span class="rack-temp" id="pip-t61">--</span></div>
-                <div class="rack-row"><span class="rack-label">RACK 77</span><span class="rack-temp" id="pip-t77">--</span></div>
-                <div class="rack-row"><span class="rack-label">RACK 139</span><span class="rack-temp" id="pip-t139">--</span></div>
+                <div class="rack-strip" id="rack-strip">
+                    <div class="rack-item">
+                        <span class="rack-label">RACK 61</span>
+                        <span class="rack-temp" id="pip-t61">--</span>
+                    </div>
+                    <div class="rack-item">
+                        <span class="rack-label">RACK 77</span>
+                        <span class="rack-temp" id="pip-t77">--</span>
+                    </div>
+                    <div class="rack-item">
+                        <span class="rack-label">RACK 139</span>
+                        <span class="rack-temp" id="pip-t139">--</span>
+                    </div>
+                </div>
             `;
 
+            // Wire up semua tombol
             pipWindow.document.getElementById('pip-btn-white').addEventListener('click', () => setPipMode('WHITE'));
             pipWindow.document.getElementById('pip-btn-black').addEventListener('click', () => setPipMode('BLACK'));
+            pipWindow.document.getElementById('pip-btn-horizontal').addEventListener('click', () => setPipOrientation('HORIZONTAL'));
+            pipWindow.document.getElementById('pip-btn-vertical').addEventListener('click', () => setPipOrientation('VERTICAL'));
 
             pipWindow.addEventListener('pagehide', () => {
                 pipWindow = null;
@@ -1580,6 +1690,7 @@
             }
 
             applyPipMode();
+            applyPipOrientation();
             syncPiPWidget();
         } catch(e) { console.error('PiP error:', e); alert('Gagal membuka floating monitor: ' + e.message); }
     }
@@ -1899,9 +2010,9 @@
 
     console.log('%c✅ DC-SDI Monitoring Ready', 'color: #38bdf8; font-size: 14px; font-weight: bold;');
     console.log('%c💡 Tips Floating Monitor:', 'color: #10b981; font-weight: bold;');
-    console.log('   • Klik PUTIH  = transparansi maksimal (tembus pandang)');
-    console.log('   • Klik HITAM  = solid black background');
-    console.log('   • Hover widget untuk melihat tombol mode');
+    console.log('   • Hover widget untuk melihat tombol pengaturan');
+    console.log('   • PUTIH/HITAM = mode warna background');
+    console.log('   • HORIZ/VERT  = orientasi layout (samping/bawah)');
 </script>
 </body>
 </html>
