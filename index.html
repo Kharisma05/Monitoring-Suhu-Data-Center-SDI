@@ -1305,7 +1305,7 @@
 
     // ==== UKURAN WINDOW PER ORIENTASI ====
     const PIP_SIZE = {
-        HORIZONTAL: { w: 420, h: 78 },   // Lebar & tipis, cukup tinggi biar angka gede muat
+        HORIZONTAL: { w: 350, h: 56 },   // Lebar & tipis, cukup tinggi biar angka gede muat
         VERTICAL:   { w: 260, h: 175 }
     };
 
@@ -1341,6 +1341,114 @@
         applyPipMode();
     }
 
+    // ==== BATAS MINIMAL WINDOW (tidak boleh lebih kecil dari isi widget) ====
+    // Margin kecil di sekeliling isi (px). Perbesar kalau mau lebih longgar.
+    const PIP_MIN_MARGIN = { x: 8, y: 5 };
+
+    // Isi widget otomatis mengecil mengikuti window supaya TIDAK PERNAH terpotong
+    function setPipZoom(z) {
+        if (!pipWindow || pipWindow.closed) return;
+        const doc = pipWindow.document;
+        [doc.querySelector('.pip-head'), doc.getElementById('rack-strip')].forEach(el => {
+            if (el) el.style.zoom = z;
+        });
+    }
+    function measurePipMin() {
+        const prev = pipWindow && !pipWindow.closed
+            ? (pipWindow.document.getElementById('rack-strip') || {}).style : null;
+        const prevZoom = prev ? prev.zoom : '';
+        setPipZoom(1);                       // ukur selalu pada skala normal
+        const m = measurePipMinRaw();
+        setPipZoom(prevZoom || 1);
+        return m;
+    }
+    function applyPipScale() {
+        if (!pipWindow || pipWindow.closed) return;
+        const m = measurePipMin(); if (!m) return;
+        const z = Math.min(1, pipWindow.innerWidth / m.w, pipWindow.innerHeight / m.h);
+        setPipZoom(z < 0.999 ? z.toFixed(3) : 1);
+    }
+    function measurePipMinRaw() {
+        if (!pipWindow || pipWindow.closed) return null;
+        const doc = pipWindow.document;
+        const strip = doc.getElementById('rack-strip');
+        const head = doc.querySelector('.pip-head');
+        if (!strip || !head) return null;
+
+        // Probe: lebar/tinggi angka suhu terlebar ("88.8°") supaya batas tidak berubah-ubah
+        const probe = doc.createElement('span');
+        probe.className = 'rack-temp';
+        probe.style.cssText = 'position:absolute;visibility:hidden;white-space:nowrap;';
+        probe.textContent = '88.8°';
+        strip.appendChild(probe);
+        const tw = probe.offsetWidth, th = probe.offsetHeight;
+        probe.remove();
+
+        const labels = Array.from(strip.querySelectorAll('.rack-label'));
+        const lws = labels.map(l => l.offsetWidth);
+        const lh = Math.max(0, ...labels.map(l => l.offsetHeight));
+        const rowH = Math.max(th, lh);
+        const n = labels.length;
+        const headH = head.offsetHeight;
+        const itemGap = 3;   // jarak label ke angka
+        const minGap = 4;    // jarak minimal antar rack
+
+        let w, h;
+        if (pipOrientation === 'HORIZONTAL') {
+            w = lws.reduce((a, b) => a + b, 0) + n * (itemGap + tw) + (n - 1) * minGap + 12;
+            h = headH + rowH + 3;
+        } else {
+            w = Math.max(...lws) + itemGap + tw + 28;
+            h = headH + n * rowH + (n - 1) * 4 + 4;
+        }
+        return { w: Math.ceil(w + PIP_MIN_MARGIN.x * 2), h: Math.ceil(h + PIP_MIN_MARGIN.y * 2) };
+    }
+
+    // Kalau window lebih kecil dari isi -> dibesarkan lagi sampai pas.
+    // Memperbesar tetap bebas; hanya memperkecil yang dibatasi.
+    let pipClamping = false;
+    let pipLastCheck = 0;
+    function enforcePipMinSize(e) {
+        if (!pipWindow || pipWindow.closed) return;
+        if (!e || e.type === 'resize') applyPipScale();
+        if (pipClamping) return;
+        // event mousemove/pointer dibatasi frekuensinya, 'resize' selalu diproses
+        const now = Date.now();
+        if (e && e.type !== 'resize' && now - pipLastCheck < 150) return;
+        pipLastCheck = now;
+
+        const m = measurePipMin(); if (!m) return;
+        const iw = pipWindow.innerWidth, ih = pipWindow.innerHeight;
+        const dw = iw < m.w ? m.w - iw : 0;
+        const dh = ih < m.h ? m.h - ih : 0;
+        if (!dw && !dh) return;
+
+        pipClamping = true;
+        try { pipWindow.resizeBy(dw, dh); } catch (err) {}
+        // cadangan: kalau resizeBy tidak berefek, coba resizeTo
+        setTimeout(() => {
+            try {
+                if (pipWindow && !pipWindow.closed &&
+                    (pipWindow.innerWidth < m.w || pipWindow.innerHeight < m.h)) {
+                    pipWindow.resizeTo(
+                        pipWindow.outerWidth + Math.max(0, m.w - pipWindow.innerWidth),
+                        pipWindow.outerHeight + Math.max(0, m.h - pipWindow.innerHeight)
+                    );
+                }
+            } catch (err) {}
+            pipClamping = false;
+        }, 120);
+    }
+
+    // Ukuran awal: pas mengikuti isi (dipakai mode horizontal)
+    function fitPipToContent() {
+        if (!pipWindow || pipWindow.closed) return;
+        const m = measurePipMin(); if (!m) return;
+        pipClamping = true;
+        try { pipWindow.resizeBy(m.w - pipWindow.innerWidth, m.h - pipWindow.innerHeight); } catch (e) {}
+        setTimeout(() => { pipClamping = false; }, 150);
+    }
+
     function applyPipOrientation() {
         if (!pipWindow || pipWindow.closed) return;
         const doc = pipWindow.document;
@@ -1353,6 +1461,11 @@
             const size = PIP_SIZE[pipOrientation];
             pipWindow.resizeTo(size.w, size.h);
         } catch (e) {}
+        setTimeout(() => {
+            if (pipOrientation === 'HORIZONTAL') fitPipToContent();
+            else enforcePipMinSize();
+            applyPipScale();
+        }, 80);
 
         const btnH = doc.getElementById('pip-btn-horizontal');
         const btnV = doc.getElementById('pip-btn-vertical');
@@ -1490,6 +1603,14 @@
                     width: 100%;
                 }
 
+                /* HORIZONTAL: RACK di atas, nomor di bawah (hemat ruang) */
+                .rack-strip.horizontal { gap: 2px; padding: 0 6px 3px 6px; min-width: max-content; }
+                .rack-strip.horizontal .rack-item { align-items: center; gap: 3px; }
+                .rack-strip.horizontal .rack-label {
+                    display: inline-flex; flex-direction: column; align-items: center;
+                    line-height: 1.02;
+                }
+
                 /* LABEL KECIL */
                 .rack-label {
                     font-size: 12px;
@@ -1597,15 +1718,15 @@
                 </div>
                 <div class="rack-strip horizontal" id="rack-strip">
                     <div class="rack-item">
-                        <span class="rack-label">RACK 61</span>
+                        <span class="rack-label"><span class="rl-word">RACK</span> <span class="rl-num">61</span></span>
                         <span class="rack-temp" id="pip-t61">--</span>
                     </div>
                     <div class="rack-item">
-                        <span class="rack-label">RACK 77</span>
+                        <span class="rack-label"><span class="rl-word">RACK</span> <span class="rl-num">77</span></span>
                         <span class="rack-temp" id="pip-t77">--</span>
                     </div>
                     <div class="rack-item">
-                        <span class="rack-label">RACK 139</span>
+                        <span class="rack-label"><span class="rl-word">RACK</span> <span class="rl-num">139</span></span>
                         <span class="rack-temp" id="pip-t139">--</span>
                     </div>
                 </div>
@@ -1616,6 +1737,7 @@
             pipWindow.document.getElementById('pip-btn-horizontal').addEventListener('click', () => setPipOrientation('HORIZONTAL'));
             pipWindow.document.getElementById('pip-btn-vertical').addEventListener('click', () => setPipOrientation('VERTICAL'));
 
+            ['resize', 'mousemove', 'pointerdown', 'pointerup'].forEach(ev => pipWindow.addEventListener(ev, enforcePipMinSize));
             pipWindow.addEventListener('pagehide', () => {
                 pipWindow = null;
                 const s = document.getElementById('pipStatusText');
