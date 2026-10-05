@@ -1305,7 +1305,7 @@
 
     // ==== UKURAN WINDOW PER ORIENTASI ====
     const PIP_SIZE = {
-        HORIZONTAL: { w: 380, h: 74 },   // Lebar & tipis, cukup tinggi biar angka gede muat
+        HORIZONTAL: { w: 420, h: 78 },   // Lebar & tipis, cukup tinggi biar angka gede muat
         VERTICAL:   { w: 260, h: 175 }
     };
 
@@ -1492,8 +1492,8 @@
 
                 /* LABEL KECIL */
                 .rack-label {
-                    font-size: 8px;
-                    font-weight: 700;
+                    font-size: 12px;
+                    font-weight: 800;
                     color: #f1f5f9;
                     letter-spacing: 0.2px;
                     text-shadow: 0 0 2px #000, 0 0 3px #000, 0 0 6px #000;
@@ -1519,11 +1519,21 @@
 
                 /* MODE PUTIH: outline hitam tebal */
                 body.mode-white .pip-title,
-                body.mode-white .rack-label {
-                    -webkit-text-stroke: 0.9px rgba(0,0,0,0.95);
-                    paint-order: stroke fill;
-                    text-shadow: 0 0 2px #000, 0 0 4px #000, 0 0 8px #000, 0 0 12px #000;
+                body.mode-white .rack-label,
+                body.mode-white .pip-op-ico {
+                    color: #000;
+                    -webkit-text-stroke: 0;
+                    text-shadow: none;
                 }
+                body.mode-white .pip-mode-btn {
+                    background: rgba(255,255,255,0.75);
+                    color: #000;
+                    border-color: rgba(0,0,0,0.7);
+                    text-shadow: none;
+                }
+                body.mode-white .pip-mode-btn:hover { background: rgba(56,189,248,0.85); color: #000; border-color: #000; }
+                body.mode-white .pip-mode-btn.active { background: #38bdf8; color: #000; border-color: #000; }
+                body.mode-white .pip-mode-btn .dot-preview { border-color: rgba(0,0,0,0.7); }
                 body.mode-white .rack-temp.ok {
                     color: #6ee7b7;
                     -webkit-text-stroke: 1.2px rgba(0,0,0,0.95);
