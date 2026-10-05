@@ -1517,7 +1517,7 @@
                 .off  { color: #e2e8f0; font-size: 16px; letter-spacing: 1px; text-shadow: 0 0 2px #000, 0 0 3px #000, 0 0 6px #000; }
                 @keyframes pipBlink { 0%,100% { opacity: 1; } 50% { opacity: 0.55; } }
 
-                /* MODE BLACK: outline black tebal */
+                /* MODE PUTIH: outline hitam tebal */
                 body.mode-white .pip-title,
                 body.mode-white .rack-label {
                     -webkit-text-stroke: 0.9px rgba(0,0,0,0.95);
@@ -1569,12 +1569,12 @@
                 <div class="pip-head">
                     <span class="pip-title">DC-SDI · LIVE THERMAL TELEMETRY</span>
                     <div class="pip-op-bar" title="Atur tampilan widget">
-                        <span class="pip-op-ico">WARNA:</span>
-                        <button id="pip-btn-white" class="pip-mode-btn" title="Transparansi maksimal">
-                            <span class="dot-preview"></span> PUTIH
+                        <span class="pip-op-ico">COLOR:</span>
+                        <button id="pip-btn-black" class="pip-mode-btn" title="Solid black">
+                            <span class="dot-preview dark"></span> BLACK
                         </button>
-                        <button id="pip-btn-black" class="pip-mode-btn" title="Solid hitam">
-                            <span class="dot-preview dark"></span> HITAM
+                        <button id="pip-btn-white" class="pip-mode-btn" title="Maximum transparency">
+                            <span class="dot-preview"></span> WHITE
                         </button>
                         <span class="pip-op-ico" style="margin-left:4px;">ORIENTASI:</span>
                         <button id="pip-btn-horizontal" class="pip-mode-btn" title="Memanjang ke samping">
