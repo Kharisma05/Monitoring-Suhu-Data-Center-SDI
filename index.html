@@ -9,7 +9,7 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        :root{--bg-color:#050a10;--card-color:rgba(17,27,39,0.65);--text-main:#fff;--text-dim:#94a3b8;--accent-blue:#38bdf8;--accent-green:#10b981;--accent-red:#ef4444;--accent-orange:#f59e0b;--accent-teal:#24bbbd}
+        :root{--bg-color:#050a10;--card-color:rgba(17,27,39,.65);--text-main:#fff;--text-dim:#94a3b8;--accent-blue:#38bdf8;--accent-green:#10b981;--accent-red:#ef4444;--accent-orange:#f59e0b;--accent-teal:#24bbbd}
         @keyframes alertPulse{0%{box-shadow:0 12px 35px rgba(0,0,0,.5),0 0 60px rgba(239,68,68,.6),inset 0 1px 2px rgba(255,255,255,.4)}50%{box-shadow:0 12px 35px rgba(0,0,0,.5),0 0 80px rgba(239,68,68,.9),inset 0 1px 2px rgba(255,255,255,.5);transform:scale(1.02)}100%{box-shadow:0 12px 35px rgba(0,0,0,.5),0 0 60px rgba(239,68,68,.6),inset 0 1px 2px rgba(255,255,255,.4)}}
         .modal-content.alert-critical-mode{animation:alertPulse .8s ease-in-out infinite}
         body{background-color:var(--bg-color);background-image:radial-gradient(circle at 50% -20%,#11253d 0%,#050a10 80%);background-attachment:fixed;color:var(--text-main);font-family:'Segoe UI',sans-serif;margin:0;padding:15px;overflow-x:hidden}
@@ -369,12 +369,10 @@
 </audio>
 
 <script>
-/* ================== KONFIGURASI FIREBASE ================== */
 const firebaseConfig = { databaseURL: "https://monitoring-suhu-dc---sdi-default-rtdb.asia-southeast1.firebasedatabase.app" };
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 
-/* ================== STATE GLOBAL ================== */
 let lastUpdateR61 = 0, lastUpdateR77 = 0, lastUpdateR139 = 0;
 const OFFLINE_TIMEOUT = 300000;
 let targetRackExport = "";
@@ -385,7 +383,6 @@ let bigChartInstance = null;
 let isAudioEnabled = true;
 const alarmAudio = document.getElementById('alarmSound');
 
-/* ================== AUDIO ================== */
 let audioContext = null;
 function initAudioContext() {
     if (!audioContext) {
@@ -461,13 +458,11 @@ function toggleAudio() {
     }
 }
 
-/* ================== FIREBASE LISTENERS ================== */
 db.ref('notifications').limitToLast(50).on('child_added', (snap) => addNotificationItemToDOM(snap.key, snap.val()));
 ['61','77','139'].forEach(rackId => {
     db.ref(`records/rack${rackId}`).on('value', (snap) => updateRecordsUI(rackId, snap.val()));
 });
 
-/* ================== UTILS ================== */
 function formatTimestamp(ms) {
     const d = new Date(ms);
     return `${d.getDate().toString().padStart(2,'0')}/${(d.getMonth()+1).toString().padStart(2,'0')}/${d.getFullYear()} ${d.getHours().toString().padStart(2,'0')}:${d.getMinutes().toString().padStart(2,'0')}:${d.getSeconds().toString().padStart(2,'0')}`;
@@ -478,7 +473,6 @@ function formatTimeRange(s, e) {
     return `${pad(sd.getHours())}:${pad(sd.getMinutes())} - ${pad(ed.getHours())}:${pad(ed.getMinutes())}`;
 }
 
-/* ================== NOTIFIKASI HISTORY ================== */
 function addNotificationItemToDOM(key, data) {
     const listEl = document.getElementById('notificationList'); if (!listEl) return;
     let typeClass = 'warning';
@@ -509,7 +503,6 @@ function toggleNotificationHistory() {
     else { body.style.display = 'none'; arrow.classList.remove('rotated'); }
 }
 
-/* ================== RECORDS MIN/MAX ================== */
 function updateRecordIfNeeded(rackId, currentTemp, stampStr) {
     const ref = db.ref(`records/rack${rackId}`);
     ref.once('value').then(snap => {
@@ -541,7 +534,6 @@ function updateRecordsUI(rackId, data) {
 }
 function resetRekor(rackId) { if (confirm("Reset rekor Rack " + rackId + "?")) db.ref(`records/rack${rackId}`).remove(); }
 
-/* ================== TREND TRACKER ================== */
 const tempTrendTrackers = {
     '61':  { lastTemp: null, riseStartTime: null, baseTemp: null, alerted15: false, alerted30: false, alerted45: false, alerted60: false },
     '77':  { lastTemp: null, riseStartTime: null, baseTemp: null, alerted15: false, alerted30: false, alerted45: false, alerted60: false },
@@ -588,7 +580,6 @@ function evaluateTemperatureTrend(rackId, currentTemp) {
     }
 }
 
-/* ================== BROWSER NOTIFICATION ================== */
 function sendBrowserNotification(rackId, temp, alertLevel) {
     if (!('Notification' in window)) return;
     if (Notification.permission === 'granted') triggerNotificationDisplay(rackId, temp, alertLevel);
@@ -605,14 +596,11 @@ function triggerNotificationDisplay(rackId, temp, alertLevel) {
     try { new Notification(title, { body, tag: `rack-${rackId}-alert-${alertLevel}`, requireInteraction: true }); } catch(e) {}
 }
 
-/* ================== TOAST (mod: max 2, no sound) ================== */
 function showToast(rackId, alertLevel, period = '') {
-    // Sembunyikan semua toast rack ini
     for (let lvl = 1; lvl <= 4; lvl++) {
         const old = document.getElementById(`toast-${rackId}-${lvl}`);
         if (old) old.style.display = 'none';
     }
-    // Batasi maksimal 2 toast yang terlihat
     const visible = Array.from(document.querySelectorAll('.toast-card'))
         .filter(t => t.style.display === 'block')
         .sort((a,b) => parseInt(a.dataset.shownAt || '0', 10) - parseInt(b.dataset.shownAt || '0', 10));
@@ -633,7 +621,6 @@ function showToast(rackId, alertLevel, period = '') {
     }
     toast.style.display = 'block';
     toast.dataset.shownAt = Date.now().toString();
-    // 🔊 Tidak memutar bunyi untuk alarm 15/30/45/60 menit
 }
 function hideToast(rackId) {
     for (let level = 1; level <= 4; level++) {
@@ -642,12 +629,10 @@ function hideToast(rackId) {
     }
 }
 
-/* ================== HUMIDITY RACK 61 (SIMULASI) ================== */
 let lastFakeHumi61 = 51.0 + (Math.random() * 8);
 let lastFakeHumiUpdate = 0;
 const FAKE_HUMI_INTERVAL = 30000;
 
-/* ================== POPUP ALARM ================== */
 const popUpState = { '61': 0, '77': 0, '139': 0 };
 function triggerPopUpAlarm(rackId, temp, status) {
     const modal = document.getElementById('alertPopUp');
@@ -690,7 +675,6 @@ function closeAlertPopUp(e, force = false) {
     }
 }
 
-/* ================== DEVICE STATUS ================== */
 function checkDeviceStatus() {
     const now = Date.now();
     const racks = [
@@ -728,7 +712,6 @@ function checkDeviceStatus() {
     } catch(e) { setInterval(checkDeviceStatus, 5000); }
 })();
 
-/* ================== LOG & ANALYTIC ================== */
 function pushLog(id, temp, humi) {
     const now = new Date();
     const ts = now.getHours().toString().padStart(2,'0') + ':' + now.getMinutes().toString().padStart(2,'0') + ':' + now.getSeconds().toString().padStart(2,'0');
@@ -771,7 +754,6 @@ function updateAnalytic(rackId, temp, historyArr) {
     }
 }
 
-/* ================== CHART ================== */
 let history61  = JSON.parse(localStorage.getItem('hist61'))  || Array(25).fill(null);
 let history77  = JSON.parse(localStorage.getItem('hist77'))  || Array(25).fill(null);
 let history139 = JSON.parse(localStorage.getItem('hist139')) || Array(25).fill(null);
@@ -798,13 +780,17 @@ const c1 = buildChart('chart1', '#38bdf8', history61);
 const c3 = buildChart('chart77', '#24bbbd', history77);
 const c2 = buildChart('chart2', '#10b981', history139);
 
-/* ================== PiP WIDGET ================== */
+/* ===================== PiP WIDGET ===================== */
 let pipMode = 'WHITE';
 let pipOrientation = 'HORIZONTAL';
 try { const saved = localStorage.getItem('pipMode'); if (saved === 'BLACK' || saved === 'WHITE') pipMode = saved; } catch(e) {}
 let pipWindow = null;
 let pipClockInterval = null;
-const PIP_SIZE = { HORIZONTAL: { w: 350, h: 56 }, VERTICAL: { w: 260, h: 175 } };
+/* ★ Diperbesar: HORIZONTAL 700×115 (agar judul 15px + clock 15px + angka 44px muat) */
+const PIP_SIZE = {
+    HORIZONTAL: { w: 700, h: 115 },
+    VERTICAL:   { w: 420, h: 320 }
+};
 
 function applyPipMode() {
     if (!pipWindow || pipWindow.closed) return;
@@ -864,14 +850,14 @@ function measurePipMinRaw() {
     const rowH = Math.max(th, lh);
     const n = labels.length;
     const headH = head.offsetHeight;
-    const itemGap = 3, minGap = 4;
+    const itemGap = 5, minGap = 8;
     let w, h;
     if (pipOrientation === 'HORIZONTAL') {
-        w = lws.reduce((a, b) => a + b, 0) + n * (itemGap + tw) + (n - 1) * minGap + 12;
-        h = headH + rowH + 3;
+        w = lws.reduce((a, b) => a + b, 0) + n * (itemGap + tw) + (n - 1) * minGap + 30;
+        h = headH + rowH + 8;
     } else {
-        w = Math.max(...lws) + itemGap + tw + 28;
-        h = headH + n * rowH + (n - 1) * 4 + 4;
+        w = Math.max(...lws) + itemGap + tw + 40;
+        h = headH + n * rowH + (n - 1) * 6 + 8;
     }
     return { w: Math.ceil(w + PIP_MIN_MARGIN.x * 2), h: Math.ceil(h + PIP_MIN_MARGIN.y * 2) };
 }
@@ -975,47 +961,55 @@ async function togglePiPWidget() {
             * { box-sizing: border-box; margin: 0; padding: 0; }
             html { background: transparent !important; }
             body { background: transparent; color: #fff; font-family: 'Segoe UI', sans-serif; overflow: hidden; height: 100vh; display: flex; flex-direction: column; user-select: none; position: relative; }
-            .pip-head { position: relative; height: 14px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; background: transparent; }
-            .pip-title { font-size: 7px; color: #e2e8f0; letter-spacing: 1px; font-weight: 700; white-space: nowrap; transition: opacity .2s ease; text-shadow: 0 0 2px #000, 0 0 3px #000, 0 0 6px #000; }
-            .pip-clock { font-variant-numeric: tabular-nums; margin-left: 6px; color: #7dd3fc; font-weight: 900; letter-spacing: .5px; }
-            body.mode-white .pip-clock { color: #0284c7; text-shadow: none; }
-            .pip-op-bar { position: absolute; top: 0; left: 0; right: 0; bottom: 0; display: flex; align-items: center; justify-content: center; gap: 3px; opacity: 0; pointer-events: none; transition: opacity .2s ease; flex-wrap: nowrap; }
+
+            /* ===== HEADER: JUDUL & JAM DIPERBESAR ===== */
+            .pip-head { position: relative; height: 36px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; background: transparent; }
+            .pip-title { font-size: 18px; color: #e2e8f0; letter-spacing: 1.5px; font-weight: 800; white-space: nowrap; transition: opacity .2s ease; text-shadow: 0 0 2px #000, 0 0 4px #000, 0 0 8px #000; }
+            .pip-clock { font-variant-numeric: tabular-nums; margin-left: 12px; color: #7dd3fc; font-weight: 900; letter-spacing: 1px; font-size: 20px; text-shadow: 0 0 2px #000, 0 0 4px #000, 0 0 8px #000, 0 0 14px rgba(56,189,248,0.7); }
+            body.mode-white .pip-clock { color: #0284c7; text-shadow: 0 0 2px #fff, 0 0 4px #fff, 0 0 8px #fff, 0 0 14px rgba(2,132,199,0.5); }
+
+            /* ===== OPERATION BAR (muncul saat hover) ===== */
+            .pip-op-bar { position: absolute; top: 0; left: 0; right: 0; bottom: 0; display: flex; align-items: center; justify-content: center; gap: 6px; opacity: 0; pointer-events: none; transition: opacity .2s ease; flex-wrap: nowrap; }
             body:hover .pip-title { opacity: 0; }
             body:hover .pip-op-bar { opacity: 1; pointer-events: auto; }
-            .pip-op-ico { font-size: 6px; color: #7dd3fc; font-weight: 800; letter-spacing: .8px; text-shadow: 0 0 2px #000; }
-            .pip-mode-btn { padding: 1px 5px; border-radius: 3px; border: 1px solid rgba(255,255,255,0.5); background: rgba(0,0,0,0.55); color: #fff; font-size: 6.5px; font-weight: 900; cursor: pointer; letter-spacing: .8px; transition: all .15s ease; text-shadow: 0 0 2px #000; display: inline-flex; align-items: center; gap: 2px; white-space: nowrap; }
+            .pip-op-ico { font-size: 11px; color: #7dd3fc; font-weight: 800; letter-spacing: .8px; text-shadow: 0 0 2px #000; }
+            .pip-mode-btn { padding: 4px 10px; border-radius: 5px; border: 1px solid rgba(255,255,255,0.5); background: rgba(0,0,0,0.55); color: #fff; font-size: 11px; font-weight: 900; cursor: pointer; letter-spacing: .8px; transition: all .15s ease; text-shadow: 0 0 2px #000; display: inline-flex; align-items: center; gap: 3px; white-space: nowrap; }
             .pip-mode-btn:hover { background: rgba(56,189,248,0.85); color: #000; border-color: #38bdf8; text-shadow: none; }
             .pip-mode-btn.active { background: #38bdf8; color: #000; border-color: #fff; text-shadow: none; }
             .pip-mode-btn.active:hover { background: #7dd3fc; }
-            .pip-mode-btn .dot-preview { display: inline-block; width: 5px; height: 5px; border-radius: 50%; border: 1px solid rgba(255,255,255,0.7); background: #fff; }
+            .pip-mode-btn .dot-preview { display: inline-block; width: 9px; height: 9px; border-radius: 50%; border: 1px solid rgba(255,255,255,0.7); background: #fff; }
             .pip-mode-btn .dot-preview.dark { background: #050a10; }
+
+            /* ===== RACK STRIP ===== */
             .rack-strip { flex: 1; display: flex; min-height: 0; overflow: hidden; }
-            .rack-strip.horizontal { flex-direction: row; align-items: center; justify-content: space-evenly; gap: 4px; padding: 0 8px 4px 8px; }
-            .rack-strip.vertical { flex-direction: column; align-items: stretch; justify-content: space-evenly; gap: 4px; padding: 0 14px 4px 14px; }
-            .rack-item { display: flex; align-items: baseline; gap: 3px; flex: 0 0 auto; white-space: nowrap; }
+            .rack-strip.horizontal { flex-direction: row; align-items: center; justify-content: space-evenly; gap: 6px; padding: 0 12px 8px 12px; min-width: max-content; }
+            .rack-strip.vertical { flex-direction: column; align-items: stretch; justify-content: space-evenly; gap: 10px; padding: 0 26px 10px 26px; }
+            .rack-item { display: flex; align-items: baseline; gap: 6px; flex: 0 0 auto; white-space: nowrap; }
             .rack-strip.vertical .rack-item { justify-content: space-between; width: 100%; }
-            .rack-strip.horizontal { gap: 2px; padding: 0 6px 3px 6px; min-width: max-content; }
-            .rack-strip.horizontal .rack-item { align-items: center; gap: 3px; }
+            .rack-strip.horizontal .rack-item { align-items: center; gap: 6px; }
             .rack-strip.horizontal .rack-label { display: inline-flex; flex-direction: column; align-items: center; line-height: 1.02; }
-            .rack-label { font-size: 12px; font-weight: 800; color: #f1f5f9; letter-spacing: .2px; text-shadow: 0 0 2px #000, 0 0 3px #000, 0 0 6px #000; }
-            .rack-temp { font-size: 26px; font-weight: 800; letter-spacing: -1px; transition: color .3s; line-height: 1; }
-            .rack-strip.vertical .rack-temp { font-size: 30px; }
-            .ok   { color: #34d399; text-shadow: 0 0 2px #000, 0 0 3px #000, 0 0 6px #000, 0 0 12px rgba(16,185,129,0.5); }
-            .warn { color: #fbbf24; text-shadow: 0 0 2px #000, 0 0 3px #000, 0 0 6px #000, 0 0 12px rgba(245,158,11,0.6); }
-            .crit { color: #f87171; text-shadow: 0 0 2px #000, 0 0 3px #000, 0 0 6px #000, 0 0 16px rgba(239,68,68,0.9); animation: pipBlink 1s ease-in-out infinite; }
-            .cool { color: #7dd3fc; text-shadow: 0 0 2px #000, 0 0 3px #000, 0 0 6px #000, 0 0 12px rgba(56,189,248,0.6); }
-            .off  { color: #e2e8f0; font-size: 16px; letter-spacing: 1px; text-shadow: 0 0 2px #000, 0 0 3px #000, 0 0 6px #000; }
+            .rack-label { font-size: 16px; font-weight: 800; color: #f1f5f9; letter-spacing: .3px; text-shadow: 0 0 2px #000, 0 0 3px #000, 0 0 6px #000; }
+            .rack-temp { font-size: 40px; font-weight: 800; letter-spacing: -1.2px; transition: color .3s; line-height: 1; }
+            .rack-strip.vertical .rack-temp { font-size: 48px; }
+            .ok   { color: #34d399; text-shadow: 0 0 2px #000, 0 0 3px #000, 0 0 6px #000, 0 0 14px rgba(16,185,129,0.6); }
+            .warn { color: #fbbf24; text-shadow: 0 0 2px #000, 0 0 3px #000, 0 0 6px #000, 0 0 16px rgba(245,158,11,0.7); }
+            .crit { color: #f87171; text-shadow: 0 0 2px #000, 0 0 3px #000, 0 0 6px #000, 0 0 20px rgba(239,68,68,0.9); animation: pipBlink 1s ease-in-out infinite; }
+            .cool { color: #7dd3fc; text-shadow: 0 0 2px #000, 0 0 3px #000, 0 0 6px #000, 0 0 14px rgba(56,189,248,0.6); }
+            .off  { color: #e2e8f0; font-size: 26px; letter-spacing: 1px; text-shadow: 0 0 2px #000, 0 0 3px #000, 0 0 6px #000; }
             @keyframes pipBlink { 0%,100% { opacity: 1; } 50% { opacity: 0.55; } }
-            body.mode-white .pip-title, body.mode-white .rack-label, body.mode-white .pip-op-ico { color: #000; -webkit-text-stroke: 0; text-shadow: none; }
+
+            /* ===== MODE PUTIH ===== */
+            body.mode-white .pip-title, body.mode-white .rack-label, body.mode-white .pip-op-ico { color: #000; -webkit-text-stroke: 0; text-shadow: 0 0 2px #fff, 0 0 4px #fff; }
             body.mode-white .pip-mode-btn { background: rgba(255,255,255,0.75); color: #000; border-color: rgba(0,0,0,0.7); text-shadow: none; }
             body.mode-white .pip-mode-btn:hover { background: rgba(56,189,248,0.85); color: #000; border-color: #000; }
             body.mode-white .pip-mode-btn.active { background: #38bdf8; color: #000; border-color: #000; }
             body.mode-white .pip-mode-btn .dot-preview { border-color: rgba(0,0,0,0.7); }
-            body.mode-white .rack-temp.ok { color: #6ee7b7; -webkit-text-stroke: 1.2px rgba(0,0,0,0.95); paint-order: stroke fill; text-shadow: 0 0 2px #000, 0 0 4px #000, 0 0 8px #000, 0 0 14px rgba(0,0,0,0.85); }
-            body.mode-white .rack-temp.warn { color: #fcd34d; -webkit-text-stroke: 1.2px rgba(0,0,0,0.95); paint-order: stroke fill; text-shadow: 0 0 2px #000, 0 0 4px #000, 0 0 8px #000, 0 0 14px rgba(0,0,0,0.85); }
-            body.mode-white .rack-temp.crit { color: #fca5a5; -webkit-text-stroke: 1.2px rgba(0,0,0,0.95); paint-order: stroke fill; text-shadow: 0 0 2px #000, 0 0 4px #000, 0 0 8px #000, 0 0 14px rgba(0,0,0,0.85), 0 0 20px rgba(239,68,68,0.9); }
-            body.mode-white .rack-temp.cool { color: #bae6fd; -webkit-text-stroke: 1.2px rgba(0,0,0,0.95); paint-order: stroke fill; text-shadow: 0 0 2px #000, 0 0 4px #000, 0 0 8px #000, 0 0 14px rgba(0,0,0,0.85); }
-            body.mode-white .rack-temp.off { color: #e2e8f0; -webkit-text-stroke: 1.2px rgba(0,0,0,0.95); paint-order: stroke fill; text-shadow: 0 0 2px #000, 0 0 4px #000, 0 0 8px #000, 0 0 14px rgba(0,0,0,0.85); }
+            body.mode-white .rack-temp.ok { color: #6ee7b7; -webkit-text-stroke: 1.6px rgba(0,0,0,0.95); paint-order: stroke fill; text-shadow: 0 0 2px #000, 0 0 4px #000, 0 0 8px #000, 0 0 16px rgba(0,0,0,0.85); }
+            body.mode-white .rack-temp.warn { color: #fcd34d; -webkit-text-stroke: 1.6px rgba(0,0,0,0.95); paint-order: stroke fill; text-shadow: 0 0 2px #000, 0 0 4px #000, 0 0 8px #000, 0 0 16px rgba(0,0,0,0.85); }
+            body.mode-white .rack-temp.crit { color: #fca5a5; -webkit-text-stroke: 1.6px rgba(0,0,0,0.95); paint-order: stroke fill; text-shadow: 0 0 2px #000, 0 0 4px #000, 0 0 8px #000, 0 0 16px rgba(0,0,0,0.85), 0 0 22px rgba(239,68,68,1); }
+            body.mode-white .rack-temp.cool { color: #bae6fd; -webkit-text-stroke: 1.6px rgba(0,0,0,0.95); paint-order: stroke fill; text-shadow: 0 0 2px #000, 0 0 4px #000, 0 0 8px #000, 0 0 16px rgba(0,0,0,0.85); }
+            body.mode-white .rack-temp.off { color: #e2e8f0; -webkit-text-stroke: 1.6px rgba(0,0,0,0.95); paint-order: stroke fill; text-shadow: 0 0 2px #000, 0 0 4px #000, 0 0 8px #000, 0 0 16px rgba(0,0,0,0.85); }
+
             body.alarm-warn { box-shadow: inset 0 0 0 2px rgba(245,158,11,0.95); }
             body.alarm-crit { animation: pipAlarm .8s ease-in-out infinite; }
             @keyframes pipAlarm { 0%,100% { box-shadow: inset 0 0 0 2px rgba(239,68,68,1), inset 0 0 22px rgba(239,68,68,0.6); } 50% { box-shadow: inset 0 0 0 2px rgba(239,68,68,0.3), inset 0 0 6px rgba(239,68,68,0.2); } }
@@ -1029,7 +1023,7 @@ async function togglePiPWidget() {
                     <span class="pip-op-ico">COLOR:</span>
                     <button id="pip-btn-black" class="pip-mode-btn" title="Solid black"><span class="dot-preview dark"></span> BLACK</button>
                     <button id="pip-btn-white" class="pip-mode-btn" title="Maximum transparency"><span class="dot-preview"></span> WHITE</button>
-                    <span class="pip-op-ico" style="margin-left:4px;">ORIENTASI:</span>
+                    <span class="pip-op-ico" style="margin-left:6px;">ORIENTASI:</span>
                     <button id="pip-btn-horizontal" class="pip-mode-btn" title="Memanjang ke samping">➡ HORIZ</button>
                     <button id="pip-btn-vertical" class="pip-mode-btn" title="Menumpuk ke bawah">⬇ VERT</button>
                 </div>
@@ -1103,7 +1097,6 @@ function syncPiPWidget() {
     body.classList.toggle('alarm-warn', worst === 1);
 }
 
-/* ================== TAB TITLE ================== */
 function updateTabTitle() {
     const now = Date.now();
     const online61  = (now - lastUpdateR61)  < OFFLINE_TIMEOUT;
@@ -1122,7 +1115,6 @@ function updateTabTitle() {
     document.title = titleText;
 }
 
-/* ================== EXPORT CSV ================== */
 function openModal(rack) {
     targetRackExport = rack;
     document.getElementById('modalTargetRack').innerText = rack.toUpperCase().replace('_',' ');
@@ -1180,7 +1172,6 @@ function tarikDataFirebase(prefixKeyword, fileNameSuffix) {
 function executeDownloadMonthFull() { tarikDataFirebase(`${currentSelectedYear}-${currentSelectedMonthNum}`, `Bulan_${currentSelectedYear}-${currentSelectedMonthNum}`); }
 function executeDownloadDailyNum(dayStr) { tarikDataFirebase(`${currentSelectedYear}-${currentSelectedMonthNum}-${dayStr}`, `Tanggal_${currentSelectedYear}-${currentSelectedMonthNum}-${dayStr}`); }
 
-/* ================== GRAPH MODAL ================== */
 let currentGraphFilename = "";
 function openGraphModal(rack) {
     targetRackGraph = rack;
@@ -1258,7 +1249,6 @@ function downloadGraphImage() {
     link.click();
 }
 
-/* ================== ★★★ FIREBASE LIVE DATA LISTENER (PENTING) ★★★ ================== */
 db.ref('live_data').on('value', (snap) => {
     const d = snap.val();
     if (!d) return;
@@ -1267,7 +1257,6 @@ db.ref('live_data').on('value', (snap) => {
     const dateStr = now.getDate().toString().padStart(2,'0') + '/' + (now.getMonth()+1).toString().padStart(2,'0') + '/' + now.getFullYear().toString().slice(-2);
     const stampStr = `${timeStr} (${dateStr})`;
 
-    // RACK 61
     if (d.ruangan !== undefined && d.ruangan !== null) {
         lastUpdateR61 = Date.now();
         const t = Number(d.ruangan);
@@ -1286,7 +1275,6 @@ db.ref('live_data').on('value', (snap) => {
         }
     }
 
-    // RACK 77
     const rack77Data = d.rack_77;
     if (rack77Data !== undefined && rack77Data !== null) {
         const t = typeof rack77Data === 'number' ? rack77Data : Number(rack77Data.suhu);
@@ -1303,7 +1291,6 @@ db.ref('live_data').on('value', (snap) => {
         }
     }
 
-    // RACK 139
     if (d.pac !== undefined && d.pac !== null) {
         lastUpdateR139 = Date.now();
         const t = Number(d.pac);
@@ -1312,7 +1299,7 @@ db.ref('live_data').on('value', (snap) => {
             document.getElementById('hum2').innerText = Number(d.kelembaban || 0).toFixed(1);
             updateAnalytic('139', t, history139);
             updateRecordIfNeeded('139', t, stampStr);
-            c2.data.datasets[0].data.push(t); c2.datasets[0].data.shift(); c2.update('none');
+            c2.data.datasets[0].data.push(t); c2.data.datasets[0].data.shift(); c2.update('none');
             localStorage.setItem('hist139', JSON.stringify(history139));
             pushLog('logList2', t, d.kelembaban || 0);
         }
@@ -1322,7 +1309,6 @@ db.ref('live_data').on('value', (snap) => {
     syncPiPWidget();
 });
 
-/* ================== INISIALISASI ================== */
 checkDeviceStatus();
 updateTabTitle();
 if ('Notification' in window && Notification.permission === 'default') {
@@ -1335,7 +1321,6 @@ document.addEventListener('click', function resumeAudioOnce() {
     document.removeEventListener('click', resumeAudioOnce);
 }, { once: true });
 
-// Auto hide toast alert-15 setelah 8 detik
 setInterval(() => {
     ['61','77','139'].forEach(rackId => {
         const t1 = document.getElementById(`toast-${rackId}-1`);
@@ -1347,10 +1332,6 @@ setInterval(() => {
 }, 2000);
 
 console.log('%c✅ DC-SDI Monitoring Ready', 'color:#38bdf8;font-size:14px;font-weight:bold;');
-console.log('%c💡 Perubahan:', 'color:#10b981;font-weight:bold;');
-console.log('   • Bunyi alarm 15/30/45/60 menit DIMATIKAN');
-console.log('   • Toast dibatasi MAKSIMAL 2');
-console.log('   • Jam HH:MM:SS pada widget PiP');
 </script>
 </body>
 </html>
