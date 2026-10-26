@@ -787,20 +787,20 @@ try { const saved = localStorage.getItem('pipMode'); if (saved === 'BLACK' || sa
 let pipWindow = null;
 let pipClockInterval = null;
 
-/* ★★★ UKURAN REFERENSI (konten dirancang pada ukuran ini, tampil 100%) ★★★ */
+/* ★★★ UKURAN REFERENSI (Diperbesar untuk mengakomodasi font yang lebih besar) ★★★ */
 const PIP_REF_SIZE = {
-    HORIZONTAL: { w: 840, h: 150 },
-    VERTICAL:   { w: 520, h: 360 }
+    HORIZONTAL: { w: 880, h: 160 },
+    VERTICAL:   { w: 540, h: 380 }
 };
 /* ★★★ BATAS MINIMUM WINDOW — tidak bisa lebih kecil dari ini ★★★ */
 const PIP_MIN_SIZE = {
-    HORIZONTAL: { w: 520, h: 95 },
-    VERTICAL:   { w: 340, h: 240 }
+    HORIZONTAL: { w: 540, h: 100 },
+    VERTICAL:   { w: 350, h: 250 }
 };
 /* Ukuran saat pertama dibuka */
 const PIP_INITIAL_SIZE = {
-    HORIZONTAL: { w: 840, h: 150 },
-    VERTICAL:   { w: 520, h: 360 }
+    HORIZONTAL: { w: 880, h: 160 },
+    VERTICAL:   { w: 540, h: 380 }
 };
 
 function applyPipMode() {
@@ -823,7 +823,6 @@ function applyPipMode() {
 }
 function setPipMode(mode) { pipMode = mode; applyPipMode(); }
 
-/* ★★★ INTI: Hitung scale & terapkan transform agar konten mengisi window proporsional ★★★ */
 function applyPipScale() {
     if (!pipWindow || pipWindow.closed) return;
     const content = pipWindow.document.getElementById('pip-content');
@@ -831,16 +830,13 @@ function applyPipScale() {
     const ref = PIP_REF_SIZE[pipOrientation];
     const w = pipWindow.innerWidth;
     const h = pipWindow.innerHeight;
-    // Skala = berapa kali konten referensi bisa muat di window (max 1 = tidak membesar)
     const scale = Math.min(1, w / ref.w, h / ref.h);
     if (scale < 0.999) {
-        // Kecilkan konten proporsional agar mengisi window
         content.style.transform = `scale(${scale.toFixed(4)})`;
         content.style.transformOrigin = 'top left';
         content.style.width = (100 / scale) + '%';
         content.style.height = (100 / scale) + '%';
     } else {
-        // Konten tampil 100%, isi window penuh
         content.style.transform = '';
         content.style.transformOrigin = '';
         content.style.width = '100%';
@@ -942,7 +938,6 @@ async function togglePiPWidget() {
             html { background: #ffffff !important; }
             body { background: #ffffff; color: #000; font-family: 'Segoe UI', sans-serif; overflow: hidden; width: 100vw; height: 100vh; margin: 0; padding: 0; position: relative; }
 
-            /* ★ Container utama — semua konten di sini, di-scale via transform */
             #pip-content {
                 position: absolute;
                 top: 0; left: 0;
@@ -954,7 +949,7 @@ async function togglePiPWidget() {
             }
 
             /* ===== HEADER ===== */
-            .pip-head { position: relative; height: 54px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; background: transparent; padding: 0 16px; }
+            .pip-head { position: relative; height: 56px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; background: transparent; padding: 0 16px; }
             .pip-title { font-size: 18px; color: #334155; letter-spacing: 1px; font-weight: 800; white-space: nowrap; transition: opacity .2s ease; display: flex; align-items: center; gap: 12px; }
             .pip-clock { font-variant-numeric: tabular-nums; color: #000000; font-weight: 900; letter-spacing: 1.2px; font-size: 28px; }
 
@@ -980,16 +975,17 @@ async function togglePiPWidget() {
             .rack-strip.vertical .rack-item { display: flex; justify-content: space-between; align-items: center; width: 100%; padding: 4px 0; }
             .rack-strip.vertical .rack-label { display: inline-flex; flex-direction: row; align-items: baseline; gap: 6px; }
 
-            .rack-label { font-size: 18px; font-weight: 800; color: #334155; letter-spacing: .5px; }
-            .rack-temp { font-size: 42px; font-weight: 800; letter-spacing: -1px; transition: color .3s; line-height: 1; }
-            .rack-strip.vertical .rack-temp { font-size: 46px; }
+            /* ★ PERBESAR FONT LABEL & SUHU, UBAH WARNA LABEL JADI HITAM */
+            .rack-label { font-size: 22px; font-weight: 800; color: #000000; letter-spacing: .5px; }
+            .rack-temp { font-size: 52px; font-weight: 800; letter-spacing: -1px; transition: color .3s; line-height: 1; }
+            .rack-strip.vertical .rack-temp { font-size: 58px; }
 
             /* Warna Teks Mode WHITE (solid, tanpa outline) */
             .ok   { color: #059669; }
             .warn { color: #d97706; }
             .crit { color: #dc2626; animation: pipBlink 1s ease-in-out infinite; }
             .cool { color: #0284c7; }
-            .off  { color: #64748b; font-size: 28px; letter-spacing: 1px; }
+            .off  { color: #64748b; font-size: 32px; letter-spacing: 1px; }
             @keyframes pipBlink { 0%,100% { opacity: 1; } 50% { opacity: 0.5; } }
 
             /* ===== MODE BLACK ===== */
@@ -1335,4 +1331,4 @@ setInterval(() => {
 console.log('%c✅ DC-SDI Monitoring Ready', 'color:#38bdf8;font-size:14px;font-weight:bold;');
 </script>
 </body>
-</html>
+    </html>
