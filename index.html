@@ -786,9 +786,21 @@ let pipOrientation = 'HORIZONTAL';
 try { const saved = localStorage.getItem('pipMode'); if (saved === 'BLACK' || saved === 'WHITE') pipMode = saved; } catch(e) {}
 let pipWindow = null;
 let pipClockInterval = null;
-const PIP_SIZE = {
-    HORIZONTAL: { w: 740, h: 130 },
-    VERTICAL:   { w: 440, h: 340 }
+
+/* ★★★ UKURAN REFERENSI (konten dirancang pada ukuran ini, tampil 100%) ★★★ */
+const PIP_REF_SIZE = {
+    HORIZONTAL: { w: 840, h: 150 },
+    VERTICAL:   { w: 520, h: 360 }
+};
+/* ★★★ BATAS MINIMUM WINDOW — tidak bisa lebih kecil dari ini ★★★ */
+const PIP_MIN_SIZE = {
+    HORIZONTAL: { w: 520, h: 95 },
+    VERTICAL:   { w: 340, h: 240 }
+};
+/* Ukuran saat pertama dibuka */
+const PIP_INITIAL_SIZE = {
+    HORIZONTAL: { w: 840, h: 150 },
+    VERTICAL:   { w: 520, h: 360 }
 };
 
 function applyPipMode() {
@@ -800,8 +812,8 @@ function applyPipMode() {
         body.style.cssText = 'background:#050a10 !important; background-color:#050a10 !important; background-image:none !important; backdrop-filter:none !important; -webkit-backdrop-filter:none !important;';
         body.classList.remove('mode-white'); body.classList.add('mode-black');
     } else {
-        root.style.cssText = 'background:transparent !important; background-color:transparent !important; background-image:none !important; color-scheme:normal !important;';
-        body.style.cssText = 'background:transparent !important; background-color:rgba(0,0,0,0) !important; background-image:none !important; backdrop-filter:none !important; -webkit-backdrop-filter:none !important;';
+        root.style.cssText = 'background:#ffffff !important; color-scheme:light;';
+        body.style.cssText = 'background:#ffffff !important; background-color:#ffffff !important; background-image:none !important; backdrop-filter:none !important; -webkit-backdrop-filter:none !important;';
         body.classList.remove('mode-black'); body.classList.add('mode-white');
     }
     const btnW = doc.getElementById('pip-btn-white'), btnB = doc.getElementById('pip-btn-black');
@@ -810,101 +822,70 @@ function applyPipMode() {
     try { localStorage.setItem('pipMode', pipMode); } catch(e) {}
 }
 function setPipMode(mode) { pipMode = mode; applyPipMode(); }
-const PIP_MIN_MARGIN = { x: 8, y: 5 };
-function setPipZoom(z) {
-    if (!pipWindow || pipWindow.closed) return;
-    const doc = pipWindow.document;
-    [doc.querySelector('.pip-head'), doc.getElementById('rack-strip')].forEach(el => { if (el) el.style.zoom = z; });
-}
-function measurePipMin() {
-    const prev = pipWindow && !pipWindow.closed ? (pipWindow.document.getElementById('rack-strip') || {}).style : null;
-    const prevZoom = prev ? prev.zoom : '';
-    setPipZoom(1);
-    const m = measurePipMinRaw();
-    setPipZoom(prevZoom || 1);
-    return m;
-}
+
+/* ★★★ INTI: Hitung scale & terapkan transform agar konten mengisi window proporsional ★★★ */
 function applyPipScale() {
     if (!pipWindow || pipWindow.closed) return;
-    const m = measurePipMin(); if (!m) return;
-    const z = Math.min(1, pipWindow.innerWidth / m.w, pipWindow.innerHeight / m.h);
-    setPipZoom(z < 0.999 ? z.toFixed(3) : 1);
-}
-function measurePipMinRaw() {
-    if (!pipWindow || pipWindow.closed) return null;
-    const doc = pipWindow.document;
-    const strip = doc.getElementById('rack-strip');
-    const head = doc.querySelector('.pip-head');
-    if (!strip || !head) return null;
-    const probe = doc.createElement('span');
-    probe.className = 'rack-temp';
-    probe.style.cssText = 'position:absolute;visibility:hidden;white-space:nowrap;';
-    probe.textContent = '88.8°';
-    strip.appendChild(probe);
-    const tw = probe.offsetWidth, th = probe.offsetHeight;
-    probe.remove();
-    const labels = Array.from(strip.querySelectorAll('.rack-label'));
-    const lws = labels.map(l => l.offsetWidth);
-    const lh = Math.max(0, ...labels.map(l => l.offsetHeight));
-    const rowH = Math.max(th, lh);
-    const n = labels.length;
-    const headH = head.offsetHeight;
-    const itemGap = 5, minGap = 8;
-    let w, h;
-    if (pipOrientation === 'HORIZONTAL') {
-        w = lws.reduce((a, b) => a + b, 0) + n * (itemGap + tw) + (n - 1) * minGap + 30;
-        h = headH + rowH + 8;
+    const content = pipWindow.document.getElementById('pip-content');
+    if (!content) return;
+    const ref = PIP_REF_SIZE[pipOrientation];
+    const w = pipWindow.innerWidth;
+    const h = pipWindow.innerHeight;
+    // Skala = berapa kali konten referensi bisa muat di window (max 1 = tidak membesar)
+    const scale = Math.min(1, w / ref.w, h / ref.h);
+    if (scale < 0.999) {
+        // Kecilkan konten proporsional agar mengisi window
+        content.style.transform = `scale(${scale.toFixed(4)})`;
+        content.style.transformOrigin = 'top left';
+        content.style.width = (100 / scale) + '%';
+        content.style.height = (100 / scale) + '%';
     } else {
-        w = Math.max(...lws) + itemGap + tw + 40;
-        h = headH + n * rowH + (n - 1) * 6 + 8;
+        // Konten tampil 100%, isi window penuh
+        content.style.transform = '';
+        content.style.transformOrigin = '';
+        content.style.width = '100%';
+        content.style.height = '100%';
     }
-    return { w: Math.ceil(w + PIP_MIN_MARGIN.x * 2), h: Math.ceil(h + PIP_MIN_MARGIN.y * 2) };
 }
+
 let pipClamping = false, pipLastCheck = 0;
 function enforcePipMinSize(e) {
     if (!pipWindow || pipWindow.closed) return;
     if (!e || e.type === 'resize') applyPipScale();
     if (pipClamping) return;
     const now = Date.now();
-    if (e && e.type !== 'resize' && now - pipLastCheck < 150) return;
+    if (e && e.type !== 'resize' && now - pipLastCheck < 120) return;
     pipLastCheck = now;
-    const m = measurePipMin(); if (!m) return;
+
+    const min = PIP_MIN_SIZE[pipOrientation];
     const iw = pipWindow.innerWidth, ih = pipWindow.innerHeight;
-    const dw = iw < m.w ? m.w - iw : 0;
-    const dh = ih < m.h ? m.h - ih : 0;
+    const dw = iw < min.w ? min.w - iw : 0;
+    const dh = ih < min.h ? min.h - ih : 0;
     if (!dw && !dh) return;
+
     pipClamping = true;
     try { pipWindow.resizeBy(dw, dh); } catch(err) {}
     setTimeout(() => {
         try {
-            if (pipWindow && !pipWindow.closed && (pipWindow.innerWidth < m.w || pipWindow.innerHeight < m.h)) {
+            if (pipWindow && !pipWindow.closed && (pipWindow.innerWidth < min.w || pipWindow.innerHeight < min.h)) {
                 pipWindow.resizeTo(
-                    pipWindow.outerWidth + Math.max(0, m.w - pipWindow.innerWidth),
-                    pipWindow.outerHeight + Math.max(0, m.h - pipWindow.innerHeight)
+                    pipWindow.outerWidth + Math.max(0, min.w - pipWindow.innerWidth),
+                    pipWindow.outerHeight + Math.max(0, min.h - pipWindow.innerHeight)
                 );
             }
         } catch(err) {}
         pipClamping = false;
-    }, 120);
+        applyPipScale();
+    }, 100);
 }
-function fitPipToContent() {
-    if (!pipWindow || pipWindow.closed) return;
-    const m = measurePipMin(); if (!m) return;
-    pipClamping = true;
-    try { pipWindow.resizeBy(m.w - pipWindow.innerWidth, m.h - pipWindow.innerHeight); } catch(e) {}
-    setTimeout(() => { pipClamping = false; }, 150);
-}
+
 function applyPipOrientation() {
     if (!pipWindow || pipWindow.closed) return;
     const doc = pipWindow.document;
     const strip = doc.getElementById('rack-strip');
     if (strip) { strip.classList.toggle('horizontal', pipOrientation === 'HORIZONTAL'); strip.classList.toggle('vertical', pipOrientation === 'VERTICAL'); }
-    try { const s = PIP_SIZE[pipOrientation]; pipWindow.resizeTo(s.w, s.h); } catch(e) {}
-    setTimeout(() => {
-        if (pipOrientation === 'HORIZONTAL') fitPipToContent();
-        else enforcePipMinSize();
-        applyPipScale();
-    }, 80);
+    try { const s = PIP_INITIAL_SIZE[pipOrientation]; pipWindow.resizeTo(s.w, s.h); } catch(e) {}
+    setTimeout(() => { applyPipScale(); enforcePipMinSize(); }, 80);
     const btnH = doc.getElementById('pip-btn-horizontal'), btnV = doc.getElementById('pip-btn-vertical');
     if (btnH) btnH.classList.toggle('active', pipOrientation === 'HORIZONTAL');
     if (btnV) btnV.classList.toggle('active', pipOrientation === 'VERTICAL');
@@ -952,98 +933,105 @@ async function togglePiPWidget() {
     }
     try {
         pipOrientation = 'HORIZONTAL';
-        const initialSize = PIP_SIZE.HORIZONTAL;
+        const initialSize = PIP_INITIAL_SIZE.HORIZONTAL;
         pipWindow = await documentPictureInPicture.requestWindow({ width: initialSize.w, height: initialSize.h });
 
         const style = pipWindow.document.createElement('style');
         style.textContent = `
             * { box-sizing: border-box; margin: 0; padding: 0; }
-            html { background: transparent !important; }
-            body { background: transparent; color: #fff; font-family: 'Segoe UI', sans-serif; overflow: hidden; height: 100vh; display: flex; flex-direction: column; user-select: none; position: relative; }
+            html { background: #ffffff !important; }
+            body { background: #ffffff; color: #000; font-family: 'Segoe UI', sans-serif; overflow: hidden; width: 100vw; height: 100vh; margin: 0; padding: 0; position: relative; }
 
-            /* ===== HEADER: JUDUL & JAM ===== */
-            .pip-head { position: relative; height: 48px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; background: transparent; }
-            .pip-title { font-size: 18px; color: #e2e8f0; letter-spacing: 1.5px; font-weight: 800; white-space: nowrap; transition: opacity .2s ease; text-shadow: 0 0 2px #000, 0 0 4px #000, 0 0 8px #000; }
-            /* ★ JAM: lebih besar (28px) & warna hitam */
-            .pip-clock {
-                font-variant-numeric: tabular-nums;
-                margin-left: 14px;
-                color: #000000;
-                font-weight: 900;
-                letter-spacing: 1.2px;
-                font-size: 28px;
-                text-shadow: 0 0 3px #ffffff, 0 0 6px #ffffff, 0 0 10px rgba(255,255,255,0.7);
+            /* ★ Container utama — semua konten di sini, di-scale via transform */
+            #pip-content {
+                position: absolute;
+                top: 0; left: 0;
+                width: 100%;
+                height: 100%;
+                display: flex;
+                flex-direction: column;
+                transform-origin: top left;
             }
-            /* Mode white tetap hitam agar konsisten */
-            body.mode-white .pip-clock {
-                color: #000000;
-                text-shadow: 0 0 3px #ffffff, 0 0 6px #ffffff, 0 0 10px rgba(255,255,255,0.7);
-            }
+
+            /* ===== HEADER ===== */
+            .pip-head { position: relative; height: 54px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; background: transparent; padding: 0 16px; }
+            .pip-title { font-size: 18px; color: #334155; letter-spacing: 1px; font-weight: 800; white-space: nowrap; transition: opacity .2s ease; display: flex; align-items: center; gap: 12px; }
+            .pip-clock { font-variant-numeric: tabular-nums; color: #000000; font-weight: 900; letter-spacing: 1.2px; font-size: 28px; }
 
             /* ===== OPERATION BAR (muncul saat hover) ===== */
-            .pip-op-bar { position: absolute; top: 0; left: 0; right: 0; bottom: 0; display: flex; align-items: center; justify-content: center; gap: 6px; opacity: 0; pointer-events: none; transition: opacity .2s ease; flex-wrap: nowrap; }
+            .pip-op-bar { position: absolute; top: 0; left: 0; right: 0; bottom: 0; display: flex; align-items: center; justify-content: center; gap: 6px; opacity: 0; pointer-events: none; transition: opacity .2s ease; flex-wrap: wrap; padding: 4px; }
             body:hover .pip-title { opacity: 0; }
             body:hover .pip-op-bar { opacity: 1; pointer-events: auto; }
-            .pip-op-ico { font-size: 11px; color: #7dd3fc; font-weight: 800; letter-spacing: .8px; text-shadow: 0 0 2px #000; }
-            .pip-mode-btn { padding: 4px 10px; border-radius: 5px; border: 1px solid rgba(255,255,255,0.5); background: rgba(0,0,0,0.55); color: #fff; font-size: 11px; font-weight: 900; cursor: pointer; letter-spacing: .8px; transition: all .15s ease; text-shadow: 0 0 2px #000; display: inline-flex; align-items: center; gap: 3px; white-space: nowrap; }
-            .pip-mode-btn:hover { background: rgba(56,189,248,0.85); color: #000; border-color: #38bdf8; text-shadow: none; }
-            .pip-mode-btn.active { background: #38bdf8; color: #000; border-color: #fff; text-shadow: none; }
-            .pip-mode-btn.active:hover { background: #7dd3fc; }
-            .pip-mode-btn .dot-preview { display: inline-block; width: 9px; height: 9px; border-radius: 50%; border: 1px solid rgba(255,255,255,0.7); background: #fff; }
+            .pip-op-ico { font-size: 11px; color: #64748b; font-weight: 800; letter-spacing: .8px; }
+            .pip-mode-btn { padding: 4px 10px; border-radius: 5px; border: 1px solid #cbd5e1; background: #f1f5f9; color: #0f172a; font-size: 11px; font-weight: 900; cursor: pointer; letter-spacing: .8px; transition: all .15s ease; display: inline-flex; align-items: center; gap: 4px; white-space: nowrap; }
+            .pip-mode-btn:hover { background: #e2e8f0; border-color: #94a3b8; }
+            .pip-mode-btn.active { background: #38bdf8; color: #ffffff; border-color: #0ea5e9; }
+            .pip-mode-btn .dot-preview { display: inline-block; width: 9px; height: 9px; border-radius: 50%; border: 1px solid #94a3b8; background: #fff; }
             .pip-mode-btn .dot-preview.dark { background: #050a10; }
 
             /* ===== RACK STRIP ===== */
             .rack-strip { flex: 1; display: flex; min-height: 0; overflow: hidden; }
-            .rack-strip.horizontal { flex-direction: row; align-items: center; justify-content: space-evenly; gap: 6px; padding: 0 12px 10px 12px; min-width: max-content; }
-            .rack-strip.vertical { flex-direction: column; align-items: stretch; justify-content: space-evenly; gap: 10px; padding: 0 26px 12px 26px; }
-            .rack-item { display: flex; align-items: baseline; gap: 6px; flex: 0 0 auto; white-space: nowrap; }
-            .rack-strip.vertical .rack-item { justify-content: space-between; width: 100%; }
-            .rack-strip.horizontal .rack-item { align-items: center; gap: 6px; }
-            .rack-strip.horizontal .rack-label { display: inline-flex; flex-direction: column; align-items: center; line-height: 1.02; }
-            .rack-label { font-size: 16px; font-weight: 800; color: #f1f5f9; letter-spacing: .3px; text-shadow: 0 0 2px #000, 0 0 3px #000, 0 0 6px #000; }
-            .rack-temp { font-size: 40px; font-weight: 800; letter-spacing: -1.2px; transition: color .3s; line-height: 1; }
-            .rack-strip.vertical .rack-temp { font-size: 48px; }
-            .ok   { color: #34d399; text-shadow: 0 0 2px #000, 0 0 3px #000, 0 0 6px #000, 0 0 14px rgba(16,185,129,0.6); }
-            .warn { color: #fbbf24; text-shadow: 0 0 2px #000, 0 0 3px #000, 0 0 6px #000, 0 0 16px rgba(245,158,11,0.7); }
-            .crit { color: #f87171; text-shadow: 0 0 2px #000, 0 0 3px #000, 0 0 6px #000, 0 0 20px rgba(239,68,68,0.9); animation: pipBlink 1s ease-in-out infinite; }
-            .cool { color: #7dd3fc; text-shadow: 0 0 2px #000, 0 0 3px #000, 0 0 6px #000, 0 0 14px rgba(56,189,248,0.6); }
-            .off  { color: #e2e8f0; font-size: 26px; letter-spacing: 1px; text-shadow: 0 0 2px #000, 0 0 3px #000, 0 0 6px #000; }
-            @keyframes pipBlink { 0%,100% { opacity: 1; } 50% { opacity: 0.55; } }
 
-            /* ===== MODE PUTIH ===== */
-            body.mode-white .pip-title, body.mode-white .rack-label, body.mode-white .pip-op-ico { color: #000; -webkit-text-stroke: 0; text-shadow: 0 0 2px #fff, 0 0 4px #fff; }
-            body.mode-white .pip-mode-btn { background: rgba(255,255,255,0.75); color: #000; border-color: rgba(0,0,0,0.7); text-shadow: none; }
-            body.mode-white .pip-mode-btn:hover { background: rgba(56,189,248,0.85); color: #000; border-color: #000; }
-            body.mode-white .pip-mode-btn.active { background: #38bdf8; color: #000; border-color: #000; }
-            body.mode-white .pip-mode-btn .dot-preview { border-color: rgba(0,0,0,0.7); }
-            body.mode-white .rack-temp.ok { color: #6ee7b7; -webkit-text-stroke: 1.6px rgba(0,0,0,0.95); paint-order: stroke fill; text-shadow: 0 0 2px #000, 0 0 4px #000, 0 0 8px #000, 0 0 16px rgba(0,0,0,0.85); }
-            body.mode-white .rack-temp.warn { color: #fcd34d; -webkit-text-stroke: 1.6px rgba(0,0,0,0.95); paint-order: stroke fill; text-shadow: 0 0 2px #000, 0 0 4px #000, 0 0 8px #000, 0 0 16px rgba(0,0,0,0.85); }
-            body.mode-white .rack-temp.crit { color: #fca5a5; -webkit-text-stroke: 1.6px rgba(0,0,0,0.95); paint-order: stroke fill; text-shadow: 0 0 2px #000, 0 0 4px #000, 0 0 8px #000, 0 0 16px rgba(0,0,0,0.85), 0 0 22px rgba(239,68,68,1); }
-            body.mode-white .rack-temp.cool { color: #bae6fd; -webkit-text-stroke: 1.6px rgba(0,0,0,0.95); paint-order: stroke fill; text-shadow: 0 0 2px #000, 0 0 4px #000, 0 0 8px #000, 0 0 16px rgba(0,0,0,0.85); }
-            body.mode-white .rack-temp.off { color: #e2e8f0; -webkit-text-stroke: 1.6px rgba(0,0,0,0.95); paint-order: stroke fill; text-shadow: 0 0 2px #000, 0 0 4px #000, 0 0 8px #000, 0 0 16px rgba(0,0,0,0.85); }
+            .rack-strip.horizontal { flex-direction: row; align-items: center; justify-content: space-evenly; gap: 16px; padding: 0 16px 14px 16px; }
+            .rack-strip.horizontal .rack-item { display: flex; align-items: center; gap: 8px; flex: 0 0 auto; white-space: nowrap; }
+            .rack-strip.horizontal .rack-label { display: inline-flex; flex-direction: column; align-items: center; line-height: 1.1; }
 
-            body.alarm-warn { box-shadow: inset 0 0 0 2px rgba(245,158,11,0.95); }
+            .rack-strip.vertical { flex-direction: column; align-items: stretch; justify-content: space-evenly; gap: 12px; padding: 0 24px 16px 24px; }
+            .rack-strip.vertical .rack-item { display: flex; justify-content: space-between; align-items: center; width: 100%; padding: 4px 0; }
+            .rack-strip.vertical .rack-label { display: inline-flex; flex-direction: row; align-items: baseline; gap: 6px; }
+
+            .rack-label { font-size: 18px; font-weight: 800; color: #334155; letter-spacing: .5px; }
+            .rack-temp { font-size: 42px; font-weight: 800; letter-spacing: -1px; transition: color .3s; line-height: 1; }
+            .rack-strip.vertical .rack-temp { font-size: 46px; }
+
+            /* Warna Teks Mode WHITE (solid, tanpa outline) */
+            .ok   { color: #059669; }
+            .warn { color: #d97706; }
+            .crit { color: #dc2626; animation: pipBlink 1s ease-in-out infinite; }
+            .cool { color: #0284c7; }
+            .off  { color: #64748b; font-size: 28px; letter-spacing: 1px; }
+            @keyframes pipBlink { 0%,100% { opacity: 1; } 50% { opacity: 0.5; } }
+
+            /* ===== MODE BLACK ===== */
+            body.mode-black { background: #050a10 !important; }
+            body.mode-black .pip-title { color: #e2e8f0; text-shadow: 0 0 2px #000, 0 0 4px #000; }
+            body.mode-black .pip-clock { color: #7dd3fc; text-shadow: 0 0 2px #000, 0 0 4px #000, 0 0 8px #000, 0 0 14px rgba(56,189,248,0.7); }
+            body.mode-black .rack-label { color: #f1f5f9; text-shadow: 0 0 2px #000, 0 0 3px #000; }
+            body.mode-black .pip-op-ico { color: #7dd3fc; text-shadow: 0 0 2px #000; }
+            body.mode-black .pip-mode-btn { background: rgba(0,0,0,0.55); color: #fff; border-color: rgba(255,255,255,0.5); text-shadow: 0 0 2px #000; }
+            body.mode-black .pip-mode-btn:hover { background: rgba(56,189,248,0.85); color: #000; border-color: #38bdf8; text-shadow: none; }
+            body.mode-black .pip-mode-btn.active { background: #38bdf8; color: #000; border-color: #fff; text-shadow: none; }
+            body.mode-black .pip-mode-btn .dot-preview { border-color: rgba(255,255,255,0.7); }
+            body.mode-black .rack-temp.ok { color: #34d399; text-shadow: 0 0 2px #000, 0 0 6px #000, 0 0 14px rgba(16,185,129,0.6); }
+            body.mode-black .rack-temp.warn { color: #fbbf24; text-shadow: 0 0 2px #000, 0 0 6px #000, 0 0 16px rgba(245,158,11,0.7); }
+            body.mode-black .rack-temp.crit { color: #f87171; text-shadow: 0 0 2px #000, 0 0 6px #000, 0 0 20px rgba(239,68,68,0.9); }
+            body.mode-black .rack-temp.cool { color: #7dd3fc; text-shadow: 0 0 2px #000, 0 0 6px #000, 0 0 14px rgba(56,189,248,0.6); }
+            body.mode-black .rack-temp.off { color: #e2e8f0; text-shadow: 0 0 2px #000, 0 0 6px #000; }
+
+            body.alarm-warn { box-shadow: inset 0 0 0 3px rgba(245,158,11,0.95); }
             body.alarm-crit { animation: pipAlarm .8s ease-in-out infinite; }
-            @keyframes pipAlarm { 0%,100% { box-shadow: inset 0 0 0 2px rgba(239,68,68,1), inset 0 0 22px rgba(239,68,68,0.6); } 50% { box-shadow: inset 0 0 0 2px rgba(239,68,68,0.3), inset 0 0 6px rgba(239,68,68,0.2); } }
+            @keyframes pipAlarm { 0%,100% { box-shadow: inset 0 0 0 3px rgba(239,68,68,1), inset 0 0 22px rgba(239,68,68,0.6); } 50% { box-shadow: inset 0 0 0 3px rgba(239,68,68,0.3), inset 0 0 6px rgba(239,68,68,0.2); } }
         `;
         pipWindow.document.head.appendChild(style);
         pipWindow.document.title = 'DC-SDI Monitor';
         pipWindow.document.body.innerHTML = `
-            <div class="pip-head">
-                <span class="pip-title">DC-SDI · LIVE THERMAL TELEMETRY<span class="pip-clock" id="pip-clock">--:--:--</span></span>
-                <div class="pip-op-bar" title="Atur tampilan widget">
-                    <span class="pip-op-ico">COLOR:</span>
-                    <button id="pip-btn-black" class="pip-mode-btn" title="Solid black"><span class="dot-preview dark"></span> BLACK</button>
-                    <button id="pip-btn-white" class="pip-mode-btn" title="Maximum transparency"><span class="dot-preview"></span> WHITE</button>
-                    <span class="pip-op-ico" style="margin-left:6px;">ORIENTASI:</span>
-                    <button id="pip-btn-horizontal" class="pip-mode-btn" title="Memanjang ke samping">➡ HORIZ</button>
-                    <button id="pip-btn-vertical" class="pip-mode-btn" title="Menumpuk ke bawah">⬇ VERT</button>
+            <div id="pip-content">
+                <div class="pip-head">
+                    <span class="pip-title">DC-SDI · LIVE THERMAL TELEMETRY<span class="pip-clock" id="pip-clock">--:--:--</span></span>
+                    <div class="pip-op-bar" title="Atur tampilan widget">
+                        <span class="pip-op-ico">COLOR:</span>
+                        <button id="pip-btn-black" class="pip-mode-btn" title="Solid black"><span class="dot-preview dark"></span> BLACK</button>
+                        <button id="pip-btn-white" class="pip-mode-btn" title="Solid white"><span class="dot-preview"></span> WHITE</button>
+                        <span class="pip-op-ico" style="margin-left:6px;">ORIENTASI:</span>
+                        <button id="pip-btn-horizontal" class="pip-mode-btn" title="Memanjang ke samping">➡ HORIZ</button>
+                        <button id="pip-btn-vertical" class="pip-mode-btn" title="Menumpuk ke bawah">⬇ VERT</button>
+                    </div>
                 </div>
-            </div>
-            <div class="rack-strip horizontal" id="rack-strip">
-                <div class="rack-item"><span class="rack-label"><span class="rl-word">RACK</span> <span class="rl-num">61</span></span><span class="rack-temp" id="pip-t61">--</span></div>
-                <div class="rack-item"><span class="rack-label"><span class="rl-word">RACK</span> <span class="rl-num">77</span></span><span class="rack-temp" id="pip-t77">--</span></div>
-                <div class="rack-item"><span class="rack-label"><span class="rl-word">RACK</span> <span class="rl-num">139</span></span><span class="rack-temp" id="pip-t139">--</span></div>
+                <div class="rack-strip horizontal" id="rack-strip">
+                    <div class="rack-item"><span class="rack-label"><span class="rl-word">RACK</span> <span class="rl-num">61</span></span><span class="rack-temp" id="pip-t61">--</span></div>
+                    <div class="rack-item"><span class="rack-label"><span class="rl-word">RACK</span> <span class="rl-num">77</span></span><span class="rack-temp" id="pip-t77">--</span></div>
+                    <div class="rack-item"><span class="rack-label"><span class="rl-word">RACK</span> <span class="rl-num">139</span></span><span class="rack-temp" id="pip-t139">--</span></div>
+                </div>
             </div>
         `;
         pipWindow.document.getElementById('pip-btn-white').addEventListener('click', () => setPipMode('WHITE'));
@@ -1333,22 +1321,18 @@ document.addEventListener('click', function resumeAudioOnce() {
     document.removeEventListener('click', resumeAudioOnce);
 }, { once: true });
 
-/* ★★★ AUTO-CLOSE TOAST SETELAH 10 MENIT ★★★ */
-// Toast akan otomatis tertutup setelah 10 menit (600.000 ms) jika user tidak menutupnya manual
-const TOAST_AUTO_CLOSE_MS = 10 * 60 * 1000; // 10 menit
+/* ★ Auto-close toast setelah 10 menit */
+const TOAST_AUTO_CLOSE_MS = 10 * 60 * 1000;
 setInterval(() => {
     document.querySelectorAll('.toast-card').forEach(t => {
         if (t.style.display === 'block') {
             const shownAt = parseInt(t.dataset.shownAt || '0', 10);
-            if (shownAt && (Date.now() - shownAt > TOAST_AUTO_CLOSE_MS)) {
-                t.style.display = 'none';
-            }
+            if (shownAt && (Date.now() - shownAt > TOAST_AUTO_CLOSE_MS)) t.style.display = 'none';
         }
     });
-}, 5000); // Cek tiap 5 detik
+}, 5000);
 
 console.log('%c✅ DC-SDI Monitoring Ready', 'color:#38bdf8;font-size:14px;font-weight:bold;');
-console.log('%c🕐 Auto-close toast: 10 menit | Jam PiP: 28px warna hitam', 'color:#10b981;font-weight:bold;');
 </script>
 </body>
 </html>
