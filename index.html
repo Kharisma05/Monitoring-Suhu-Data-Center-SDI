@@ -786,10 +786,9 @@ let pipOrientation = 'HORIZONTAL';
 try { const saved = localStorage.getItem('pipMode'); if (saved === 'BLACK' || saved === 'WHITE') pipMode = saved; } catch(e) {}
 let pipWindow = null;
 let pipClockInterval = null;
-/* ★ Diperbesar: HORIZONTAL 700×115 (agar judul 15px + clock 15px + angka 44px muat) */
 const PIP_SIZE = {
-    HORIZONTAL: { w: 700, h: 115 },
-    VERTICAL:   { w: 420, h: 320 }
+    HORIZONTAL: { w: 740, h: 130 },
+    VERTICAL:   { w: 440, h: 340 }
 };
 
 function applyPipMode() {
@@ -962,11 +961,24 @@ async function togglePiPWidget() {
             html { background: transparent !important; }
             body { background: transparent; color: #fff; font-family: 'Segoe UI', sans-serif; overflow: hidden; height: 100vh; display: flex; flex-direction: column; user-select: none; position: relative; }
 
-            /* ===== HEADER: JUDUL & JAM DIPERBESAR ===== */
-            .pip-head { position: relative; height: 36px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; background: transparent; }
+            /* ===== HEADER: JUDUL & JAM ===== */
+            .pip-head { position: relative; height: 48px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; background: transparent; }
             .pip-title { font-size: 18px; color: #e2e8f0; letter-spacing: 1.5px; font-weight: 800; white-space: nowrap; transition: opacity .2s ease; text-shadow: 0 0 2px #000, 0 0 4px #000, 0 0 8px #000; }
-            .pip-clock { font-variant-numeric: tabular-nums; margin-left: 12px; color: #7dd3fc; font-weight: 900; letter-spacing: 1px; font-size: 20px; text-shadow: 0 0 2px #000, 0 0 4px #000, 0 0 8px #000, 0 0 14px rgba(56,189,248,0.7); }
-            body.mode-white .pip-clock { color: #0284c7; text-shadow: 0 0 2px #fff, 0 0 4px #fff, 0 0 8px #fff, 0 0 14px rgba(2,132,199,0.5); }
+            /* ★ JAM: lebih besar (28px) & warna hitam */
+            .pip-clock {
+                font-variant-numeric: tabular-nums;
+                margin-left: 14px;
+                color: #000000;
+                font-weight: 900;
+                letter-spacing: 1.2px;
+                font-size: 28px;
+                text-shadow: 0 0 3px #ffffff, 0 0 6px #ffffff, 0 0 10px rgba(255,255,255,0.7);
+            }
+            /* Mode white tetap hitam agar konsisten */
+            body.mode-white .pip-clock {
+                color: #000000;
+                text-shadow: 0 0 3px #ffffff, 0 0 6px #ffffff, 0 0 10px rgba(255,255,255,0.7);
+            }
 
             /* ===== OPERATION BAR (muncul saat hover) ===== */
             .pip-op-bar { position: absolute; top: 0; left: 0; right: 0; bottom: 0; display: flex; align-items: center; justify-content: center; gap: 6px; opacity: 0; pointer-events: none; transition: opacity .2s ease; flex-wrap: nowrap; }
@@ -982,8 +994,8 @@ async function togglePiPWidget() {
 
             /* ===== RACK STRIP ===== */
             .rack-strip { flex: 1; display: flex; min-height: 0; overflow: hidden; }
-            .rack-strip.horizontal { flex-direction: row; align-items: center; justify-content: space-evenly; gap: 6px; padding: 0 12px 8px 12px; min-width: max-content; }
-            .rack-strip.vertical { flex-direction: column; align-items: stretch; justify-content: space-evenly; gap: 10px; padding: 0 26px 10px 26px; }
+            .rack-strip.horizontal { flex-direction: row; align-items: center; justify-content: space-evenly; gap: 6px; padding: 0 12px 10px 12px; min-width: max-content; }
+            .rack-strip.vertical { flex-direction: column; align-items: stretch; justify-content: space-evenly; gap: 10px; padding: 0 26px 12px 26px; }
             .rack-item { display: flex; align-items: baseline; gap: 6px; flex: 0 0 auto; white-space: nowrap; }
             .rack-strip.vertical .rack-item { justify-content: space-between; width: 100%; }
             .rack-strip.horizontal .rack-item { align-items: center; gap: 6px; }
@@ -1321,17 +1333,22 @@ document.addEventListener('click', function resumeAudioOnce() {
     document.removeEventListener('click', resumeAudioOnce);
 }, { once: true });
 
+/* ★★★ AUTO-CLOSE TOAST SETELAH 10 MENIT ★★★ */
+// Toast akan otomatis tertutup setelah 10 menit (600.000 ms) jika user tidak menutupnya manual
+const TOAST_AUTO_CLOSE_MS = 10 * 60 * 1000; // 10 menit
 setInterval(() => {
-    ['61','77','139'].forEach(rackId => {
-        const t1 = document.getElementById(`toast-${rackId}-1`);
-        if (t1 && t1.style.display === 'block') {
-            const shownAt = parseInt(t1.dataset.shownAt || '0', 10);
-            if (shownAt && (Date.now() - shownAt > 8000)) t1.style.display = 'none';
+    document.querySelectorAll('.toast-card').forEach(t => {
+        if (t.style.display === 'block') {
+            const shownAt = parseInt(t.dataset.shownAt || '0', 10);
+            if (shownAt && (Date.now() - shownAt > TOAST_AUTO_CLOSE_MS)) {
+                t.style.display = 'none';
+            }
         }
     });
-}, 2000);
+}, 5000); // Cek tiap 5 detik
 
 console.log('%c✅ DC-SDI Monitoring Ready', 'color:#38bdf8;font-size:14px;font-weight:bold;');
+console.log('%c🕐 Auto-close toast: 10 menit | Jam PiP: 28px warna hitam', 'color:#10b981;font-weight:bold;');
 </script>
 </body>
 </html>
