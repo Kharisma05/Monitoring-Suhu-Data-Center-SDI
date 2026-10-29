@@ -787,21 +787,38 @@ try { const saved = localStorage.getItem('pipMode'); if (saved === 'BLACK' || sa
 let pipWindow = null;
 let pipClockInterval = null;
 
-/* ★★★ UKURAN REFERENSI (Diperbesar untuk mengakomodasi font yang lebih besar) ★★★ */
-const PIP_REF_SIZE = {
-    HORIZONTAL: { w: 880, h: 160 },
-    VERTICAL:   { w: 540, h: 380 }
-};
-/* ★★★ BATAS MINIMUM WINDOW — tidak bisa lebih kecil dari ini ★★★ */
-const PIP_MIN_SIZE = {
-    HORIZONTAL: { w: 540, h: 100 },
-    VERTICAL:   { w: 350, h: 250 }
-};
-/* Ukuran saat pertama dibuka */
+/* ★★★ PENGATURAN AWAL WIDGET (ukuran normal) ★★★
+   Angka suhu & label RACK sekarang OTOMATIS membesar / mengecil mengikuti ukuran jendela,
+   jadi widget selalu terlihat penuh — di ukuran normal (kecil) maupun saat ditarik lebih besar.
+   Kalau ingin menyetel manual, cukup ubah angka-angka di bawah ini. */
+
+/* Ukuran jendela saat dibuka / saat ganti orientasi (ukuran "normal") */
 const PIP_INITIAL_SIZE = {
-    HORIZONTAL: { w: 880, h: 160 },
-    VERTICAL:   { w: 540, h: 380 }
+    HORIZONTAL: { w: 280, h: 72 },
+    VERTICAL:   { w: 280, h: 160 }
 };
+/* Batas terkecil jendela */
+const PIP_MIN_SIZE = {
+    HORIZONTAL: { w: 220, h: 50 },
+    VERTICAL:   { w: 200, h: 100 }
+};
+/* Tata letak. Satuan "u" = ukuran font angka suhu (nilai u dihitung otomatis supaya pas jendela).
+   labelRatio : ukuran huruf "RACK xx" dibanding angka suhu (0.5 = setengahnya)
+   labelMax   : batas pembesaran huruf RACK (mode vertikal, kalau lebar jendela masih sisa)
+   gap        : jarak minimum antar rack
+   padX/padTop/padBottom : ruang kosong di tepi widget
+   spread     : jarak antar rack tidak akan melebar melebihi (spread × u) walau jendela sangat besar */
+const PIP_LAYOUT = {
+    HORIZONTAL: { labelRatio: 0.5, labelMax: 0.5,  gap: 0.35, padX: 0.30, padTop: 0.06, padBottom: 0.18, spread: 10.5 },
+    VERTICAL:   { labelRatio: 0.6, labelMax: 0.75, gap: 0.20, padX: 0.35, padTop: 0.06, padBottom: 0.18, spread: 4.6 }
+};
+/* Judul "DC-SDI · LIVE THERMAL TELEMETRY" dan jam di sampingnya SELALU berukuran sama.
+   PIP_HEAD_RATIO : ukuran huruf judul/jam dibanding angka suhu (0.34 = sepertiganya)
+   PIP_HEAD_MIN   : batas terkecil huruf judul/jam (px) — tetap dikecilkan otomatis bila jendela terlalu sempit
+   PIP_OPBAR_MAX  : batas terbesar huruf menu COLOR / ORIENTASI (px); di bawah itu ukurannya menyesuaikan jendela */
+const PIP_HEAD_RATIO = 0.34;
+const PIP_HEAD_MIN = 9;
+const PIP_OPBAR_MAX = 18;
 
 function applyPipMode() {
     if (!pipWindow || pipWindow.closed) return;
@@ -823,31 +840,124 @@ function applyPipMode() {
 }
 function setPipMode(mode) { pipMode = mode; applyPipMode(); }
 
-function applyPipScale() {
+/* ★ AUTO-FIT: hitung ukuran font terbesar yang masih muat di jendela, lalu terapkan ke seluruh widget.
+   Dipanggil saat jendela dibuka, di-resize, ganti orientasi, dan tiap data suhu masuk. */
+function fitPipContent() {
     if (!pipWindow || pipWindow.closed) return;
-    const content = pipWindow.document.getElementById('pip-content');
-    if (!content) return;
-    const ref = PIP_REF_SIZE[pipOrientation];
-    const w = pipWindow.innerWidth;
-    const h = pipWindow.innerHeight;
-    const scale = Math.min(1, w / ref.w, h / ref.h);
-    if (scale < 0.999) {
-        content.style.transform = `scale(${scale.toFixed(4)})`;
-        content.style.transformOrigin = 'top left';
-        content.style.width = (100 / scale) + '%';
-        content.style.height = (100 / scale) + '%';
-    } else {
-        content.style.transform = '';
-        content.style.transformOrigin = '';
-        content.style.width = '100%';
-        content.style.height = '100%';
+    try {
+        const doc = pipWindow.document;
+        const box = doc.getElementById('pip-content');
+        const head = doc.getElementById('pip-head');
+        const strip = doc.getElementById('rack-strip');
+        const title = doc.getElementById('pip-title');
+        if (!box || !head || !strip || !title) return;
+        const items = Array.from(strip.querySelectorAll('.rack-item'));
+        const W = pipWindow.innerWidth, H = pipWindow.innerHeight;
+        if (!items.length || !W || !H) return;
+
+        const horiz = pipOrientation === 'HORIZONTAL';
+        const L = PIP_LAYOUT[pipOrientation];
+        const n = items.length;
+        const set = (k, v) => box.style.setProperty(k, String(v));
+
+        set('--lr', L.labelRatio); set('--gap', L.gap); set('--padx', L.padX);
+        set('--pt', L.padTop); set('--pb', L.padBottom); set('--spread', L.spread);
+
+        /* judul & jam: huruf SAMA besar (--hf). Idealnya PIP_HEAD_RATIO × u; dikecilkan hanya jika judul + jam tidak muat selebar jendela */
+        const fitHead = (u) => {
+            let hf = Math.max(PIP_HEAD_MIN, u * PIP_HEAD_RATIO);
+            set('--hf', hf.toFixed(2) + 'px');
+            const gapW = 0.25 * u;                          // jarak judul – jam
+            const availW = W - 2 * 0.12 * u - 2;            // lebar jendela dikurangi padding kiri-kanan header
+            const totalW = title.getBoundingClientRect().width;
+            if (totalW > availW && totalW > gapW) {
+                hf = Math.max(4, hf * (availW - gapW) / (totalW - gapW));
+                set('--hf', hf.toFixed(2) + 'px');
+            }
+        };
+
+        /* ukur ruang yang dibutuhkan pada ukuran u tertentu */
+        const measure = (u) => {
+            set('--u', u.toFixed(2) + 'px');
+            fitHead(u);
+            const headH = head.getBoundingClientRect().height;
+            let sumW = 0, maxW = 0, sumH = 0, maxH = 0;
+            items.forEach(el => {
+                const r = el.getBoundingClientRect();
+                sumW += r.width; sumH += r.height;
+                if (r.width > maxW) maxW = r.width;
+                if (r.height > maxH) maxH = r.height;
+            });
+            return {
+                needW: (horiz ? sumW + (n - 1) * L.gap * u : maxW) + 2 * L.padX * u,
+                needH: headH + (horiz ? maxH : sumH + (n - 1) * L.gap * u) + (L.padTop + L.padBottom) * u
+            };
+        };
+
+        let u = parseFloat(box.style.getPropertyValue('--u')) || Math.min(W / 9, H / 2);
+        if (!(u > 0)) u = 20;
+        let m = measure(u);
+        for (let i = 0; i < 8; i++) {
+            const r = Math.min(W / m.needW, H / m.needH);
+            if (!isFinite(r) || r <= 0 || Math.abs(r - 1) < 0.004) break;
+            u = Math.max(6, u * r);
+            m = measure(u);
+        }
+        /* jaga-jaga: kalau masih sedikit meluap, kecilkan sedikit */
+        const rEnd = Math.min(W / m.needW, H / m.needH);
+        if (isFinite(rEnd) && rEnd > 0 && rEnd < 1) { u = Math.max(6, u * rEnd); m = measure(u); }
+
+        /* Mode vertikal: kalau tinggi yang membatasi dan lebar masih sisa, besarkan huruf RACK supaya makin penuh */
+        if (!horiz && L.labelMax > L.labelRatio) {
+            const spare = W * 0.98 - m.needW;
+            const labelW = Math.max(...items.map(el => el.querySelector('.rack-label').getBoundingClientRect().width));
+            if (spare > 2 && labelW > 0) {
+                const lr = Math.min(L.labelMax, L.labelRatio * (1 + spare / labelW));
+                if (lr > L.labelRatio + 0.005) {
+                    set('--lr', lr.toFixed(3));
+                    const m2 = measure(u);
+                    if (m2.needW > W * 1.002 || m2.needH > H * 1.002) { set('--lr', L.labelRatio); measure(u); }
+                }
+            }
+        }
+
+        fitPipOpBar(doc, W, H);
+    } catch (err) { /* jendela PiP mungkin sedang ditutup */ }
+}
+
+/* Menu COLOR / ORIENTASI (muncul saat kursor di atas widget).
+   ★ VERSI BARU: ukuran menu sekarang PROPORSIONAL terhadap ukuran jendela.
+   Mulai dari ukuran wajar (W/22 atau H/7), dan HANYA dikecilkan kalau memang overflow.
+   Tidak pernah lagi "dipaksa membesar" untuk mengisi seluruh jendela (yang menyebabkan
+   menu terlihat kegedean saat widget dikecilkan maksimal). */
+function fitPipOpBar(doc, W, H) {
+    const bar = doc.getElementById('pip-op-bar'), grid = doc.getElementById('pip-op-grid');
+    if (!bar || !grid) return;
+    const key = W + 'x' + H;
+    if (bar.dataset.fit === key) return;                 // ukuran jendela sama → tidak perlu hitung ulang
+
+    // ★ Ukuran awal proporsional terhadap jendela (BUKAN fill-to-fit).
+    //   Ini mencegah menu memenuhi seluruh widget saat jendela dikecilkan.
+    let ob = Math.min(PIP_OPBAR_MAX, Math.max(4, Math.min(W / 22, H / 7)));
+
+    // ★ Hanya mengecil kalau memang overflow (tidak pernah membesar untuk mengisi jendela)
+    for (let i = 0; i < 4; i++) {
+        bar.style.setProperty('--ob', ob.toFixed(2) + 'px');
+        const gw = grid.getBoundingClientRect().width;
+        const bh = bar.getBoundingClientRect().height;
+        if (!gw || !bh) return;
+        const k = Math.min((W * 0.94) / gw, (H * 0.94) / bh);
+        if (k >= 1) break;                               // muat → stop
+        ob = Math.max(4, ob * k);
     }
+    bar.style.setProperty('--ob', ob.toFixed(2) + 'px');
+    bar.dataset.fit = key;
 }
 
 let pipClamping = false, pipLastCheck = 0;
 function enforcePipMinSize(e) {
     if (!pipWindow || pipWindow.closed) return;
-    if (!e || e.type === 'resize') applyPipScale();
+    if (!e || e.type === 'resize') fitPipContent();
     if (pipClamping) return;
     const now = Date.now();
     if (e && e.type !== 'resize' && now - pipLastCheck < 120) return;
@@ -871,7 +981,7 @@ function enforcePipMinSize(e) {
             }
         } catch(err) {}
         pipClamping = false;
-        applyPipScale();
+        fitPipContent();
     }, 100);
 }
 
@@ -880,8 +990,9 @@ function applyPipOrientation() {
     const doc = pipWindow.document;
     const strip = doc.getElementById('rack-strip');
     if (strip) { strip.classList.toggle('horizontal', pipOrientation === 'HORIZONTAL'); strip.classList.toggle('vertical', pipOrientation === 'VERTICAL'); }
+    fitPipContent();
     try { const s = PIP_INITIAL_SIZE[pipOrientation]; pipWindow.resizeTo(s.w, s.h); } catch(e) {}
-    setTimeout(() => { applyPipScale(); enforcePipMinSize(); }, 80);
+    setTimeout(() => { fitPipContent(); enforcePipMinSize(); }, 80);
     const btnH = doc.getElementById('pip-btn-horizontal'), btnV = doc.getElementById('pip-btn-vertical');
     if (btnH) btnH.classList.toggle('active', pipOrientation === 'HORIZONTAL');
     if (btnV) btnV.classList.toggle('active', pipOrientation === 'VERTICAL');
@@ -936,56 +1047,59 @@ async function togglePiPWidget() {
         style.textContent = `
             * { box-sizing: border-box; margin: 0; padding: 0; }
             html { background: #ffffff !important; }
-            body { background: #ffffff; color: #000; font-family: 'Segoe UI', sans-serif; overflow: hidden; width: 100vw; height: 100vh; margin: 0; padding: 0; position: relative; }
+            body { --pip-bg: rgba(255,255,255,0.96); background: #ffffff; color: #000; font-family: 'Segoe UI', sans-serif; overflow: hidden; width: 100vw; height: 100vh; margin: 0; padding: 0; position: relative; }
+            body.mode-black { --pip-bg: rgba(5,10,16,0.96); }
 
+            /* ★ Semua ukuran memakai satuan --u (= ukuran font angka suhu). Nilai --u diatur otomatis oleh fitPipContent() */
             #pip-content {
-                position: absolute;
-                top: 0; left: 0;
-                width: 100%;
-                height: 100%;
-                display: flex;
-                flex-direction: column;
-                transform-origin: top left;
+                --u: 30px; --hf: 10px; --lr: .5; --gap: .35; --padx: .3; --pt: .06; --pb: .18; --spread: 10.5;
+                position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+                display: flex; flex-direction: column;
             }
 
             /* ===== HEADER ===== */
-            .pip-head { position: relative; height: 56px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; background: transparent; padding: 0 16px; }
-            .pip-title { font-size: 18px; color: #334155; letter-spacing: 1px; font-weight: 800; white-space: nowrap; transition: opacity .2s ease; display: flex; align-items: center; gap: 12px; }
-            .pip-clock { font-variant-numeric: tabular-nums; color: #000000; font-weight: 900; letter-spacing: 1.2px; font-size: 28px; }
+            .pip-head { position: relative; flex: 0 0 auto; display: flex; align-items: center; justify-content: center; padding: calc(var(--u) * .08) calc(var(--u) * .12) 0; min-width: 0; }
+            /* Judul & jam: huruf SAMA besar (--hf), dihitung otomatis oleh fitPipContent() */
+            .pip-title { flex: 0 0 auto; display: flex; align-items: baseline; justify-content: center; gap: calc(var(--u) * .25); width: max-content; font-size: var(--hf); color: #334155; letter-spacing: .04em; font-weight: 800; line-height: 1.15; white-space: nowrap; transition: opacity .2s ease; }
+            .pip-title-text { flex: 0 0 auto; }
+            .pip-clock { flex: 0 0 auto; font-variant-numeric: tabular-nums; color: #000000; font-weight: 900; letter-spacing: .04em; font-size: 1em; line-height: 1.15; }
 
-            /* ===== OPERATION BAR (muncul saat hover) ===== */
-            .pip-op-bar { position: absolute; top: 0; left: 0; right: 0; bottom: 0; display: flex; align-items: center; justify-content: center; gap: 6px; opacity: 0; pointer-events: none; transition: opacity .2s ease; flex-wrap: wrap; padding: 4px; }
+            /* ===== OPERATION BAR (muncul saat kursor di atas widget) — semua ukuran dalam em dari --ob; nilainya dihitung otomatis oleh fitPipOpBar() supaya selalu muat di jendela ===== */
+            .pip-op-bar { --ob: 10px; position: absolute; top: 0; left: 0; right: 0; z-index: 5; display: flex; align-items: center; justify-content: center; padding: .5em .4em; font-size: var(--ob); background: var(--pip-bg); opacity: 0; pointer-events: none; transition: opacity .2s ease; }
+            .pip-op-grid { display: grid; grid-template-columns: repeat(3, max-content); align-items: center; column-gap: .55em; row-gap: .45em; width: max-content; }
             body:hover .pip-title { opacity: 0; }
             body:hover .pip-op-bar { opacity: 1; pointer-events: auto; }
-            .pip-op-ico { font-size: 11px; color: #64748b; font-weight: 800; letter-spacing: .8px; }
-            .pip-mode-btn { padding: 4px 10px; border-radius: 5px; border: 1px solid #cbd5e1; background: #f1f5f9; color: #0f172a; font-size: 11px; font-weight: 900; cursor: pointer; letter-spacing: .8px; transition: all .15s ease; display: inline-flex; align-items: center; gap: 4px; white-space: nowrap; }
+            .pip-op-ico { color: #475569; font-weight: 800; font-size: 1em; line-height: 1.15; letter-spacing: .06em; text-align: right; white-space: nowrap; }
+            .pip-mode-btn { font-family: inherit; font-size: 1em; font-weight: 900; line-height: 1.15; letter-spacing: .06em; padding: .36em .8em; border-radius: .45em; border: 1px solid #cbd5e1; background: #f1f5f9; color: #0f172a; cursor: pointer; transition: all .15s ease; display: inline-flex; align-items: center; justify-content: center; gap: .4em; white-space: nowrap; }
             .pip-mode-btn:hover { background: #e2e8f0; border-color: #94a3b8; }
-            .pip-mode-btn.active { background: #38bdf8; color: #ffffff; border-color: #0ea5e9; }
-            .pip-mode-btn .dot-preview { display: inline-block; width: 9px; height: 9px; border-radius: 50%; border: 1px solid #94a3b8; background: #fff; }
+            .pip-mode-btn.active { background: #0284c7; color: #ffffff; border-color: #0369a1; }
+            .pip-mode-btn .dot-preview { display: inline-block; flex: 0 0 auto; width: .8em; height: .8em; border-radius: 50%; border: 1px solid #94a3b8; background: #fff; }
             .pip-mode-btn .dot-preview.dark { background: #050a10; }
 
             /* ===== RACK STRIP ===== */
-            .rack-strip { flex: 1; display: flex; min-height: 0; overflow: hidden; }
+            .rack-strip { flex: 1 1 auto; min-height: 0; display: flex; gap: calc(var(--u) * var(--gap)); padding: calc(var(--u) * var(--pt)) calc(var(--u) * var(--padx)) calc(var(--u) * var(--pb)); }
+            .rack-item { flex: 0 0 auto; display: flex; align-items: center; white-space: nowrap; }
 
-            .rack-strip.horizontal { flex-direction: row; align-items: center; justify-content: space-evenly; gap: 16px; padding: 0 16px 14px 16px; }
-            .rack-strip.horizontal .rack-item { display: flex; align-items: center; gap: 8px; flex: 0 0 auto; white-space: nowrap; }
-            .rack-strip.horizontal .rack-label { display: inline-flex; flex-direction: column; align-items: center; line-height: 1.1; }
+            /* Horizontal: 3 rack berjajar, label RACK di atas angka suhu */
+            .rack-strip.horizontal { flex-direction: row; align-items: center; justify-content: space-evenly; width: 100%; max-width: calc(var(--u) * var(--spread)); margin: 0 auto; }
+            .rack-strip.horizontal .rack-item { flex-direction: column; gap: calc(var(--u) * .03); }
 
-            .rack-strip.vertical { flex-direction: column; align-items: stretch; justify-content: space-evenly; gap: 12px; padding: 0 24px 16px 24px; }
-            .rack-strip.vertical .rack-item { display: flex; justify-content: space-between; align-items: center; width: 100%; padding: 4px 0; }
-            .rack-strip.vertical .rack-label { display: inline-flex; flex-direction: row; align-items: baseline; gap: 6px; }
+            /* Vertikal: 3 rack menumpuk, label di kiri angka suhu (jarak sedang, di tengah) */
+            .rack-strip.vertical { flex-direction: column; align-items: center; justify-content: space-evenly; max-height: calc(var(--u) * var(--spread)); margin: auto 0; }
+            .rack-strip.vertical .rack-item { flex-direction: row; gap: calc(var(--u) * .45); }
+            .rack-strip.vertical .rl-num { min-width: 1.8em; text-align: left; }
 
-            /* ★ PERBESAR FONT LABEL & SUHU, UBAH WARNA LABEL JADI HITAM */
-            .rack-label { font-size: 22px; font-weight: 800; color: #000000; letter-spacing: .5px; }
-            .rack-temp { font-size: 52px; font-weight: 800; letter-spacing: -1px; transition: color .3s; line-height: 1; }
-            .rack-strip.vertical .rack-temp { font-size: 58px; }
+            /* ★ HURUF RACK & ANGKA SUHU: ukuran mengikuti --u */
+            .rack-label { display: inline-flex; align-items: baseline; gap: .28em; font-size: calc(var(--u) * var(--lr)); line-height: 1.05; font-weight: 800; color: #000000; letter-spacing: .03em; }
+            .rack-temp { display: flex; align-items: center; justify-content: center; height: calc(var(--u) * .9); min-width: calc(var(--u) * 2.5); font-size: var(--u); line-height: 1; font-weight: 800; letter-spacing: -.02em; font-variant-numeric: tabular-nums; transition: color .3s; }
+            .rack-strip.vertical .rack-temp { justify-content: flex-end; }
 
             /* Warna Teks Mode WHITE (solid, tanpa outline) */
             .ok   { color: #059669; }
             .warn { color: #d97706; }
             .crit { color: #dc2626; animation: pipBlink 1s ease-in-out infinite; }
             .cool { color: #0284c7; }
-            .off  { color: #64748b; font-size: 32px; letter-spacing: 1px; }
+            .rack-temp.off { color: #64748b; font-size: calc(var(--u) * .6); letter-spacing: .05em; }
             @keyframes pipBlink { 0%,100% { opacity: 1; } 50% { opacity: 0.5; } }
 
             /* ===== MODE BLACK ===== */
@@ -993,6 +1107,7 @@ async function togglePiPWidget() {
             body.mode-black .pip-title { color: #e2e8f0; text-shadow: 0 0 2px #000, 0 0 4px #000; }
             body.mode-black .pip-clock { color: #7dd3fc; text-shadow: 0 0 2px #000, 0 0 4px #000, 0 0 8px #000, 0 0 14px rgba(56,189,248,0.7); }
             body.mode-black .rack-label { color: #f1f5f9; text-shadow: 0 0 2px #000, 0 0 3px #000; }
+            body.mode-black .rack-temp { color: #e2e8f0; }
             body.mode-black .pip-op-ico { color: #7dd3fc; text-shadow: 0 0 2px #000; }
             body.mode-black .pip-mode-btn { background: rgba(0,0,0,0.55); color: #fff; border-color: rgba(255,255,255,0.5); text-shadow: 0 0 2px #000; }
             body.mode-black .pip-mode-btn:hover { background: rgba(56,189,248,0.85); color: #000; border-color: #38bdf8; text-shadow: none; }
@@ -1012,21 +1127,23 @@ async function togglePiPWidget() {
         pipWindow.document.title = 'DC-SDI Monitor';
         pipWindow.document.body.innerHTML = `
             <div id="pip-content">
-                <div class="pip-head">
-                    <span class="pip-title">DC-SDI · LIVE THERMAL TELEMETRY<span class="pip-clock" id="pip-clock">--:--:--</span></span>
-                    <div class="pip-op-bar" title="Atur tampilan widget">
+                <div class="pip-head" id="pip-head">
+                    <span class="pip-title" id="pip-title"><span class="pip-title-text">DC-SDI · LIVE THERMAL TELEMETRY</span><span class="pip-clock" id="pip-clock">--:--:--</span></span>
+                </div>
+                <div class="rack-strip horizontal" id="rack-strip">
+                    <div class="rack-item"><span class="rack-label"><span class="rl-word">RACK</span><span class="rl-num">61</span></span><span class="rack-temp" id="pip-t61">--</span></div>
+                    <div class="rack-item"><span class="rack-label"><span class="rl-word">RACK</span><span class="rl-num">77</span></span><span class="rack-temp" id="pip-t77">--</span></div>
+                    <div class="rack-item"><span class="rack-label"><span class="rl-word">RACK</span><span class="rl-num">139</span></span><span class="rack-temp" id="pip-t139">--</span></div>
+                </div>
+                <div class="pip-op-bar" id="pip-op-bar" title="Atur tampilan widget">
+                    <div class="pip-op-grid" id="pip-op-grid">
                         <span class="pip-op-ico">COLOR:</span>
                         <button id="pip-btn-black" class="pip-mode-btn" title="Solid black"><span class="dot-preview dark"></span> BLACK</button>
                         <button id="pip-btn-white" class="pip-mode-btn" title="Solid white"><span class="dot-preview"></span> WHITE</button>
-                        <span class="pip-op-ico" style="margin-left:6px;">ORIENTASI:</span>
+                        <span class="pip-op-ico">ORIENTASI:</span>
                         <button id="pip-btn-horizontal" class="pip-mode-btn" title="Memanjang ke samping">➡ HORIZ</button>
                         <button id="pip-btn-vertical" class="pip-mode-btn" title="Menumpuk ke bawah">⬇ VERT</button>
                     </div>
-                </div>
-                <div class="rack-strip horizontal" id="rack-strip">
-                    <div class="rack-item"><span class="rack-label"><span class="rl-word">RACK</span> <span class="rl-num">61</span></span><span class="rack-temp" id="pip-t61">--</span></div>
-                    <div class="rack-item"><span class="rack-label"><span class="rl-word">RACK</span> <span class="rl-num">77</span></span><span class="rack-temp" id="pip-t77">--</span></div>
-                    <div class="rack-item"><span class="rack-label"><span class="rl-word">RACK</span> <span class="rl-num">139</span></span><span class="rack-temp" id="pip-t139">--</span></div>
                 </div>
             </div>
         `;
@@ -1091,6 +1208,7 @@ function syncPiPWidget() {
     const body = pipWindow.document.body;
     body.classList.toggle('alarm-crit', worst === 2);
     body.classList.toggle('alarm-warn', worst === 1);
+    fitPipContent();
 }
 
 function updateTabTitle() {
@@ -1331,4 +1449,4 @@ setInterval(() => {
 console.log('%c✅ DC-SDI Monitoring Ready', 'color:#38bdf8;font-size:14px;font-weight:bold;');
 </script>
 </body>
-    </html>
+</html>
