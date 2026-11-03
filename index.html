@@ -116,8 +116,21 @@
             .card-value{font-size:28px!important;margin:0!important}
             .unit{font-size:11px!important}
             
-            /* KHUSUS MIN/MAX: Tambahkan padding kanan agar menjauh dari ujung kotak */
-            .min-max-group{gap:5px!important;margin-bottom:0!important;padding-right:8px!important}
+            /* ===== PERBAIKAN RECORDS DI HP (SEPOJOK & BERJARAK DARI GARIS UJUNG) ===== */
+            .dashboard-grid > .r61-group:not(#card-temp-61):not(.log-card) .status-wrapper,
+            .dashboard-grid > .r77-group:not(#card-temp-77):not(.log-card) .status-wrapper,
+            .dashboard-grid > .r139-group:not(#card-temp-139):not(.log-card) .status-wrapper{
+                margin-left:auto!important;
+                flex:0 0 auto!important;
+                align-items:flex-end!important;
+                padding-right: 4px !important; /* Diberi jarak agar tidak terlalu mepet garis pinggir kartu */
+            }
+            .records-info{padding:2px 3px!important;border-radius:4px!important;margin-right:0!important;text-align:right!important}
+            .records-info .min-max-label{font-size:8px!important}
+            .records-reset-ico{font-size:.7em!important}
+            
+            /* Perataan grup min/max suhu di bawah agar tidak terlalu mepet ke border kanan */
+            .min-max-group{gap:8px!important;margin-bottom:0!important;padding-right:2px!important}
             
             .min-max-icon{font-size:9px!important}.min-max-label{font-size:7px!important}.min-max-val{font-size:11px!important}
             .min-max-time{display:block!important;margin-left:0!important;margin-top:2px!important;font-size:7px!important}
@@ -243,17 +256,6 @@
                 line-height:1.15!important;
                 letter-spacing:.2px!important;
             }
-            .dashboard-grid > .r61-group:not(#card-temp-61):not(.log-card) .status-wrapper,
-            .dashboard-grid > .r77-group:not(#card-temp-77):not(.log-card) .status-wrapper,
-            .dashboard-grid > .r139-group:not(#card-temp-139):not(.log-card) .status-wrapper{
-                margin-left:auto!important;
-                flex:0 0 auto!important;
-                align-items:center!important;
-                /* Padding right dihilangkan agar RECORDS tetap di pojok */
-            }
-            .records-info{padding:2px 5px!important;border-radius:5px!important;margin-right:0!important}
-            .records-info .min-max-label{font-size:8.5px!important}
-            .records-reset-ico{font-size:.75em!important}
         }
         @media (max-width:768px){
             .dashboard-grid{
@@ -685,7 +687,6 @@ function wibParts(ms = Date.now()) {
         .formatToParts(ms).forEach(p => o[p.type] = p.value);
     return o;
 }
-// Dipanggil tiap 5 detik (checkDeviceStatus) & tiap data masuk: ganti hari => pindah ke node tanggal baru (otomatis kosong = reset 00:00)
 function subscribeDailyRecords() {
     const p = wibParts();
     const key = `${p.year}-${p.month}-${p.day}`;
@@ -712,7 +713,6 @@ function updateRecordsUI(rackId, data) {
     set(`timeMin${rackId}`, rec.timeMin || '--:--:--', rec.timeMin ? `${tgl} ${rec.timeMin} WIB` : '');
     set(`timeMax${rackId}`, rec.timeMax || '--:--:--', rec.timeMax ? `${tgl} ${rec.timeMax} WIB` : '');
 }
-// Tanpa baca Firebase tiap update: bandingkan dengan cache, tulis (transaction) hanya jika rekor baru
 function updateRecordIfNeeded(rackId, currentTemp) {
     subscribeDailyRecords();
     const c = dailyRecordCache[rackId];
@@ -738,8 +738,8 @@ function resetRekor(rackId) {
 subscribeDailyRecords();
 
 /* ===== TREN SUHU ===== */
-const TREND_RISE_START = 0.2;   // naik >= 0.2°C dari titik dasar => timer mulai
-const TREND_DROP_RESET = 0.3;   // turun >= 0.3°C dari puncak (kumulatif) => reset
+const TREND_RISE_START = 0.2;
+const TREND_DROP_RESET = 0.3;
 const TREND_LEVELS = [
     { level: 1, min: 15, key: 'alerted15', type: '15 menit', browser: false },
     { level: 2, min: 30, key: 'alerted30', type: '30 menit', browser: false },
@@ -755,14 +755,14 @@ function resetTracker(tr, temp) {
 }
 function evaluateTemperatureTrend(rackId, currentTemp) {
     const tr = tempTrendTrackers[rackId], now = Date.now();
-    if (tr.baseTemp === null) { resetTracker(tr, currentTemp); return; }   // buka halaman: timer TIDAK langsung jalan
-    if (tr.riseStartTime === null) {                                        // belum ada tren naik
-        if (currentTemp < tr.baseTemp) tr.baseTemp = currentTemp;           // ikuti titik terendah
+    if (tr.baseTemp === null) { resetTracker(tr, currentTemp); return; }
+    if (tr.riseStartTime === null) {
+        if (currentTemp < tr.baseTemp) tr.baseTemp = currentTemp;
         else if (tdiff(currentTemp, tr.baseTemp) >= TREND_RISE_START) { tr.riseStartTime = now; tr.peakTemp = currentTemp; }
         return;
     }
     if (currentTemp > tr.peakTemp) tr.peakTemp = currentTemp;
-    if (currentTemp <= tr.baseTemp || tdiff(tr.peakTemp, currentTemp) >= TREND_DROP_RESET) {   // turun pelan pun tetap terdeteksi
+    if (currentTemp <= tr.baseTemp || tdiff(tr.peakTemp, currentTemp) >= TREND_DROP_RESET) {
         const hadAlert = tr.alerted15;
         resetTracker(tr, currentTemp);
         if (hadAlert) hideToast(rackId);
@@ -916,11 +916,11 @@ function checkDeviceStatus() {
     } catch(e) { setInterval(checkDeviceStatus, 5000); }
 })();
 
-/* ===== ACTIVITY LOG (terstruktur: waktu • level • suhu • Δ • RH + status "last update") ===== */
+/* ===== ACTIVITY LOG ===== */
 const LOG_META = { logList1: '61', logList77: '77', logList2: '139' };
 const LOG_MAX_ROWS = 5;
-const LOG_MIN_INTERVAL_MS = 10000;   // data identik hanya dicatat tiap 10 dtk (heartbeat); isi 0 untuk mencatat semua
-const LIVE_MAX_AGE_MS = 30000;       // data lebih tua dari ini => status DELAYED
+const LOG_MIN_INTERVAL_MS = 10000;
+const LIVE_MAX_AGE_MS = 30000;
 const logState = { '61': { temp: null, humi: null, ts: 0, count: 0 }, '77': { temp: null, humi: null, ts: 0, count: 0 }, '139': { temp: null, humi: null, ts: 0, count: 0 } };
 
 const clockStr = ms => { const d = new Date(ms); return [d.getHours(), d.getMinutes(), d.getSeconds()].map(n => String(n).padStart(2, '0')).join(':'); };
@@ -931,7 +931,7 @@ function fmtAge(ms) {
     if (m < 60) return `${m}m ago`;
     return `${Math.floor(m / 60)}h ${m % 60}m ago`;
 }
-function thermalLevel(t) {   // batas sama dengan status kartu suhu
+function thermalLevel(t) {
     if (t < 17.0) return { label: 'COOLTEMP', cls: 'lvl-cool' };
     if (t < 25.0) return { label: 'OPTIMAL', cls: 'lvl-ok' };
     if (t <= 26.0) return { label: 'WARNING', cls: 'lvl-warn' };
@@ -1148,7 +1148,7 @@ function fitPipContent() {
         }
 
         fitPipOpBar(doc, W, H);
-    } catch (err) { /* jendela PiP mungkin sedang ditutup */ }
+    } catch (err) {}
 }
 
 function fitPipOpBar(doc, W, H) {
@@ -1274,14 +1274,11 @@ async function togglePiPWidget() {
                 display: flex; flex-direction: column;
             }
 
-            /* ===== HEADER ===== */
             .pip-head { position: relative; flex: 0 0 auto; display: flex; align-items: center; justify-content: center; padding: calc(var(--u) * .08) calc(var(--u) * .12) 0; min-width: 0; }
-            /* ★ Judul: hitam saat mode WHITE */
             .pip-title { flex: 0 0 auto; display: flex; align-items: baseline; justify-content: center; gap: calc(var(--u) * .25); width: max-content; font-size: var(--hf); color: #000000; letter-spacing: .04em; font-weight: 800; line-height: 1.15; white-space: nowrap; transition: opacity .2s ease; }
             .pip-title-text { flex: 0 0 auto; }
             .pip-clock { flex: 0 0 auto; font-variant-numeric: tabular-nums; color: #000000; font-weight: 900; letter-spacing: .04em; font-size: 1em; line-height: 1.15; }
 
-            /* ===== OPERATION BAR ===== */
             .pip-op-bar { --ob: 10px; position: absolute; top: 0; left: 0; right: 0; z-index: 5; display: flex; align-items: center; justify-content: center; padding: .5em .4em; font-size: var(--ob); background: var(--pip-bg); opacity: 0; pointer-events: none; transition: opacity .2s ease; }
             .pip-op-grid { display: grid; grid-template-columns: repeat(3, max-content); align-items: center; column-gap: .55em; row-gap: .45em; width: max-content; }
             body:hover .pip-title { opacity: 0; }
@@ -1293,7 +1290,6 @@ async function togglePiPWidget() {
             .pip-mode-btn .dot-preview { display: inline-block; flex: 0 0 auto; width: .8em; height: .8em; border-radius: 50%; border: 1px solid #94a3b8; background: #fff; }
             .pip-mode-btn .dot-preview.dark { background: #050a10; }
 
-            /* ===== RACK STRIP ===== */
             .rack-strip { flex: 1 1 auto; min-height: 0; display: flex; gap: calc(var(--u) * var(--gap)); padding: calc(var(--u) * var(--pt)) calc(var(--u) * var(--padx)) calc(var(--u) * var(--pb)); }
             .rack-item { flex: 0 0 auto; display: flex; align-items: center; white-space: nowrap; }
 
@@ -1315,9 +1311,7 @@ async function togglePiPWidget() {
             .rack-temp.off { color: #64748b; font-size: calc(var(--u) * .6); letter-spacing: .05em; }
             @keyframes pipBlink { 0%,100% { opacity: 1; } 50% { opacity: 0.5; } }
 
-            /* ===== MODE BLACK ===== */
             body.mode-black { background: #050a10 !important; }
-            /* ★ Judul & jam: PUTIH saat mode BLACK */
             body.mode-black .pip-title { color: #ffffff; text-shadow: 0 0 2px #000, 0 0 4px #000; }
             body.mode-black .pip-clock { color: #ffffff; text-shadow: 0 0 2px #000, 0 0 4px #000, 0 0 8px #000, 0 0 14px rgba(255,255,255,0.6); }
             body.mode-black .rack-label { color: #f1f5f9; text-shadow: 0 0 2px #000, 0 0 3px #000; }
@@ -1657,7 +1651,6 @@ setInterval(() => {
     });
 }, 5000);
 
-/* Pilih tahun untuk export CSV & grafik */
 function buildYearSelects() {
     const y = new Date().getFullYear();
     document.querySelectorAll('.year-select').forEach(sel => {
