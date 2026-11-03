@@ -202,6 +202,37 @@
         }
         .log-card .log-list::-webkit-scrollbar{width:4px}
         .log-card .log-list::-webkit-scrollbar-thumb{background:rgba(56,189,248,.35);border-radius:4px}
+
+        /* ===== TATA LETAK HP: SENSOR BERPASANGAN, ACTIVITY LOG DI BAWAH ===== */
+        @media (max-width:768px){
+            .dashboard-grid{
+                grid-template-columns:repeat(2,minmax(0,1fr))!important;
+                grid-auto-flow:row;
+                align-items:stretch;
+            }
+            /* Baris 1: Rack 61 | Baris 2: Rack 77 | Baris 3: Rack 139 */
+            #card-temp-61{grid-column:1!important;grid-row:1!important}
+            .r61-group:not(#card-temp-61):not(.log-card){grid-column:2!important;grid-row:1!important}
+            #card-temp-77{grid-column:1!important;grid-row:2!important}
+            .r77-group:not(#card-temp-77):not(.log-card){grid-column:2!important;grid-row:2!important}
+            #card-temp-139{grid-column:1!important;grid-row:3!important}
+            .r139-group:not(#card-temp-139):not(.log-card){grid-column:2!important;grid-row:3!important}
+            /* Activity log dipindahkan setelah seluruh kartu suhu dan kelembapan */
+            .dashboard-grid > .log-card{
+                grid-column:1 / -1!important;
+                width:100%!important;
+                min-width:0!important;
+                height:170px!important;
+                min-height:170px!important;
+                max-height:170px!important;
+                overflow:hidden!important;
+            }
+            .r61-group.log-card{grid-row:4!important}
+            .r77-group.log-card{grid-row:5!important}
+            .r139-group.log-card{grid-row:6!important}
+            .log-card .log-list{overflow-y:auto!important;min-height:0!important;max-height:none!important}
+            .chart-card,.notification-history-panel{grid-column:1 / -1!important}
+        }
     </style>
 </head>
 <body>
