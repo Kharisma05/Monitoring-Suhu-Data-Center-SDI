@@ -89,6 +89,7 @@
         .notification-type.critical{background:rgba(239,68,68,.2);color:var(--accent-red)}
         .notification-type.verycritical{background:rgba(255,0,0,.3);color:#ff5555;font-weight:900}
         .notification-type.emergency{background:rgba(180,0,0,.4);color:#ff0000;font-weight:900;animation:pulse 1s infinite}
+        
         @media (max-width:768px){
             header{flex-direction:column!important;align-items:center!important;justify-content:center!important;text-align:center!important;width:100%!important;gap:12px!important}
             .logo-container{flex-direction:column!important;align-items:center!important;gap:8px!important;margin-bottom:0!important;width:100%!important}
@@ -103,7 +104,10 @@
             .indicator{padding:6px 14px!important;font-size:10px!important;text-align:center!important;justify-content:center!important}
             .dashboard-grid{grid-template-columns:1.2fr 1.3fr;gap:10px;width:100%}
             .log-card,.chart-card,.notification-history-panel{grid-column:span 2}
-            .card{padding:12px 10px!important;min-height:105px!important;border-radius:12px}
+            
+            /* PERUBAHAN DISINI: Padding kanan ditambah dari 10px ke 15px agar tidak mepet ujung */
+            .card{padding:12px 15px 12px 10px!important;min-height:105px!important;border-radius:12px}
+            
             .card-label-row{flex-direction:row!important;flex-wrap:nowrap!important;align-items:center!important;width:100%!important;gap:4px!important}
             .card-label{font-size:7.5px!important;line-height:1.2!important;white-space:normal!important;flex:1 1 0%!important;min-width:0!important;word-break:break-word!important;overflow-wrap:break-word!important}
             .status-wrapper{flex-shrink:0!important;align-items:center!important}
@@ -111,7 +115,10 @@
             .trend-icon{font-size:12px!important}
             .card-value{font-size:28px!important;margin:0!important}
             .unit{font-size:11px!important}
-            .min-max-group{gap:5px!important;margin-bottom:0!important}
+            
+            /* PERUBAHAN DISINI: padding-right ditambah agar grup MIN/MAX tidak mepet border */
+            .min-max-group{gap:5px!important;margin-bottom:0!important;padding-right:3px!important}
+            
             .min-max-icon{font-size:9px!important}.min-max-label{font-size:7px!important}.min-max-val{font-size:11px!important}
             .min-max-time{display:block!important;margin-left:0!important;margin-top:2px!important;font-size:7px!important}
             .device-badge{font-size:6px!important;bottom:5px!important;right:8px!important}
@@ -242,8 +249,9 @@
                 margin-left:auto!important;
                 flex:0 0 auto!important;
                 align-items:center!important;
+                padding-right:2px!important; /* Tambahan space untuk wrapper records */
             }
-            .records-info{padding:2px 5px!important;border-radius:5px!important}
+            .records-info{padding:2px 5px!important;border-radius:5px!important;margin-right:2px!important}
             .records-info .min-max-label{font-size:8.5px!important}
             .records-reset-ico{font-size:.75em!important}
         }
