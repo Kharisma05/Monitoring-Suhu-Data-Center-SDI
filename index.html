@@ -113,6 +113,7 @@
             .notification-detail{font-size:8px;gap:4px}
             .notification-type{font-size:8px;padding:2px 6px}
         }
+        .year-select{background:rgba(0,0,0,.4);color:#fff;border:1px solid rgba(255,255,255,.2);border-radius:6px;padding:3px 6px;font-size:10px;font-weight:800;cursor:pointer}
     </style>
 </head>
 <body>
@@ -289,7 +290,7 @@
     <div class="modal-content">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:15px;"><span style="color:var(--accent-blue);font-size:13px;font-weight:800;"><i class="fa-solid fa-download"></i> EXPORT DATA (<span id="modalTargetRack"></span>)</span><i class="fa-solid fa-xmark" onclick="closeModal()" style="cursor:pointer;color:var(--accent-red);font-size:18px;"></i></div>
         <div id="viewBulan">
-            <div style="color:var(--text-dim);font-size:10px;margin-bottom:10px;">Langkah 1: Pilih bulan riwayat yang ingin diunduh</div>
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;"><span style="color:var(--text-dim);font-size:10px;">Langkah 1: Pilih tahun &amp; bulan riwayat</span><select class="year-select"></select></div>
             <div class="month-grid-ui">
                 <button class="btn-mini" onclick="selectMonth('01','JANUARI')">JAN</button>
                 <button class="btn-mini" onclick="selectMonth('02','FEBRUARI')">FEB</button>
@@ -307,7 +308,7 @@
         </div>
         <div id="viewHari" style="display:none;">
             <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:15px;"><span style="color:var(--accent-green);font-size:12px;font-weight:bold;">🗓️ <span id="labelBulanTerpilih"></span></span><button class="btn-mini" onclick="backToBulan()" style="padding:4px 8px;font-size:9px;border-color:var(--text-dim);color:var(--text-dim);"><i class="fa-solid fa-arrow-left"></i> KEMBALI</button></div>
-            <button class="btn-mini" onclick="executeDownloadMonthFull()" style="width:100%;margin-bottom:15px;padding:10px;background:rgba(56,189,248,.1);font-size:11px;"><i class="fa-solid fa-file-excel"></i> UNDUH FULL 1 BULAN</button>
+            <button class="btn-mini" onclick="executeDownloadMonthFull(this)" style="width:100%;margin-bottom:15px;padding:10px;background:rgba(56,189,248,.1);font-size:11px;"><i class="fa-solid fa-file-excel"></i> UNDUH FULL 1 BULAN</button>
             <div style="background:rgba(255,255,255,.02);padding:10px;border-radius:8px;border:1px solid rgba(255,255,255,.05);">
                 <div style="color:var(--text-dim);font-size:10px;margin-bottom:5px;">Atau pilih unduh per tanggal:</div>
                 <div class="day-grid-ui" id="csvDayGridUI"></div>
@@ -321,7 +322,7 @@
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:15px;"><span style="color:var(--accent-blue);font-size:13px;font-weight:800;"><i class="fa-solid fa-chart-line"></i> GRAFIK RIWAYAT (<span id="graphModalTargetRack"></span>)</span><i class="fa-solid fa-xmark" onclick="closeGraphModal()" style="cursor:pointer;color:var(--accent-red);font-size:18px;"></i></div>
         <div id="graphSelectionArea">
             <div id="graphViewBulan">
-                <div style="color:var(--text-dim);font-size:10px;margin-bottom:10px;">Langkah 1: Pilih bulan grafik yang ingin dilihat</div>
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;"><span style="color:var(--text-dim);font-size:10px;">Langkah 1: Pilih tahun &amp; bulan grafik</span><select class="year-select"></select></div>
                 <div class="month-grid-ui">
                     <button class="btn-mini" onclick="selectGraphMonth('01','JANUARI')">JAN</button>
                     <button class="btn-mini" onclick="selectGraphMonth('02','FEBRUARI')">FEB</button>
@@ -459,9 +460,6 @@ function toggleAudio() {
 }
 
 db.ref('notifications').limitToLast(50).on('child_added', (snap) => addNotificationItemToDOM(snap.key, snap.val()));
-['61','77','139'].forEach(rackId => {
-    db.ref(`records/rack${rackId}`).on('value', (snap) => updateRecordsUI(rackId, snap.val()));
-});
 
 function formatTimestamp(ms) {
     const d = new Date(ms);
@@ -503,81 +501,109 @@ function toggleNotificationHistory() {
     else { body.style.display = 'none'; arrow.classList.remove('rotated'); }
 }
 
-function updateRecordIfNeeded(rackId, currentTemp, stampStr) {
-    const ref = db.ref(`records/rack${rackId}`);
-    ref.once('value').then(snap => {
-        const record = snap.val() || {}; const updates = {}; let changed = false;
-        if (record.min === undefined || currentTemp < record.min) { updates.min = currentTemp; updates.timeMin = stampStr; changed = true; }
-        if (record.max === undefined || currentTemp > record.max) { updates.max = currentTemp; updates.timeMax = stampStr; changed = true; }
-        if (changed) ref.update(updates);
+/* ===== REKOR HARIAN (reset otomatis 00:00 WIB) ===== */
+const RECORD_TZ = 'Asia/Jakarta';
+const RACK_IDS = ['61', '77', '139'];
+const recordRefs = {};
+const dailyRecordCache = {};
+let recordDayKey = null;
+
+function wibParts(ms = Date.now()) {
+    const o = {};
+    new Intl.DateTimeFormat('en-GB', { timeZone: RECORD_TZ, year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit', hourCycle: 'h23' })
+        .formatToParts(ms).forEach(p => o[p.type] = p.value);
+    return o;
+}
+// Dipanggil tiap 5 detik (checkDeviceStatus) & tiap data masuk: ganti hari => pindah ke node tanggal baru (otomatis kosong = reset 00:00)
+function subscribeDailyRecords() {
+    const p = wibParts();
+    const key = `${p.year}-${p.month}-${p.day}`;
+    if (key === recordDayKey) return;
+    RACK_IDS.forEach(id => { if (recordRefs[id]) recordRefs[id].off(); });
+    recordDayKey = key;
+    RACK_IDS.forEach(id => {
+        dailyRecordCache[id] = { loaded: false, data: null };
+        updateRecordsUI(id, null);
+        recordRefs[id] = db.ref(`records_harian/rack${id}/${key}`);
+        recordRefs[id].on('value', snap => {
+            dailyRecordCache[id] = { loaded: true, data: snap.val() };
+            updateRecordsUI(id, snap.val());
+        });
     });
 }
 function updateRecordsUI(rackId, data) {
-    const minEl = document.getElementById(`min${rackId}`);
-    const maxEl = document.getElementById(`max${rackId}`);
-    const timeMinEl = document.getElementById(`timeMin${rackId}`);
-    const timeMaxEl = document.getElementById(`timeMax${rackId}`);
-    const dateEl = document.getElementById(`dateRekor${rackId}`);
-    if (data) {
-        minEl.innerText = data.min !== undefined ? data.min.toFixed(1) : '--';
-        maxEl.innerText = data.max !== undefined ? data.max.toFixed(1) : '--';
-        timeMinEl.innerText = data.timeMin ? data.timeMin.split(' ')[0] : '--:--';
-        timeMaxEl.innerText = data.timeMax ? data.timeMax.split(' ')[0] : '--:--';
-        const dMin = data.timeMin ? data.timeMin.split('(')[1]?.replace(')','') : '--/--/--';
-        const dMax = data.timeMax ? data.timeMax.split('(')[1]?.replace(')','') : '--/--/--';
-        dateEl.innerText = dMax || dMin || '--/--/--';
-    } else {
-        minEl.innerText = '--'; maxEl.innerText = '--';
-        timeMinEl.innerText = '--:--'; timeMaxEl.innerText = '--:--';
-        dateEl.innerText = '--/--/--';
-    }
+    const set = (id, txt, tip) => { const el = document.getElementById(id); if (el) { el.innerText = txt; el.title = tip || ''; } };
+    const tgl = recordDayKey ? recordDayKey.split('-').reverse().join('/') : '--/--/----';
+    const rec = data || {};
+    set(`dateRekor${rackId}`, `HARIAN • ${tgl}`);
+    set(`min${rackId}`, rec.min !== undefined ? Number(rec.min).toFixed(1) : '--');
+    set(`max${rackId}`, rec.max !== undefined ? Number(rec.max).toFixed(1) : '--');
+    set(`timeMin${rackId}`, rec.timeMin || '--:--:--', rec.timeMin ? `${tgl} ${rec.timeMin} WIB` : '');
+    set(`timeMax${rackId}`, rec.timeMax || '--:--:--', rec.timeMax ? `${tgl} ${rec.timeMax} WIB` : '');
 }
-function resetRekor(rackId) { if (confirm("Reset rekor Rack " + rackId + "?")) db.ref(`records/rack${rackId}`).remove(); }
+// Tanpa baca Firebase tiap update: bandingkan dengan cache, tulis (transaction) hanya jika rekor baru
+function updateRecordIfNeeded(rackId, currentTemp) {
+    subscribeDailyRecords();
+    const c = dailyRecordCache[rackId];
+    if (!c || !c.loaded) return;
+    const rec = c.data || {};
+    if (!(rec.min === undefined || currentTemp < rec.min) && !(rec.max === undefined || currentTemp > rec.max)) return;
+    const p = wibParts(), ts = Date.now();
+    const stamp = `${p.hour}:${p.minute}:${p.second}`;
+    recordRefs[rackId].transaction(cur => {
+        cur = cur || {}; let changed = false;
+        if (cur.min === undefined || currentTemp < cur.min) { cur.min = currentTemp; cur.timeMin = stamp; cur.tsMin = ts; changed = true; }
+        if (cur.max === undefined || currentTemp > cur.max) { cur.max = currentTemp; cur.timeMax = stamp; cur.tsMax = ts; changed = true; }
+        if (changed) cur.date = `${p.day}/${p.month}/${p.year}`;
+        return changed ? cur : undefined;
+    });
+}
+function resetRekor(rackId) {
+    if (confirm(`Reset rekor harian Rack ${rackId} (${recordDayKey})?`)) db.ref(`records_harian/rack${rackId}/${recordDayKey}`).remove();
+}
+subscribeDailyRecords();
 
-const tempTrendTrackers = {
-    '61':  { lastTemp: null, riseStartTime: null, baseTemp: null, alerted15: false, alerted30: false, alerted45: false, alerted60: false },
-    '77':  { lastTemp: null, riseStartTime: null, baseTemp: null, alerted15: false, alerted30: false, alerted45: false, alerted60: false },
-    '139': { lastTemp: null, riseStartTime: null, baseTemp: null, alerted15: false, alerted30: false, alerted45: false, alerted60: false }
-};
+/* ===== TREN SUHU ===== */
+const TREND_RISE_START = 0.2;   // naik >= 0.2°C dari titik dasar => timer mulai
+const TREND_DROP_RESET = 0.3;   // turun >= 0.3°C dari puncak (kumulatif) => reset
+const TREND_LEVELS = [
+    { level: 1, min: 15, key: 'alerted15', type: '15 menit', browser: false },
+    { level: 2, min: 30, key: 'alerted30', type: '30 menit', browser: false },
+    { level: 3, min: 45, key: 'alerted45', type: '45 menit', browser: true },
+    { level: 4, min: 60, key: 'alerted60', type: '60 menit', browser: true }
+];
+const newTracker = () => ({ baseTemp: null, peakTemp: null, riseStartTime: null, alerted15: false, alerted30: false, alerted45: false, alerted60: false });
+const tempTrendTrackers = { '61': newTracker(), '77': newTracker(), '139': newTracker() };
+const tdiff = (a, b) => Number((a - b).toFixed(2));
+function resetTracker(tr, temp) {
+    tr.baseTemp = temp; tr.peakTemp = temp; tr.riseStartTime = null;
+    tr.alerted15 = tr.alerted30 = tr.alerted45 = tr.alerted60 = false;
+}
 function evaluateTemperatureTrend(rackId, currentTemp) {
-    const tracker = tempTrendTrackers[rackId]; const now = Date.now();
-    if (tracker.lastTemp === null) {
-        tracker.lastTemp = currentTemp; tracker.baseTemp = currentTemp; tracker.riseStartTime = now; return;
+    const tr = tempTrendTrackers[rackId], now = Date.now();
+    if (tr.baseTemp === null) { resetTracker(tr, currentTemp); return; }   // buka halaman: timer TIDAK langsung jalan
+    if (tr.riseStartTime === null) {                                        // belum ada tren naik
+        if (currentTemp < tr.baseTemp) tr.baseTemp = currentTemp;           // ikuti titik terendah
+        else if (tdiff(currentTemp, tr.baseTemp) >= TREND_RISE_START) { tr.riseStartTime = now; tr.peakTemp = currentTemp; }
+        return;
     }
-    if (currentTemp > tracker.lastTemp) {
-        if (!tracker.riseStartTime) { tracker.riseStartTime = now; tracker.baseTemp = tracker.lastTemp; }
-    } else if (currentTemp < tracker.lastTemp - 0.2) {
-        tracker.riseStartTime = null; tracker.baseTemp = currentTemp;
-        tracker.alerted15 = tracker.alerted30 = tracker.alerted45 = tracker.alerted60 = false;
-        hideToast(rackId);
+    if (currentTemp > tr.peakTemp) tr.peakTemp = currentTemp;
+    if (currentTemp <= tr.baseTemp || tdiff(tr.peakTemp, currentTemp) >= TREND_DROP_RESET) {   // turun pelan pun tetap terdeteksi
+        const hadAlert = tr.alerted15;
+        resetTracker(tr, currentTemp);
+        if (hadAlert) hideToast(rackId);
+        return;
     }
-    tracker.lastTemp = currentTemp;
-    if (tracker.riseStartTime && (now - tracker.riseStartTime >= 15*60*1000) && currentTemp >= tracker.baseTemp && !tracker.alerted15) {
-        const period = formatTimeRange(tracker.riseStartTime, now);
-        showToast(rackId, 1, period);
-        addNotificationHistory(rackId, currentTemp, '15 menit', period);
-        tracker.alerted15 = true;
-    }
-    if (tracker.riseStartTime && (now - tracker.riseStartTime >= 30*60*1000) && currentTemp >= tracker.baseTemp && !tracker.alerted30) {
-        const period = formatTimeRange(tracker.riseStartTime, now);
-        showToast(rackId, 2, period);
-        addNotificationHistory(rackId, currentTemp, '30 menit', period);
-        tracker.alerted30 = true;
-    }
-    if (tracker.riseStartTime && (now - tracker.riseStartTime >= 45*60*1000) && currentTemp >= tracker.baseTemp && !tracker.alerted45) {
-        const period = formatTimeRange(tracker.riseStartTime, now);
-        showToast(rackId, 3, period);
-        sendBrowserNotification(rackId, currentTemp, 3);
-        addNotificationHistory(rackId, currentTemp, '45 menit', period);
-        tracker.alerted45 = true;
-    }
-    if (tracker.riseStartTime && (now - tracker.riseStartTime >= 60*60*1000) && currentTemp >= tracker.baseTemp && !tracker.alerted60) {
-        const period = formatTimeRange(tracker.riseStartTime, now);
-        showToast(rackId, 4, period);
-        sendBrowserNotification(rackId, currentTemp, 4);
-        addNotificationHistory(rackId, currentTemp, '60 menit', period);
-        tracker.alerted60 = true;
-    }
+    const elapsed = now - tr.riseStartTime;
+    TREND_LEVELS.forEach(L => {
+        if (elapsed >= L.min * 60000 && !tr[L.key]) {
+            const period = formatTimeRange(tr.riseStartTime, now);
+            showToast(rackId, L.level, period);
+            if (L.browser) sendBrowserNotification(rackId, currentTemp, L.level);
+            addNotificationHistory(rackId, currentTemp, L.type, period);
+            tr[L.key] = true;
+        }
+    });
 }
 
 function sendBrowserNotification(rackId, temp, alertLevel) {
@@ -676,6 +702,7 @@ function closeAlertPopUp(e, force = false) {
 }
 
 function checkDeviceStatus() {
+    subscribeDailyRecords();
     const now = Date.now();
     const racks = [
         { indId:'ind1',  group:'.r61-group',  label:'61',  num:'1', last: lastUpdateR61  },
@@ -754,12 +781,12 @@ function updateAnalytic(rackId, temp, historyArr) {
     }
 }
 
-let history61  = JSON.parse(localStorage.getItem('hist61'))  || Array(25).fill(null);
-let history77  = JSON.parse(localStorage.getItem('hist77'))  || Array(25).fill(null);
-let history139 = JSON.parse(localStorage.getItem('hist139')) || Array(25).fill(null);
-history61 = history61.map(v => v === 0 ? null : v);
-history77 = history77.map(v => v === 0 ? null : v);
-history139 = history139.map(v => v === 0 ? null : v);
+function loadHist(key) {
+    try { const a = JSON.parse(localStorage.getItem(key)); if (Array.isArray(a) && a.length === 25) return a.map(v => v === 0 ? null : v); } catch(e) {}
+    return Array(25).fill(null);
+}
+function saveHist(key, arr) { try { localStorage.setItem(key, JSON.stringify(arr)); } catch(e) {} }
+let history61 = loadHist('hist61'), history77 = loadHist('hist77'), history139 = loadHist('hist139');
 const pluginBackground = {
     id: 'customCanvasBackgroundColor',
     beforeDraw: (chart) => {
@@ -1213,15 +1240,17 @@ function selectMonth(monthNum, monthName) {
     for (let i = 1; i <= daysInMonth; i++) {
         const dayStr = i.toString().padStart(2,'0');
         const dName = dayNames[new Date(`${currentSelectedYear}-${monthNum}-${dayStr}`).getDay()];
-        html += `<button class="btn-day" onclick="executeDownloadDailyNum('${dayStr}')"><span class="d-num">${i}</span><span class="d-name">${dName}</span></button>`;
+        html += `<button class="btn-day" onclick="executeDownloadDailyNum('${dayStr}', this)"><span class="d-num">${i}</span><span class="d-name">${dName}</span></button>`;
     }
     document.getElementById('csvDayGridUI').innerHTML = html;
 }
 function backToBulan() { document.getElementById('viewHari').style.display = 'none'; document.getElementById('viewBulan').style.display = 'block'; }
-function tarikDataFirebase(prefixKeyword, fileNameSuffix) {
-    let btnText = event.target, originalText = btnText.innerText; btnText.innerText = "Loading...";
+function tarikDataFirebase(prefixKeyword, fileNameSuffix, btn) {
+    const originalHTML = btn.innerHTML;
+    btn.innerHTML = 'Loading...'; btn.disabled = true;
+    const restore = () => { btn.innerHTML = originalHTML; btn.disabled = false; };
     db.ref('history_suhu/' + targetRackExport).once('value').then(snap => {
-        btnText.innerText = originalText;
+        restore();
         if (!snap.exists()) { alert(`Data riwayat untuk rak ini belum tersedia.`); return; }
         let csv = "Hari, Tanggal, Jam, Suhu, Kelembaban\n"; let hasData = false;
         snap.forEach(c => {
@@ -1246,10 +1275,10 @@ function tarikDataFirebase(prefixKeyword, fileNameSuffix) {
         const url = window.URL.createObjectURL(blob);
         const a = document.createElement('a'); a.href = url; a.download = `Log_${targetRackExport}_${fileNameSuffix}.csv`;
         a.click(); window.URL.revokeObjectURL(url); closeModal();
-    });
+    }).catch(err => { restore(); alert('Gagal mengambil data: ' + err.message); });
 }
-function executeDownloadMonthFull() { tarikDataFirebase(`${currentSelectedYear}-${currentSelectedMonthNum}`, `Bulan_${currentSelectedYear}-${currentSelectedMonthNum}`); }
-function executeDownloadDailyNum(dayStr) { tarikDataFirebase(`${currentSelectedYear}-${currentSelectedMonthNum}-${dayStr}`, `Tanggal_${currentSelectedYear}-${currentSelectedMonthNum}-${dayStr}`); }
+function executeDownloadMonthFull(btn) { tarikDataFirebase(`${currentSelectedYear}-${currentSelectedMonthNum}`, `Bulan_${currentSelectedYear}-${currentSelectedMonthNum}`, btn); }
+function executeDownloadDailyNum(dayStr, btn) { tarikDataFirebase(`${currentSelectedYear}-${currentSelectedMonthNum}-${dayStr}`, `Tanggal_${currentSelectedYear}-${currentSelectedMonthNum}-${dayStr}`, btn); }
 
 let currentGraphFilename = "";
 function openGraphModal(rack) {
@@ -1331,10 +1360,6 @@ function downloadGraphImage() {
 db.ref('live_data').on('value', (snap) => {
     const d = snap.val();
     if (!d) return;
-    const now = new Date();
-    const timeStr = now.getHours().toString().padStart(2,'0') + ':' + now.getMinutes().toString().padStart(2,'0');
-    const dateStr = now.getDate().toString().padStart(2,'0') + '/' + (now.getMonth()+1).toString().padStart(2,'0') + '/' + now.getFullYear().toString().slice(-2);
-    const stampStr = `${timeStr} (${dateStr})`;
 
     if (d.ruangan !== undefined && d.ruangan !== null) {
         lastUpdateR61 = Date.now();
@@ -1347,9 +1372,9 @@ db.ref('live_data').on('value', (snap) => {
             }
             document.getElementById('hum1').innerText = lastFakeHumi61.toFixed(1);
             updateAnalytic('61', t, history61);
-            updateRecordIfNeeded('61', t, stampStr);
+            updateRecordIfNeeded('61', t);
             c1.data.datasets[0].data.push(t); c1.data.datasets[0].data.shift(); c1.update('none');
-            localStorage.setItem('hist61', JSON.stringify(history61));
+            saveHist('hist61', history61);
             pushLog('logList1', t, lastFakeHumi61);
         }
     }
@@ -1363,9 +1388,9 @@ db.ref('live_data').on('value', (snap) => {
             document.getElementById('val77').innerText = t.toFixed(1);
             document.getElementById('hum77').innerText = h.toFixed(1);
             updateAnalytic('77', t, history77);
-            updateRecordIfNeeded('77', t, stampStr);
+            updateRecordIfNeeded('77', t);
             c3.data.datasets[0].data.push(t); c3.data.datasets[0].data.shift(); c3.update('none');
-            localStorage.setItem('hist77', JSON.stringify(history77));
+            saveHist('hist77', history77);
             pushLog('logList77', t, h);
         }
     }
@@ -1377,9 +1402,9 @@ db.ref('live_data').on('value', (snap) => {
             document.getElementById('val2').innerText = t.toFixed(1);
             document.getElementById('hum2').innerText = Number(d.kelembaban || 0).toFixed(1);
             updateAnalytic('139', t, history139);
-            updateRecordIfNeeded('139', t, stampStr);
+            updateRecordIfNeeded('139', t);
             c2.data.datasets[0].data.push(t); c2.data.datasets[0].data.shift(); c2.update('none');
-            localStorage.setItem('hist139', JSON.stringify(history139));
+            saveHist('hist139', history139);
             pushLog('logList2', t, d.kelembaban || 0);
         }
     }
@@ -1410,7 +1435,32 @@ setInterval(() => {
     });
 }, 5000);
 
+/* Pilih tahun untuk export CSV & grafik */
+function buildYearSelects() {
+    const y = new Date().getFullYear();
+    document.querySelectorAll('.year-select').forEach(sel => {
+        sel.innerHTML = '';
+        for (let i = y; i >= y - 5; i--) sel.add(new Option(i, i));
+        sel.value = currentSelectedYear;
+        sel.onchange = () => {
+            currentSelectedYear = parseInt(sel.value, 10);
+            document.querySelectorAll('.year-select').forEach(s => s.value = currentSelectedYear);
+        };
+    });
+}
+buildYearSelects();
+
+/* Peringatan jika file alarm mp3 tidak ditemukan */
+function warnAudioMissing() {
+    console.error('File alarm mp3 tidak ditemukan.');
+    const t = document.getElementById('audioStatusText');
+    if (t) { t.innerText = 'ACTIVE (MP3 TIDAK DITEMUKAN)'; t.style.color = 'var(--accent-orange)'; }
+}
+const alarmSrc = alarmAudio.querySelector('source');
+if (alarmSrc) alarmSrc.addEventListener('error', warnAudioMissing);
+window.addEventListener('load', () => { if (alarmAudio.networkState === HTMLMediaElement.NETWORK_NO_SOURCE) warnAudioMissing(); });
+
 console.log('%c✅ DC-SDI Monitoring Ready', 'color:#38bdf8;font-size:14px;font-weight:bold;');
 </script>
 </body>
-                                                                                                                                         </html>
+</html>
