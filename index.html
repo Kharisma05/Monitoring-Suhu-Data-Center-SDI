@@ -114,6 +114,11 @@
             .notification-type{font-size:8px;padding:2px 6px}
         }
         .year-select{background:rgba(0,0,0,.4);color:#fff;border:1px solid rgba(255,255,255,.2);border-radius:6px;padding:3px 6px;font-size:10px;font-weight:800;cursor:pointer}
+        /* Tanggal "HARIAN • dd/mm/yyyy" (7px→17.5px) & jam MIN/MAX (8px→20px) = 2.5x; mengecil otomatis di layar sempit agar tidak keluar kartu */
+        @media (min-width:769px){
+            [id^="dateRekor"]{font-size:clamp(9px,1.28vw,17.5px)!important;white-space:nowrap}
+            .min-max-time{font-size:clamp(9px,1.45vw,20px)!important;white-space:nowrap}
+        }
     </style>
 </head>
 <body>
