@@ -669,11 +669,27 @@ function toggleNotificationHistory() {
     else { body.style.display = 'none'; arrow.classList.remove('rotated'); }
 }
 
-/* ===== REKOR HARIAN (reset otomatis 00:00 WIB) ===== */
+/* ===== REKOR HARIAN (00:00 - 23:59 WIB, SAMA DI SEMUA PERANGKAT) =====
+   PERBAIKAN:
+   Sebelumnya MIN/MAX hanya dicatat oleh browser yang sedang membuka dashboard, sehingga
+   kalau dashboard baru dibuka jam 10:00 maka rekor "dimulai" dari jam 10:00.
+   Sekarang, setiap dashboard dibuka (dan tiap 10 menit / saat tab kembali aktif), rekor
+   dihitung ulang dari riwayat history_suhu (yang ditulis ESP) mulai 00:00 WIB hari ini,
+   lalu digabung ke node bersama records_harian/rackXX/<tanggal>. Hasilnya angka MIN/MAX
+   dan jamnya SAMA di semua perangkat, siapa pun yang membuka dan jam berapa pun dibuka. */
 const RECORD_TZ = 'Asia/Jakarta';
 const RACK_IDS = ['61', '77', '139'];
+/* Zona waktu penulisan key di history_suhu (mis. 2026-11-04_10-15-30). 7 = WIB (UTC+7). */
+const HISTORY_TZ_OFFSET_H = 7;
+/* Pembacaan di luar rentang ini dianggap glitch sensor (mis. 0.000 / -127 / 85) dan tidak dicatat sbg rekor. */
+const RECORD_VALID_MIN = 5;
+const RECORD_VALID_MAX = 60;
+/* Sinkron ulang berkala dari riwayat (hanya mengambil data baru sejak sinkron terakhir). */
+const HISTORY_RESYNC_MS = 10 * 60 * 1000;
 const recordRefs = {};
 const dailyRecordCache = {};
+const historyCursor = {};
+const historyBusy = {};
 let recordDayKey = null;
 
 function wibParts(ms = Date.now()) {
@@ -682,6 +698,22 @@ function wibParts(ms = Date.now()) {
         .formatToParts(ms).forEach(p => o[p.type] = p.value);
     return o;
 }
+function wibStamp(ms) {
+    const p = wibParts(ms);
+    return `${p.hour}:${p.minute}:${p.second}`;
+}
+function isValidRecordTemp(t) {
+    return Number.isFinite(t) && t >= RECORD_VALID_MIN && t <= RECORD_VALID_MAX;
+}
+/* Ubah key riwayat ("2026-11-04_10-15-30", "2026-11-04_10-15", atau "2026-11-04 10:15:30") jadi {ts, stamp} */
+function parseHistoryKey(key) {
+    const m = /^(\d{4})-(\d{2})-(\d{2})[_ T](\d{2})[-:](\d{2})(?:[-:](\d{2}))?/.exec(String(key));
+    if (!m) return null;
+    const sec = m[6] ? Number(m[6]) : 0;
+    const ts = Date.UTC(Number(m[1]), Number(m[2]) - 1, Number(m[3]), Number(m[4]) - HISTORY_TZ_OFFSET_H, Number(m[5]), sec);
+    return { ts, stamp: `${m[4]}:${m[5]}:${String(sec).padStart(2, '0')}` };
+}
+
 function subscribeDailyRecords() {
     const p = wibParts();
     const key = `${p.year}-${p.month}-${p.day}`;
@@ -696,20 +728,90 @@ function subscribeDailyRecords() {
             dailyRecordCache[id] = { loaded: true, data: snap.val() };
             updateRecordsUI(id, snap.val());
         });
+        /* Hari baru / dashboard baru dibuka: isi rekor dari riwayat sejak 00:00 */
+        syncRecordFromHistory(id, true);
     });
 }
+
 function updateRecordsUI(rackId, data) {
     const set = (id, txt, tip) => { const el = document.getElementById(id); if (el) { el.innerText = txt; el.title = tip || ''; } };
     const tgl = recordDayKey ? recordDayKey.split('-').reverse().join('/') : '--/--/----';
     const rec = data || {};
-    set(`dateRekor${rackId}`, `HARIAN • ${tgl}`);
+    const dateTip = rec.resetTs
+        ? `Direset manual pukul ${wibStamp(Number(rec.resetTs))} WIB - rekor dihitung ulang sejak saat itu`
+        : 'Rekor dihitung sejak 00:00 WIB (sama di semua perangkat)';
+    set(`dateRekor${rackId}`, `DAILY RANGE • ${tgl}`, dateTip);
     set(`min${rackId}`, rec.min !== undefined ? Number(rec.min).toFixed(1) : '--');
     set(`max${rackId}`, rec.max !== undefined ? Number(rec.max).toFixed(1) : '--');
     set(`timeMin${rackId}`, rec.timeMin || '--:--:--', rec.timeMin ? `${tgl} ${rec.timeMin} WIB` : '');
     set(`timeMax${rackId}`, rec.timeMax || '--:--:--', rec.timeMax ? `${tgl} ${rec.timeMax} WIB` : '');
 }
+
+/* Gabungkan sekumpulan data riwayat (urut waktu) ke node rekor bersama lewat transaction.
+   Entri sebelum resetTs (reset manual) diabaikan. */
+function mergeEntriesIntoRecord(rackId, dayKey, entries) {
+    const ref = db.ref(`records_harian/rack${rackId}/${dayKey}`);
+    return ref.transaction(cur => {
+        cur = cur || {};
+        const from = Number(cur.resetTs) || 0;
+        let changed = false;
+        for (let i = 0; i < entries.length; i++) {
+            const e = entries[i];
+            if (e.ts < from) continue;
+            if (cur.min === undefined || e.t < cur.min) {
+                cur.min = e.t; cur.timeMin = e.stamp; cur.tsMin = e.ts; changed = true;
+            } else if (e.t === cur.min && e.ts < (cur.tsMin === undefined ? Infinity : cur.tsMin)) {
+                cur.timeMin = e.stamp; cur.tsMin = e.ts; changed = true;
+            }
+            if (cur.max === undefined || e.t > cur.max) {
+                cur.max = e.t; cur.timeMax = e.stamp; cur.tsMax = e.ts; changed = true;
+            } else if (e.t === cur.max && e.ts < (cur.tsMax === undefined ? Infinity : cur.tsMax)) {
+                cur.timeMax = e.stamp; cur.tsMax = e.ts; changed = true;
+            }
+        }
+        if (changed) cur.date = dayKey.split('-').reverse().join('/');
+        return changed ? cur : undefined;
+    });
+}
+
+/* Ambil riwayat hari ini dari history_suhu/rack_XX dan gabungkan ke rekor harian.
+   full=true  : ambil sejak 00:00 hari ini
+   full=false : hanya data baru sejak sinkron terakhir */
+async function syncRecordFromHistory(rackId, full) {
+    if (!recordDayKey || historyBusy[rackId]) return;
+    const dayKey = recordDayKey;
+    historyBusy[rackId] = true;
+    try {
+        const cursor = historyCursor[rackId];
+        const startKey = (!full && cursor && cursor.day === dayKey) ? cursor.key : dayKey;
+        const snap = await db.ref(`history_suhu/rack_${rackId}`)
+            .orderByKey().startAt(startKey).endAt(dayKey + '\uf8ff').once('value');
+        const entries = [];
+        let lastKey = null;
+        snap.forEach(child => {
+            const parsed = parseHistoryKey(child.key);
+            if (!parsed) return;
+            lastKey = child.key;
+            const raw = child.val();
+            const t = Number(raw !== null && typeof raw === 'object' ? raw.suhu : raw);
+            if (!isValidRecordTemp(t)) return;
+            entries.push({ ts: parsed.ts, t, stamp: parsed.stamp });
+        });
+        if (entries.length) await mergeEntriesIntoRecord(rackId, dayKey, entries);
+        if (lastKey) historyCursor[rackId] = { day: dayKey, key: lastKey };
+    } catch (err) {
+        console.warn(`[REKOR] Sinkron riwayat RACK ${rackId} gagal:`, err);
+    } finally {
+        historyBusy[rackId] = false;
+        /* Kalau ganti hari (lewat 00:00) saat sinkron berjalan, ulangi untuk hari yang baru */
+        if (recordDayKey !== dayKey) syncRecordFromHistory(rackId, true);
+    }
+}
+
+/* Pembaruan langsung dari data live (selagi dashboard terbuka) */
 function updateRecordIfNeeded(rackId, currentTemp) {
     subscribeDailyRecords();
+    if (!isValidRecordTemp(currentTemp)) return;
     const c = dailyRecordCache[rackId];
     if (!c || !c.loaded) return;
     const rec = c.data || {};
@@ -724,13 +826,24 @@ function updateRecordIfNeeded(rackId, currentTemp) {
         return changed ? cur : undefined;
     });
 }
+
+/* Reset manual: kosongkan MIN/MAX hari ini dan hitung ulang mulai SEKARANG (berlaku di semua perangkat).
+   resetTs disimpan supaya sinkron riwayat tidak memasukkan lagi data sebelum waktu reset. */
 function resetRekor(rackId) {
-    const tgl = recordDayKey ? recordDayKey.split('-').reverse().join('/') : '-';
-    if (confirm(`Reset rekor harian RACK ${rackId} tanggal ${tgl}?\n\nData MIN/MAX hari ini akan dihapus dan mulai dicatat ulang.`)) {
-        db.ref(`records_harian/rack${rackId}/${recordDayKey}`).remove();
+    if (!recordDayKey) return;
+    const tgl = recordDayKey.split('-').reverse().join('/');
+    if (confirm(`Reset rekor harian RACK ${rackId} tanggal ${tgl}?\n\nMIN/MAX hari ini akan dikosongkan dan dicatat ulang mulai SEKARANG (berlaku di semua perangkat).`)) {
+        db.ref(`records_harian/rack${rackId}/${recordDayKey}`).set({
+            resetTs: firebase.database.ServerValue.TIMESTAMP,
+            date: tgl
+        });
     }
 }
 subscribeDailyRecords();
+setInterval(() => RACK_IDS.forEach(id => syncRecordFromHistory(id, false)), HISTORY_RESYNC_MS);
+document.addEventListener('visibilitychange', () => {
+    if (!document.hidden) RACK_IDS.forEach(id => syncRecordFromHistory(id, false));
+});
 
 /* ===== TREN SUHU ===== */
 const TREND_RISE_START = 0.2;
