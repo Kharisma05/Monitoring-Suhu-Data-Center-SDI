@@ -6,7 +6,7 @@
     <title>DC-SDI REAL-TIME MONITORING | RACK 61, 77 & 139</title>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         :root{--bg-color:#050a10;--card-color:rgba(17,27,39,.65);--text-main:#fff;--text-dim:#94a3b8;--accent-blue:#38bdf8;--accent-green:#10b981;--accent-red:#ef4444;--accent-orange:#f59e0b;--accent-teal:#24bbbd}
@@ -47,7 +47,7 @@
         .status-wrapper{display:flex;align-items:flex-start;gap:4px;flex-shrink:0}
         .log-card{min-height:115px}
         .log-list{font-family:'Courier New',monospace;font-size:9px;color:#60a5fa;line-height:1.4;min-height:60px;text-shadow:0 0 5px rgba(96,165,250,.3)}
-        canvas{width:100%!important;height:160px!important}
+        canvas{width:100%!important}
         .btn-mini{background:linear-gradient(135deg,rgba(255,255,255,.08) 0%,rgba(255,255,255,0) 100%);border:1px solid rgba(255,255,255,.1);border-top:1px solid rgba(255,255,255,.25);color:var(--accent-blue);border-radius:6px;padding:5px 10px;font-size:8px;font-weight:800;cursor:pointer;transition:.3s;display:flex;align-items:center;gap:4px;justify-content:center;box-shadow:0 4px 10px rgba(0,0,0,.3),inset 0 1px 1px rgba(255,255,255,.1)}
         .btn-mini:hover{background:rgba(255,255,255,.15);border-color:#fff;color:#fff;transform:translateY(-1px);box-shadow:0 6px 15px rgba(0,0,0,.4),inset 0 1px 1px rgba(255,255,255,.3)}
         .action-buttons{display:flex;gap:5px;align-items:center;flex-shrink:0}
@@ -281,6 +281,38 @@
             .log-card .log-list{overflow-y:auto!important;min-height:0!important;max-height:none!important}
             .chart-card,.notification-history-panel{grid-column:1 / -1!important}
         }
+
+        /* ===== MODERN THERMAL CHARTS ===== */
+        .chart-card{--accent:var(--accent-blue);padding-top:15px}
+        .chart-card::before{content:'';position:absolute;top:0;left:18px;right:18px;height:2px;border-radius:0 0 4px 4px;background:linear-gradient(90deg,transparent,var(--accent),transparent);box-shadow:0 0 14px var(--accent);opacity:.9;pointer-events:none}
+        .chart-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:9px}
+        .chart-title{display:flex;align-items:center;gap:8px;min-width:0;flex:1 1 auto}
+        .chart-title .card-label{margin:0;color:var(--accent);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+        .chart-dot{width:8px;height:8px;border-radius:50%;background:var(--text-dim);color:var(--text-dim);box-shadow:0 0 8px currentColor;flex:0 0 auto;transition:background .4s,color .4s}
+        .chart-head .btn-mini{margin:0;flex:0 0 auto;color:var(--accent);border-color:color-mix(in srgb,var(--accent) 40%,transparent)}
+        .chart-stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;margin-bottom:8px}
+        .stat{background:rgba(0,0,0,.28);border:1px solid rgba(255,255,255,.06);border-top-color:rgba(255,255,255,.12);border-radius:8px;padding:5px 8px;min-width:0}
+        .stat-k{display:block;font-size:7.5px;font-weight:800;letter-spacing:.9px;color:var(--text-dim)}
+        .stat-v{display:block;margin-top:2px;font-size:13px;font-weight:800;color:var(--text-main);font-variant-numeric:tabular-nums;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+        .chart-wrap{position:relative;width:100%;height:176px}
+        .chart-wrap canvas{height:100%!important}
+        .chart-foot{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:4px 10px;margin-top:8px;font-size:8px;font-weight:700;color:var(--text-dim);letter-spacing:.4px}
+        .zone-legend{display:flex;flex-wrap:wrap;gap:3px 10px}
+        .zone-legend i{display:inline-block;width:7px;height:7px;border-radius:2px;margin-right:4px}
+        .live-pulse{position:absolute;box-sizing:border-box;width:10px;height:10px;margin:-5px 0 0 -5px;border-radius:50%;background:var(--pc,#38bdf8);border:2px solid #050a10;box-shadow:0 0 10px var(--pc,#38bdf8);pointer-events:none;display:none;z-index:2}
+        .live-pulse::after{content:'';position:absolute;inset:-4px;border-radius:50%;border:2px solid var(--pc,#38bdf8);animation:livePing 1.8s ease-out infinite}
+        @keyframes livePing{0%{transform:scale(.8);opacity:.9}100%{transform:scale(3);opacity:0}}
+        .chart-card.is-offline .live-pulse{display:none!important}
+        .chart-card.is-offline .chart-wrap,.chart-card.is-offline .chart-stats{opacity:.45;filter:grayscale(.8)}
+        .chart-card.is-offline .chart-dot{background:var(--text-dim)!important;color:var(--text-dim)!important}
+        @media (max-width:768px){
+            .chart-wrap{height:150px}
+            .chart-stats{gap:5px}
+            .stat{padding:4px 6px}
+            .stat-v{font-size:11.5px}
+            .chart-foot{font-size:7.5px}
+        }
+        @media (max-width:380px){.chart-stats{grid-template-columns:repeat(2,minmax(0,1fr))}}
     </style>
 </head>
 <body>
@@ -433,17 +465,56 @@
         <div class="panel-body" id="panelBody" style="display:none;"><div id="notificationList" class="notification-list"></div></div>
     </div>
 
-    <div class="card chart-card">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;"><span class="card-label" style="margin-bottom:0;color:var(--accent-blue);">RACK 61 TEMPERATURE HISTORY</span><button onclick="openGraphModal('rack_61')" class="btn-mini" style="margin:0;"><i class="fa-solid fa-chart-line"></i> CHART</button></div>
-        <div style="position:relative;width:100%;height:160px;"><canvas id="chart1"></canvas></div>
+    <div class="card chart-card" id="chartcard-61" style="--accent:var(--accent-blue);">
+        <div class="chart-head">
+            <div class="chart-title"><span class="chart-dot" id="dot-61"></span><span class="card-label">RACK 61 · THERMAL TREND</span></div>
+            <button onclick="openGraphModal('rack_61')" class="btn-mini"><i class="fa-solid fa-chart-line"></i> VIEW TREND</button>
+        </div>
+        <div class="chart-stats" title="Based on the visible chart window (not the daily record)">
+            <div class="stat"><span class="stat-k">NOW</span><span class="stat-v" id="st-now-61">--</span></div>
+            <div class="stat"><span class="stat-k">CHANGE</span><span class="stat-v" id="st-trend-61">—</span></div>
+            <div class="stat"><span class="stat-k">AVG</span><span class="stat-v" id="st-avg-61">--</span></div>
+            <div class="stat"><span class="stat-k">RANGE</span><span class="stat-v" id="st-range-61">--</span></div>
+        </div>
+        <div class="chart-wrap"><canvas id="chart1"></canvas></div>
+        <div class="chart-foot">
+            <div class="zone-legend"><span><i style="background:#38bdf8"></i>COOLTEMP &lt;17</span><span><i style="background:#10b981"></i>OPTIMAL 17–25</span><span><i style="background:#f59e0b"></i>WARNING 25–26</span><span><i style="background:#ef4444"></i>CRITICAL &gt;26</span></div>
+            <span id="win-61">WINDOW --</span>
+        </div>
     </div>
-    <div class="card chart-card">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;"><span class="card-label" style="margin-bottom:0;color:var(--accent-teal);">RACK 77 TEMPERATURE HISTORY</span><button onclick="openGraphModal('rack_77')" class="btn-mini" style="margin:0;color:var(--accent-teal);border-color:rgba(36,187,189,.4);"><i class="fa-solid fa-chart-line"></i> CHART</button></div>
-        <div style="position:relative;width:100%;height:160px;"><canvas id="chart77"></canvas></div>
+    <div class="card chart-card" id="chartcard-77" style="--accent:var(--accent-teal);">
+        <div class="chart-head">
+            <div class="chart-title"><span class="chart-dot" id="dot-77"></span><span class="card-label">RACK 77 · THERMAL TREND</span></div>
+            <button onclick="openGraphModal('rack_77')" class="btn-mini"><i class="fa-solid fa-chart-line"></i> VIEW TREND</button>
+        </div>
+        <div class="chart-stats" title="Based on the visible chart window (not the daily record)">
+            <div class="stat"><span class="stat-k">NOW</span><span class="stat-v" id="st-now-77">--</span></div>
+            <div class="stat"><span class="stat-k">CHANGE</span><span class="stat-v" id="st-trend-77">—</span></div>
+            <div class="stat"><span class="stat-k">AVG</span><span class="stat-v" id="st-avg-77">--</span></div>
+            <div class="stat"><span class="stat-k">RANGE</span><span class="stat-v" id="st-range-77">--</span></div>
+        </div>
+        <div class="chart-wrap"><canvas id="chart77"></canvas></div>
+        <div class="chart-foot">
+            <div class="zone-legend"><span><i style="background:#38bdf8"></i>COOLTEMP &lt;17</span><span><i style="background:#10b981"></i>OPTIMAL 17–25</span><span><i style="background:#f59e0b"></i>WARNING 25–26</span><span><i style="background:#ef4444"></i>CRITICAL &gt;26</span></div>
+            <span id="win-77">WINDOW --</span>
+        </div>
     </div>
-    <div class="card chart-card">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;"><span class="card-label" style="margin-bottom:0;color:var(--accent-green);">RACK 139 TEMPERATURE HISTORY</span><button onclick="openGraphModal('rack_139')" class="btn-mini" style="margin:0;color:var(--accent-green);border-color:rgba(16,185,129,.4);"><i class="fa-solid fa-chart-line"></i> CHART</button></div>
-        <div style="position:relative;width:100%;height:160px;"><canvas id="chart2"></canvas></div>
+    <div class="card chart-card" id="chartcard-139" style="--accent:var(--accent-green);">
+        <div class="chart-head">
+            <div class="chart-title"><span class="chart-dot" id="dot-139"></span><span class="card-label">RACK 139 · THERMAL TREND</span></div>
+            <button onclick="openGraphModal('rack_139')" class="btn-mini"><i class="fa-solid fa-chart-line"></i> VIEW TREND</button>
+        </div>
+        <div class="chart-stats" title="Based on the visible chart window (not the daily record)">
+            <div class="stat"><span class="stat-k">NOW</span><span class="stat-v" id="st-now-139">--</span></div>
+            <div class="stat"><span class="stat-k">CHANGE</span><span class="stat-v" id="st-trend-139">—</span></div>
+            <div class="stat"><span class="stat-k">AVG</span><span class="stat-v" id="st-avg-139">--</span></div>
+            <div class="stat"><span class="stat-k">RANGE</span><span class="stat-v" id="st-range-139">--</span></div>
+        </div>
+        <div class="chart-wrap"><canvas id="chart2"></canvas></div>
+        <div class="chart-foot">
+            <div class="zone-legend"><span><i style="background:#38bdf8"></i>COOLTEMP &lt;17</span><span><i style="background:#10b981"></i>OPTIMAL 17–25</span><span><i style="background:#f59e0b"></i>WARNING 25–26</span><span><i style="background:#ef4444"></i>CRITICAL &gt;26</span></div>
+            <span id="win-139">WINDOW --</span>
+        </div>
     </div>
 </div>
 
@@ -525,7 +596,8 @@
         </div>
         <div id="graphViewerArea" style="display:none;">
             <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;"><span style="color:var(--text-main);font-size:11px;font-weight:bold;" id="graphViewerTitle">DATA SUHU</span><div style="display:flex;gap:5px;"><button class="btn-mini" onclick="backToGraphSelection()" style="border-color:var(--text-dim);color:var(--text-dim);"><i class="fa-solid fa-arrow-left"></i> KEMBALI</button><button class="btn-mini" onclick="downloadGraphImage()" style="background:var(--accent-green);color:#000;border:none;font-weight:900;"><i class="fa-solid fa-camera"></i> SIMPAN GAMBAR</button></div></div>
-            <div style="width:100%;height:320px;background:#050a10;border-radius:8px;padding:10px;box-sizing:border-box;border:1px solid rgba(255,255,255,.05);"><canvas id="modalViewChart"></canvas></div>
+            <div class="chart-stats" id="modalStats"></div>
+            <div class="chart-wrap" style="height:320px;background:#050a10;border-radius:8px;padding:10px;box-sizing:border-box;border:1px solid rgba(255,255,255,.05);"><canvas id="modalViewChart"></canvas></div>
         </div>
         <div id="graphLoadingMsg" style="display:none;text-align:center;color:var(--accent-blue);margin-top:15px;font-size:11px;font-weight:bold;"><i class="fa-solid fa-spinner fa-spin" style="margin-right:5px;"></i> Sedang memuat data grafik...</div>
     </div>
@@ -1000,6 +1072,7 @@ function checkDeviceStatus() {
         const ind = document.getElementById(r.indId);
         const cards = document.querySelectorAll(r.group);
         const isOnline = (now - r.last) < OFFLINE_TIMEOUT;
+        setChartOnline(r.label, isOnline);
         if (!isOnline) {
             if (allOffline) ind.innerHTML = `<span class='dot-icon offline-exclaim'>!</span> RACK ${r.label} OFFLINE`;
             else ind.innerHTML = `<span class='dot-icon offline-circle'>${r.num}</span> RACK ${r.label} OFFLINE`;
@@ -1125,655 +1198,87 @@ const pluginBackground = {
         ctx.fillStyle = '#050a10'; ctx.fillRect(0, 0, chart.width, chart.height); ctx.restore();
     }
 };
-function buildChart(ctxId, color, storedData) {
-    const initialData = (storedData && storedData.length === 25) ? storedData : Array(25).fill(null);
-    return new Chart(document.getElementById(ctxId), {
-        type: 'line',
-        data: { labels: Array(25).fill(''), datasets: [{ data: initialData, borderColor: color, backgroundColor: color + '15', fill: true, tension: 0, pointRadius: 0, borderWidth: 2 }] },
-        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false }, tooltip: { enabled: false } }, scales: { x: { display: false }, y: { grid: { color: '#1e293b' }, ticks: { color: '#64748b', font: { size: 9 }, callback: v => v.toFixed(3) } } } }
-    });
-}
-const c1 = buildChart('chart1', '#38bdf8', history61);
-const c3 = buildChart('chart77', '#24bbbd', history77);
-const c2 = buildChart('chart2', '#10b981', history139);
-
-/* ===================== PiP WIDGET ===================== */
-let pipMode = 'WHITE';
-let pipOrientation = 'HORIZONTAL';
-try { const saved = localStorage.getItem('pipMode'); if (saved === 'BLACK' || saved === 'WHITE') pipMode = saved; } catch(e) {}
-let pipWindow = null;
-let pipClockInterval = null;
-
-const PIP_INITIAL_SIZE = {
-    HORIZONTAL: { w: 280, h: 72 },
-    VERTICAL:   { w: 280, h: 160 }
+/* ===================== MODERN THERMAL CHARTS =====================
+   Fitur: pita zona suhu, garis ambang, gradien isi, segmen berwarna sesuai status,
+   tooltip + crosshair, titik live berdenyut, sumbu waktu, chip statistik. */
+const ZONE_HEX = { cool: '#38bdf8', ok: '#10b981', warn: '#f59e0b', crit: '#ef4444' };
+const ZONE_RGB = { cool: '56,189,248', ok: '16,185,129', warn: '245,158,11', crit: '239,68,68' };
+const ZONE_NAME = { cool: 'COOLTEMP', ok: 'OPTIMAL', warn: 'WARNING', crit: 'CRITICAL' };
+const zoneOf = t => t < 17.0 ? 'cool' : t < 25.0 ? 'ok' : t <= 26.0 ? 'warn' : 'crit';
+const hexA = (hex, a) => { const n = parseInt(hex.slice(1), 16); return `rgba(${n >> 16},${(n >> 8) & 255},${n & 255},${a})`; };
+const pad2 = n => String(n).padStart(2, '0');
+const fmtSpan = ms => {
+    const s = Math.round(ms / 1000);
+    if (s < 60) return s + 's';
+    const m = Math.floor(s / 60);
+    return m < 60 ? `${m}m ${pad2(s % 60)}s` : `${Math.floor(m / 60)}h ${pad2(m % 60)}m`;
 };
-const PIP_MIN_SIZE = {
-    HORIZONTAL: { w: 220, h: 50 },
-    VERTICAL:   { w: 200, h: 100 }
+
+/* Pita zona + garis ambang di belakang grafik */
+const zoneBandsPlugin = {
+    id: 'zoneBands',
+    beforeDatasetsDraw(chart) {
+        const { ctx, chartArea: a, scales: { y } } = chart;
+        if (!a || !y) return;
+        const w = a.right - a.left;
+        ctx.save();
+        ctx.beginPath(); ctx.rect(a.left, a.top, w, a.bottom - a.top); ctx.clip();
+        [[-Infinity, 17, 'cool'], [17, 25, 'ok'], [25, 26, 'warn'], [26, Infinity, 'crit']].forEach(([lo, hi, z]) => {
+            const yTop = hi === Infinity ? a.top : y.getPixelForValue(hi);
+            const yBot = lo === -Infinity ? a.bottom : y.getPixelForValue(lo);
+            if (yBot <= a.top || yTop >= a.bottom) return;
+            ctx.fillStyle = `rgba(${ZONE_RGB[z]},${z === 'ok' ? 0.05 : 0.09})`;
+            ctx.fillRect(a.left, yTop, w, yBot - yTop);
+        });
+        ctx.lineWidth = 1; ctx.setLineDash([4, 4]);
+        ctx.font = '700 8px "Segoe UI",sans-serif'; ctx.textAlign = 'left'; ctx.textBaseline = 'bottom';
+        [[25, 'warn', '25.0 WARN'], [26, 'crit', '26.0 CRIT'], [17, 'cool', '17.0 COOL']].forEach(([v, z, txt]) => {
+            const py = y.getPixelForValue(v);
+            if (py <= a.top + 1 || py >= a.bottom - 1) return;
+            ctx.strokeStyle = `rgba(${ZONE_RGB[z]},.55)`;
+            ctx.beginPath(); ctx.moveTo(a.left, py); ctx.lineTo(a.right, py); ctx.stroke();
+            ctx.fillStyle = `rgba(${ZONE_RGB[z]},.95)`;
+            ctx.fillText(txt, a.left + 5, py - 2);
+        });
+        ctx.restore();
+    }
 };
-const PIP_LAYOUT = {
-    HORIZONTAL: { labelRatio: 0.5, labelMax: 0.5,  gap: 0.35, padX: 0.30, padTop: 0.06, padBottom: 0.18, spread: 10.5 },
-    VERTICAL:   { labelRatio: 0.6, labelMax: 0.75, gap: 0.20, padX: 0.35, padTop: 0.06, padBottom: 0.18, spread: 4.6 }
+
+/* Garis vertikal putus-putus mengikuti kursor / sentuhan */
+const crosshairPlugin = {
+    id: 'crosshair',
+    afterDatasetsDraw(chart) {
+        const tt = chart.tooltip;
+        if (!tt || !tt.getActiveElements || !tt.getActiveElements().length) return;
+        const x = tt.getActiveElements()[0].element.x, { ctx, chartArea: a } = chart;
+        ctx.save();
+        ctx.strokeStyle = 'rgba(255,255,255,.28)'; ctx.lineWidth = 1; ctx.setLineDash([3, 3]);
+        ctx.beginPath(); ctx.moveTo(x, a.top); ctx.lineTo(x, a.bottom); ctx.stroke();
+        ctx.restore();
+    }
 };
-const PIP_HEAD_RATIO = 0.34;
-const PIP_HEAD_MIN = 9;
-const PIP_OPBAR_MAX = 18;
 
-function applyPipMode() {
-    if (!pipWindow || pipWindow.closed) return;
-    const doc = pipWindow.document, root = doc.documentElement, body = doc.body;
-    if (!root || !body) return;
-    if (pipMode === 'BLACK') {
-        root.style.cssText = 'background:#050a10 !important; color-scheme:dark;';
-        body.style.cssText = 'background:#050a10 !important; background-color:#050a10 !important; background-image:none !important; backdrop-filter:none !important; -webkit-backdrop-filter:none !important;';
-        body.classList.remove('mode-white'); body.classList.add('mode-black');
-    } else {
-        root.style.cssText = 'background:#ffffff !important; color-scheme:light;';
-        body.style.cssText = 'background:#ffffff !important; background-color:#ffffff !important; background-image:none !important; backdrop-filter:none !important; -webkit-backdrop-filter:none !important;';
-        body.classList.remove('mode-black'); body.classList.add('mode-white');
-    }
-    const btnW = doc.getElementById('pip-btn-white'), btnB = doc.getElementById('pip-btn-black');
-    if (btnW) btnW.classList.toggle('active', pipMode === 'WHITE');
-    if (btnB) btnB.classList.toggle('active', pipMode === 'BLACK');
-    try { localStorage.setItem('pipMode', pipMode); } catch(e) {}
-}
-function setPipMode(mode) { pipMode = mode; applyPipMode(); }
+/* Titik terakhir berdenyut (elemen DOM + animasi CSS, jadi ringan di CPU) */
+const livePulsePlugin = {
+    id: 'livePulse',
+    afterInit(chart) {
+        const el = document.createElement('span');
+        el.className = 'live-pulse';
+        chart.canvas.parentNode.appendChild(el);
+        chart.$pulse = el;
+    },
+    afterDraw(chart) {
+        const el = chart.$pulse; if (!el) return;
+        const d = chart.data.datasets[0].data, n = d.length, pt = n ? chart.getDatasetMeta(0).data[n - 1] : null;
+        if (!pt || !Number.isFinite(pt.x) || !Number.isFinite(pt.y)) { el.style.display = 'none'; return; }
+        el.style.display = 'block';
+        el.style.left = pt.x + 'px'; el.style.top = pt.y + 'px';
+        el.style.setProperty('--pc', ZONE_HEX[zoneOf(Number(d[n - 1]))]);
+    },
+    afterDestroy(chart) { if (chart.$pulse) chart.$pulse.remove(); }
+};
 
-function fitPipContent() {
-    if (!pipWindow || pipWindow.closed) return;
-    try {
-        const doc = pipWindow.document;
-        const box = doc.getElementById('pip-content');
-        const head = doc.getElementById('pip-head');
-        const strip = doc.getElementById('rack-strip');
-        const title = doc.getElementById('pip-title');
-        if (!box || !head || !strip || !title) return;
-        const items = Array.from(strip.querySelectorAll('.rack-item'));
-        const W = pipWindow.innerWidth, H = pipWindow.innerHeight;
-        if (!items.length || !W || !H) return;
-
-        const horiz = pipOrientation === 'HORIZONTAL';
-        const L = PIP_LAYOUT[pipOrientation];
-        const n = items.length;
-        const set = (k, v) => box.style.setProperty(k, String(v));
-
-        set('--lr', L.labelRatio); set('--gap', L.gap); set('--padx', L.padX);
-        set('--pt', L.padTop); set('--pb', L.padBottom); set('--spread', L.spread);
-
-        const fitHead = (u) => {
-            let hf = Math.max(PIP_HEAD_MIN, u * PIP_HEAD_RATIO);
-            set('--hf', hf.toFixed(2) + 'px');
-            const gapW = 0.25 * u;
-            const availW = W - 2 * 0.12 * u - 2;
-            const totalW = title.getBoundingClientRect().width;
-            if (totalW > availW && totalW > gapW) {
-                hf = Math.max(4, hf * (availW - gapW) / (totalW - gapW));
-                set('--hf', hf.toFixed(2) + 'px');
-            }
-        };
-
-        const measure = (u) => {
-            set('--u', u.toFixed(2) + 'px');
-            fitHead(u);
-            const headH = head.getBoundingClientRect().height;
-            let sumW = 0, maxW = 0, sumH = 0, maxH = 0;
-            items.forEach(el => {
-                const r = el.getBoundingClientRect();
-                sumW += r.width; sumH += r.height;
-                if (r.width > maxW) maxW = r.width;
-                if (r.height > maxH) maxH = r.height;
-            });
-            return {
-                needW: (horiz ? sumW + (n - 1) * L.gap * u : maxW) + 2 * L.padX * u,
-                needH: headH + (horiz ? maxH : sumH + (n - 1) * L.gap * u) + (L.padTop + L.padBottom) * u
-            };
-        };
-
-        let u = parseFloat(box.style.getPropertyValue('--u')) || Math.min(W / 9, H / 2);
-        if (!(u > 0)) u = 20;
-        let m = measure(u);
-        for (let i = 0; i < 8; i++) {
-            const r = Math.min(W / m.needW, H / m.needH);
-            if (!isFinite(r) || r <= 0 || Math.abs(r - 1) < 0.004) break;
-            u = Math.max(6, u * r);
-            m = measure(u);
-        }
-        const rEnd = Math.min(W / m.needW, H / m.needH);
-        if (isFinite(rEnd) && rEnd > 0 && rEnd < 1) { u = Math.max(6, u * rEnd); m = measure(u); }
-
-        if (!horiz && L.labelMax > L.labelRatio) {
-            const spare = W * 0.98 - m.needW;
-            const labelW = Math.max(...items.map(el => el.querySelector('.rack-label').getBoundingClientRect().width));
-            if (spare > 2 && labelW > 0) {
-                const lr = Math.min(L.labelMax, L.labelRatio * (1 + spare / labelW));
-                if (lr > L.labelRatio + 0.005) {
-                    set('--lr', lr.toFixed(3));
-                    const m2 = measure(u);
-                    if (m2.needW > W * 1.002 || m2.needH > H * 1.002) { set('--lr', L.labelRatio); measure(u); }
-                }
-            }
-        }
-
-        fitPipOpBar(doc, W, H);
-    } catch (err) {}
-}
-
-function fitPipOpBar(doc, W, H) {
-    const bar = doc.getElementById('pip-op-bar'), grid = doc.getElementById('pip-op-grid');
-    if (!bar || !grid) return;
-    const key = W + 'x' + H;
-    if (bar.dataset.fit === key) return;
-
-    let ob = Math.min(PIP_OPBAR_MAX, Math.max(4, Math.min(W / 22, H / 7)));
-
-    for (let i = 0; i < 4; i++) {
-        bar.style.setProperty('--ob', ob.toFixed(2) + 'px');
-        const gw = grid.getBoundingClientRect().width;
-        const bh = bar.getBoundingClientRect().height;
-        if (!gw || !bh) return;
-        const k = Math.min((W * 0.94) / gw, (H * 0.94) / bh);
-        if (k >= 1) break;
-        ob = Math.max(4, ob * k);
-    }
-    bar.style.setProperty('--ob', ob.toFixed(2) + 'px');
-    bar.dataset.fit = key;
-}
-
-let pipClamping = false, pipLastCheck = 0;
-function enforcePipMinSize(e) {
-    if (!pipWindow || pipWindow.closed) return;
-    if (!e || e.type === 'resize') fitPipContent();
-    if (pipClamping) return;
-    const now = Date.now();
-    if (e && e.type !== 'resize' && now - pipLastCheck < 120) return;
-    pipLastCheck = now;
-
-    const min = PIP_MIN_SIZE[pipOrientation];
-    const iw = pipWindow.innerWidth, ih = pipWindow.innerHeight;
-    const dw = iw < min.w ? min.w - iw : 0;
-    const dh = ih < min.h ? min.h - ih : 0;
-    if (!dw && !dh) return;
-
-    pipClamping = true;
-    try { pipWindow.resizeBy(dw, dh); } catch(err) {}
-    setTimeout(() => {
-        try {
-            if (pipWindow && !pipWindow.closed && (pipWindow.innerWidth < min.w || pipWindow.innerHeight < min.h)) {
-                pipWindow.resizeTo(
-                    pipWindow.outerWidth + Math.max(0, min.w - pipWindow.innerWidth),
-                    pipWindow.outerHeight + Math.max(0, min.h - pipWindow.innerHeight)
-                );
-            }
-        } catch(err) {}
-        pipClamping = false;
-        fitPipContent();
-    }, 100);
-}
-
-function applyPipOrientation() {
-    if (!pipWindow || pipWindow.closed) return;
-    const doc = pipWindow.document;
-    const strip = doc.getElementById('rack-strip');
-    if (strip) { strip.classList.toggle('horizontal', pipOrientation === 'HORIZONTAL'); strip.classList.toggle('vertical', pipOrientation === 'VERTICAL'); }
-    fitPipContent();
-    try { const s = PIP_INITIAL_SIZE[pipOrientation]; pipWindow.resizeTo(s.w, s.h); } catch(e) {}
-    setTimeout(() => { fitPipContent(); enforcePipMinSize(); }, 80);
-    const btnH = doc.getElementById('pip-btn-horizontal'), btnV = doc.getElementById('pip-btn-vertical');
-    if (btnH) btnH.classList.toggle('active', pipOrientation === 'HORIZONTAL');
-    if (btnV) btnV.classList.toggle('active', pipOrientation === 'VERTICAL');
-}
-function setPipOrientation(ori) { pipOrientation = ori; applyPipOrientation(); }
-
-function notifyThermal(rackId, temp, status) {
-    if (!('Notification' in window) || Notification.permission !== 'granted') return;
-    if (!document.hidden && document.hasFocus()) return;
-    try {
-        const crit = (status === 'CRITICAL');
-        const n = new Notification((crit ? '🔴 CRITICAL' : '⚠️ WARNING') + ' - RACK ' + rackId, {
-            body: 'Suhu ' + temp.toFixed(1) + '°C',
-            tag: 'thermal-' + rackId + '-' + status,
-            requireInteraction: crit
-        });
-        n.onclick = () => { window.focus(); n.close(); };
-    } catch(e) {}
-}
-
-function startPipClock() {
-    if (pipClockInterval) { clearInterval(pipClockInterval); pipClockInterval = null; }
-    const updateClock = () => {
-        if (!pipWindow || pipWindow.closed) return;
-        const el = pipWindow.document.getElementById('pip-clock');
-        if (!el) return;
-        const now = new Date();
-        el.textContent = now.getHours().toString().padStart(2,'0') + ':' +
-                         now.getMinutes().toString().padStart(2,'0') + ':' +
-                         now.getSeconds().toString().padStart(2,'0');
-    };
-    updateClock();
-    pipClockInterval = setInterval(updateClock, 1000);
-}
-
-async function togglePiPWidget() {
-    if (pipWindow && !pipWindow.closed) {
-        if (pipClockInterval) { clearInterval(pipClockInterval); pipClockInterval = null; }
-        pipWindow.close();
-        return;
-    }
-    if (!('documentPictureInPicture' in window)) {
-        alert('⚠️ Floating Monitoring butuh Chrome / Edge / Brave versi 116+ di komputer (desktop).');
-        return;
-    }
-    try {
-        pipOrientation = 'HORIZONTAL';
-        const initialSize = PIP_INITIAL_SIZE.HORIZONTAL;
-        pipWindow = await documentPictureInPicture.requestWindow({ width: initialSize.w, height: initialSize.h });
-
-        const style = pipWindow.document.createElement('style');
-        style.textContent = `
-            * { box-sizing: border-box; margin: 0; padding: 0; }
-            html { background: #ffffff !important; }
-            body { --pip-bg: rgba(255,255,255,0.96); background: #ffffff; color: #000; font-family: 'Segoe UI', sans-serif; overflow: hidden; width: 100vw; height: 100vh; margin: 0; padding: 0; position: relative; }
-            body.mode-black { --pip-bg: rgba(5,10,16,0.96); }
-
-            #pip-content {
-                --u: 30px; --hf: 10px; --lr: .5; --gap: .35; --padx: .3; --pt: .06; --pb: .18; --spread: 10.5;
-                position: absolute; top: 0; left: 0; right: 0; bottom: 0;
-                display: flex; flex-direction: column;
-            }
-
-            .pip-head { position: relative; flex: 0 0 auto; display: flex; align-items: center; justify-content: center; padding: calc(var(--u) * .08) calc(var(--u) * .12) 0; min-width: 0; }
-            .pip-title { flex: 0 0 auto; display: flex; align-items: baseline; justify-content: center; gap: calc(var(--u) * .25); width: max-content; font-size: var(--hf); color: #000000; letter-spacing: .04em; font-weight: 800; line-height: 1.15; white-space: nowrap; transition: opacity .2s ease; }
-            .pip-title-text { flex: 0 0 auto; }
-            .pip-clock { flex: 0 0 auto; font-variant-numeric: tabular-nums; color: #000000; font-weight: 900; letter-spacing: .04em; font-size: 1em; line-height: 1.15; }
-
-            .pip-op-bar { --ob: 10px; position: absolute; top: 0; left: 0; right: 0; z-index: 5; display: flex; align-items: center; justify-content: center; padding: .5em .4em; font-size: var(--ob); background: var(--pip-bg); opacity: 0; pointer-events: none; transition: opacity .2s ease; }
-            .pip-op-grid { display: grid; grid-template-columns: repeat(3, max-content); align-items: center; column-gap: .55em; row-gap: .45em; width: max-content; }
-            body:hover .pip-title { opacity: 0; }
-            body:hover .pip-op-bar { opacity: 1; pointer-events: auto; }
-            .pip-op-ico { color: #475569; font-weight: 800; font-size: 1em; line-height: 1.15; letter-spacing: .06em; text-align: right; white-space: nowrap; }
-            .pip-mode-btn { font-family: inherit; font-size: 1em; font-weight: 900; line-height: 1.15; letter-spacing: .06em; padding: .36em .8em; border-radius: .45em; border: 1px solid #cbd5e1; background: #f1f5f9; color: #0f172a; cursor: pointer; transition: all .15s ease; display: inline-flex; align-items: center; justify-content: center; gap: .4em; white-space: nowrap; }
-            .pip-mode-btn:hover { background: #e2e8f0; border-color: #94a3b8; }
-            .pip-mode-btn.active { background: #0284c7; color: #ffffff; border-color: #0369a1; }
-            .pip-mode-btn .dot-preview { display: inline-block; flex: 0 0 auto; width: .8em; height: .8em; border-radius: 50%; border: 1px solid #94a3b8; background: #fff; }
-            .pip-mode-btn .dot-preview.dark { background: #050a10; }
-
-            .rack-strip { flex: 1 1 auto; min-height: 0; display: flex; gap: calc(var(--u) * var(--gap)); padding: calc(var(--u) * var(--pt)) calc(var(--u) * var(--padx)) calc(var(--u) * var(--pb)); }
-            .rack-item { flex: 0 0 auto; display: flex; align-items: center; white-space: nowrap; }
-
-            .rack-strip.horizontal { flex-direction: row; align-items: center; justify-content: space-evenly; width: 100%; max-width: calc(var(--u) * var(--spread)); margin: 0 auto; }
-            .rack-strip.horizontal .rack-item { flex-direction: column; gap: calc(var(--u) * .03); }
-
-            .rack-strip.vertical { flex-direction: column; align-items: center; justify-content: space-evenly; max-height: calc(var(--u) * var(--spread)); margin: auto 0; }
-            .rack-strip.vertical .rack-item { flex-direction: row; gap: calc(var(--u) * .45); }
-            .rack-strip.vertical .rl-num { min-width: 1.8em; text-align: left; }
-
-            .rack-label { display: inline-flex; align-items: baseline; gap: .28em; font-size: calc(var(--u) * var(--lr)); line-height: 1.05; font-weight: 800; color: #000000; letter-spacing: .03em; }
-            .rack-temp { display: flex; align-items: center; justify-content: center; height: calc(var(--u) * .9); min-width: calc(var(--u) * 2.5); font-size: var(--u); line-height: 1; font-weight: 800; letter-spacing: -.02em; font-variant-numeric: tabular-nums; transition: color .3s; }
-            .rack-strip.vertical .rack-temp { justify-content: flex-end; }
-
-            .ok   { color: #059669; }
-            .warn { color: #d97706; }
-            .crit { color: #dc2626; animation: pipBlink 1s ease-in-out infinite; }
-            .cool { color: #0284c7; }
-            .rack-temp.off { color: #64748b; font-size: calc(var(--u) * .6); letter-spacing: .05em; }
-            @keyframes pipBlink { 0%,100% { opacity: 1; } 50% { opacity: 0.5; } }
-
-            body.mode-black { background: #050a10 !important; }
-            body.mode-black .pip-title { color: #ffffff; text-shadow: 0 0 2px #000, 0 0 4px #000; }
-            body.mode-black .pip-clock { color: #ffffff; text-shadow: 0 0 2px #000, 0 0 4px #000, 0 0 8px #000, 0 0 14px rgba(255,255,255,0.6); }
-            body.mode-black .rack-label { color: #f1f5f9; text-shadow: 0 0 2px #000, 0 0 3px #000; }
-            body.mode-black .rack-temp { color: #e2e8f0; }
-            body.mode-black .pip-op-ico { color: #7dd3fc; text-shadow: 0 0 2px #000; }
-            body.mode-black .pip-mode-btn { background: rgba(0,0,0,0.55); color: #fff; border-color: rgba(255,255,255,0.5); text-shadow: 0 0 2px #000; }
-            body.mode-black .pip-mode-btn:hover { background: rgba(56,189,248,0.85); color: #000; border-color: #38bdf8; text-shadow: none; }
-            body.mode-black .pip-mode-btn.active { background: #38bdf8; color: #000; border-color: #fff; text-shadow: none; }
-            body.mode-black .pip-mode-btn .dot-preview { border-color: rgba(255,255,255,0.7); }
-            body.mode-black .rack-temp.ok { color: #34d399; text-shadow: 0 0 2px #000, 0 0 6px #000, 0 0 14px rgba(16,185,129,0.6); }
-            body.mode-black .rack-temp.warn { color: #fbbf24; text-shadow: 0 0 2px #000, 0 0 6px #000, 0 0 16px rgba(245,158,11,0.7); }
-            body.mode-black .rack-temp.crit { color: #f87171; text-shadow: 0 0 2px #000, 0 0 6px #000, 0 0 20px rgba(239,68,68,0.9); }
-            body.mode-black .rack-temp.cool { color: #7dd3fc; text-shadow: 0 0 2px #000, 0 0 6px #000, 0 0 14px rgba(56,189,248,0.6); }
-            body.mode-black .rack-temp.off { color: #e2e8f0; text-shadow: 0 0 2px #000, 0 0 6px #000; }
-
-            body.alarm-warn { box-shadow: inset 0 0 0 3px rgba(245,158,11,0.95); }
-            body.alarm-crit { animation: pipAlarm .8s ease-in-out infinite; }
-            @keyframes pipAlarm { 0%,100% { box-shadow: inset 0 0 0 3px rgba(239,68,68,1), inset 0 0 22px rgba(239,68,68,0.6); } 50% { box-shadow: inset 0 0 0 3px rgba(239,68,68,0.3), inset 0 0 6px rgba(239,68,68,0.2); } }
-        `;
-        pipWindow.document.head.appendChild(style);
-        pipWindow.document.title = 'DC-SDI Monitor';
-        pipWindow.document.body.innerHTML = `
-            <div id="pip-content">
-                <div class="pip-head" id="pip-head">
-                    <span class="pip-title" id="pip-title"><span class="pip-title-text">DC-SDI · LIVE THERMAL TELEMETRY</span><span class="pip-clock" id="pip-clock">--:--:--</span></span>
-                </div>
-                <div class="rack-strip horizontal" id="rack-strip">
-                    <div class="rack-item"><span class="rack-label"><span class="rl-word">RACK</span><span class="rl-num">61</span></span><span class="rack-temp" id="pip-t61">--</span></div>
-                    <div class="rack-item"><span class="rack-label"><span class="rl-word">RACK</span><span class="rl-num">77</span></span><span class="rack-temp" id="pip-t77">--</span></div>
-                    <div class="rack-item"><span class="rack-label"><span class="rl-word">RACK</span><span class="rl-num">139</span></span><span class="rack-temp" id="pip-t139">--</span></div>
-                </div>
-                <div class="pip-op-bar" id="pip-op-bar" title="Atur tampilan widget">
-                    <div class="pip-op-grid" id="pip-op-grid">
-                        <span class="pip-op-ico">COLOR:</span>
-                        <button id="pip-btn-black" class="pip-mode-btn" title="Solid black"><span class="dot-preview dark"></span> BLACK</button>
-                        <button id="pip-btn-white" class="pip-mode-btn" title="Solid white"><span class="dot-preview"></span> WHITE</button>
-                        <span class="pip-op-ico">ORIENTASI:</span>
-                        <button id="pip-btn-horizontal" class="pip-mode-btn" title="Memanjang ke samping">➡ HORIZ</button>
-                        <button id="pip-btn-vertical" class="pip-mode-btn" title="Menumpuk ke bawah">⬇ VERT</button>
-                    </div>
-                </div>
-            </div>
-        `;
-        pipWindow.document.getElementById('pip-btn-white').addEventListener('click', () => setPipMode('WHITE'));
-        pipWindow.document.getElementById('pip-btn-black').addEventListener('click', () => setPipMode('BLACK'));
-        pipWindow.document.getElementById('pip-btn-horizontal').addEventListener('click', () => setPipOrientation('HORIZONTAL'));
-        pipWindow.document.getElementById('pip-btn-vertical').addEventListener('click', () => setPipOrientation('VERTICAL'));
-
-        startPipClock();
-
-        ['resize','mousemove','pointerdown','pointerup'].forEach(ev => pipWindow.addEventListener(ev, enforcePipMinSize));
-        pipWindow.addEventListener('pagehide', () => {
-            if (pipClockInterval) { clearInterval(pipClockInterval); pipClockInterval = null; }
-            pipWindow = null;
-            const s = document.getElementById('pipStatusText');
-            if (s) { s.innerText = 'OFF'; s.style.color = 'var(--text-dim)'; }
-            const btn = document.getElementById('pipToggleBtn');
-            if (btn) { btn.style.borderColor = 'rgba(56,189,248,0.3)'; btn.style.borderTopColor = 'rgba(56,189,248,0.5)'; }
-            const icon = document.getElementById('pipIcon');
-            if (icon) icon.style.color = 'var(--accent-blue)';
-        });
-        const s = document.getElementById('pipStatusText');
-        if (s) { s.innerText = 'ON'; s.style.color = 'var(--accent-green)'; }
-        const btn = document.getElementById('pipToggleBtn');
-        if (btn) { btn.style.borderColor = 'rgba(16,185,129,0.5)'; btn.style.borderTopColor = 'rgba(16,185,129,0.8)'; }
-        const icon = document.getElementById('pipIcon');
-        if (icon) icon.style.color = 'var(--accent-green)';
-
-        if ('Notification' in window && Notification.permission === 'default') {
-            try { Notification.requestPermission(); } catch(e) {}
-        }
-        applyPipMode();
-        applyPipOrientation();
-        syncPiPWidget();
-    } catch(e) { console.error('PiP error:', e); alert('Gagal membuka floating monitor: ' + e.message); }
-}
-
-function syncPiPWidget() {
-    if (!pipWindow || pipWindow.closed) return;
-    const now = Date.now();
-    const racks = [
-        { valId:'val1',  tempId:'pip-t61',  last: lastUpdateR61  },
-        { valId:'val77', tempId:'pip-t77',  last: lastUpdateR77  },
-        { valId:'val2',  tempId:'pip-t139', last: lastUpdateR139 }
-    ];
-    let worst = 0;
-    racks.forEach(r => {
-        const val = document.getElementById(r.valId)?.innerText || '--';
-        const tempEl = pipWindow.document.getElementById(r.tempId);
-        if (!tempEl) return;
-        const t = parseFloat(val);
-        if (r.last === 0 || isNaN(t)) { tempEl.innerText = '--'; tempEl.className = 'rack-temp'; return; }
-        if ((now - r.last) >= OFFLINE_TIMEOUT) { tempEl.innerText = 'OFF'; tempEl.className = 'rack-temp off'; return; }
-        tempEl.innerText = t.toFixed(1) + '°';
-        let cls = 'ok';
-        if (t < 17.0) cls = 'cool';
-        else if (t < 25.0) cls = 'ok';
-        else if (t <= 26.0) { cls = 'warn'; worst = Math.max(worst, 1); }
-        else { cls = 'crit'; worst = Math.max(worst, 2); }
-        tempEl.className = 'rack-temp ' + cls;
-    });
-    const body = pipWindow.document.body;
-    body.classList.toggle('alarm-crit', worst === 2);
-    body.classList.toggle('alarm-warn', worst === 1);
-    fitPipContent();
-}
-
-function updateTabTitle() {
-    const now = Date.now();
-    const online61  = (now - lastUpdateR61)  < OFFLINE_TIMEOUT;
-    const online77  = (now - lastUpdateR77)  < OFFLINE_TIMEOUT;
-    const online139 = (now - lastUpdateR139) < OFFLINE_TIMEOUT;
-    const onlineCount = [online61, online77, online139].filter(Boolean).length;
-    let titleText;
-    if (onlineCount === 0) titleText = `❗ DC-SDI`;
-    else if (onlineCount < 3) {
-        const off = [];
-        if (!online61) off.push('❶');
-        if (!online77) off.push('❷');
-        if (!online139) off.push('❸');
-        titleText = `${off.join(' ')} DC-SDI`;
-    } else titleText = `🟢 DC-SDI`;
-    document.title = titleText;
-}
-
-function openModal(rack) {
-    targetRackExport = rack;
-    document.getElementById('modalTargetRack').innerText = rack.toUpperCase().replace('_',' ');
-    document.getElementById('viewBulan').style.display = 'block';
-    document.getElementById('viewHari').style.display = 'none';
-    document.getElementById('monthModal').style.display = 'flex';
-}
-function closeModal() { document.getElementById('monthModal').style.display = 'none'; }
-function selectMonth(monthNum, monthName) {
-    currentSelectedMonthNum = monthNum;
-    document.getElementById('labelBulanTerpilih').innerText = `${monthName} ${currentSelectedYear}`;
-    document.getElementById('viewBulan').style.display = 'none';
-    document.getElementById('viewHari').style.display = 'block';
-    const daysInMonth = new Date(currentSelectedYear, parseInt(monthNum), 0).getDate();
-    const dayNames = ['Min','Sen','Sel','Rab','Kam','Jum','Sab'];
-    let html = "";
-    for (let i = 1; i <= daysInMonth; i++) {
-        const dayStr = i.toString().padStart(2,'0');
-        const dName = dayNames[new Date(`${currentSelectedYear}-${monthNum}-${dayStr}`).getDay()];
-        html += `<button class="btn-day" onclick="executeDownloadDailyNum('${dayStr}', this)"><span class="d-num">${i}</span><span class="d-name">${dName}</span></button>`;
-    }
-    document.getElementById('csvDayGridUI').innerHTML = html;
-}
-function backToBulan() { document.getElementById('viewHari').style.display = 'none'; document.getElementById('viewBulan').style.display = 'block'; }
-function tarikDataFirebase(prefixKeyword, fileNameSuffix, btn) {
-    const originalHTML = btn.innerHTML;
-    btn.innerHTML = 'Loading...'; btn.disabled = true;
-    const restore = () => { btn.innerHTML = originalHTML; btn.disabled = false; };
-    db.ref('history_suhu/' + targetRackExport).once('value').then(snap => {
-        restore();
-        if (!snap.exists()) { alert(`Data riwayat untuk rak ini belum tersedia.`); return; }
-        let csv = "Hari, Tanggal, Jam, Suhu, Kelembaban\n"; let hasData = false;
-        snap.forEach(c => {
-            const fullKey = c.key;
-            if (fullKey.startsWith(prefixKeyword)) {
-                hasData = true;
-                let datePart = "-", timePart = fullKey;
-                if (fullKey.includes('_')) { const p = fullKey.split('_'); datePart = p[0]; timePart = p[1].replace('-',':'); }
-                else if (fullKey.includes(' ')) { const p = fullKey.split(' '); datePart = p[0]; timePart = p[1]; }
-                let hariStr = "";
-                if (datePart !== "-") {
-                    const d = new Date(datePart);
-                    if (!isNaN(d)) { const hArr = ['Minggu','Senin','Selasa','Rabu','Kamis','Jumat','Sabtu']; hariStr = hArr[d.getDay()] + ", "; }
-                }
-                const t = c.val().suhu ? c.val().suhu.toString() : "0.000";
-                const h = c.val().kelembaban || "0";
-                csv += `"${hariStr}${datePart}", ${timePart}, ${t}, ${h}\n`;
-            }
-        });
-        if (!hasData) { alert(`Tidak ditemukan data pada periode: ${prefixKeyword}`); return; }
-        const blob = new Blob(["\ufeff" + csv], { type: 'text/csv;charset=utf-8;' });
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement('a'); a.href = url; a.download = `Log_${targetRackExport}_${fileNameSuffix}.csv`;
-        a.click(); window.URL.revokeObjectURL(url); closeModal();
-    }).catch(err => { restore(); alert('Gagal mengambil data: ' + err.message); });
-}
-function executeDownloadMonthFull(btn) { tarikDataFirebase(`${currentSelectedYear}-${currentSelectedMonthNum}`, `Bulan_${currentSelectedYear}-${currentSelectedMonthNum}`, btn); }
-function executeDownloadDailyNum(dayStr, btn) { tarikDataFirebase(`${currentSelectedYear}-${currentSelectedMonthNum}-${dayStr}`, `Tanggal_${currentSelectedYear}-${currentSelectedMonthNum}-${dayStr}`, btn); }
-
-let currentGraphFilename = "";
-function openGraphModal(rack) {
-    targetRackGraph = rack;
-    document.getElementById('graphModalTargetRack').innerText = rack.toUpperCase().replace('_',' ');
-    document.getElementById('graphSelectionArea').style.display = 'block';
-    document.getElementById('graphViewerArea').style.display = 'none';
-    document.getElementById('graphViewBulan').style.display = 'block';
-    document.getElementById('graphViewHari').style.display = 'none';
-    document.getElementById('graphModal').style.display = 'flex';
-}
-function closeGraphModal() { document.getElementById('graphModal').style.display = 'none'; }
-function selectGraphMonth(monthNum, monthName) {
-    currentSelectedMonthNum = monthNum;
-    document.getElementById('graphLabelBulanTerpilih').innerText = `${monthName} ${currentSelectedYear}`;
-    document.getElementById('graphViewBulan').style.display = 'none';
-    document.getElementById('graphViewHari').style.display = 'block';
-    const daysInMonth = new Date(currentSelectedYear, parseInt(monthNum), 0).getDate();
-    const dayNames = ['Min','Sen','Sel','Rab','Kam','Jum','Sab'];
-    let html = "";
-    for (let i = 1; i <= daysInMonth; i++) {
-        const dayStr = i.toString().padStart(2,'0');
-        const dName = dayNames[new Date(`${currentSelectedYear}-${monthNum}-${dayStr}`).getDay()];
-        html += `<button class="btn-day" onclick="renderGraphData('${dayStr}')"><span class="d-num">${i}</span><span class="d-name">${dName}</span></button>`;
-    }
-    document.getElementById('graphDayGridUI').innerHTML = html;
-}
-function backToGraphBulan() { document.getElementById('graphViewHari').style.display = 'none'; document.getElementById('graphViewBulan').style.display = 'block'; }
-function backToGraphSelection() { document.getElementById('graphViewerArea').style.display = 'none'; document.getElementById('graphSelectionArea').style.display = 'block'; }
-function renderGraphData(dayStr) {
-    let prefix = "", isFullMonth = false, namaFileDate = "";
-    if (dayStr === "FULL") { prefix = `${currentSelectedYear}-${currentSelectedMonthNum}`; namaFileDate = `Bulan_${prefix}`; isFullMonth = true; }
-    else { prefix = `${currentSelectedYear}-${currentSelectedMonthNum}-${dayStr}`; namaFileDate = `Tanggal_${prefix}`; }
-    document.getElementById('graphLoadingMsg').style.display = 'block';
-    db.ref('history_suhu/' + targetRackGraph).once('value').then(snap => {
-        if (!snap.exists()) { alert("Data riwayat tidak ditemukan."); document.getElementById('graphLoadingMsg').style.display = 'none'; return; }
-        const labelsTime = [], dataTemp = [];
-        snap.forEach(c => {
-            const fullKey = c.key;
-            if (fullKey.startsWith(prefix)) {
-                let timePart = fullKey;
-                if (fullKey.includes('_')) {
-                    if (isFullMonth) {
-                        const p = fullKey.split('_');
-                        const dPart = p[0].split('-')[2];
-                        const tPart = p[1].replace('-',':').substring(0,5);
-                        timePart = `${dPart} ${tPart}`;
-                    } else { timePart = fullKey.split('_')[1].replace('-',':'); }
-                }
-                labelsTime.push(timePart); dataTemp.push(c.val().suhu);
-            }
-        });
-        if (labelsTime.length === 0) { alert(`Tidak ada data tersimpan pada periode: ${prefix}`); document.getElementById('graphLoadingMsg').style.display = 'none'; return; }
-        document.getElementById('graphSelectionArea').style.display = 'none';
-        document.getElementById('graphViewerArea').style.display = 'block';
-        document.getElementById('graphViewerTitle').innerText = `DATA SUHU TANGGAL: ${isFullMonth ? currentSelectedYear + '-' + currentSelectedMonthNum : prefix}`;
-        currentGraphFilename = `Grafik_Suhu_${targetRackGraph}_${namaFileDate}.png`;
-        if (bigChartInstance) bigChartInstance.destroy();
-        let lineColor = '#38bdf8', bgColor = 'rgba(56,189,248,0.1)';
-        if (targetRackGraph === 'rack_77') { lineColor = '#24bbbd'; bgColor = 'rgba(36,187,189,0.1)'; }
-        else if (targetRackGraph === 'rack_139') { lineColor = '#10b981'; bgColor = 'rgba(16,185,129,0.1)'; }
-        const ctxModal = document.getElementById('modalViewChart').getContext('2d');
-        bigChartInstance = new Chart(ctxModal, {
-            type: 'line', plugins: [pluginBackground],
-            data: { labels: labelsTime, datasets: [{ label: `Suhu RACK ${targetRackGraph.replace('rack_','')}`, data: dataTemp, borderColor: lineColor, backgroundColor: bgColor, borderWidth: 2, fill: true, tension: 0, pointRadius: isFullMonth ? 0 : 2, pointBackgroundColor: '#fff' }] },
-            options: { animation: false, responsive: true, maintainAspectRatio: false, plugins: { legend: { display: true, labels: { color: '#fff' } }, tooltip: { mode: 'index', intersect: false } }, scales: { x: { ticks: { color: '#94a3b8', font: { size: 10 }, maxTicksLimit: 12 }, grid: { color: 'rgba(255,255,255,0.05)' } }, y: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#ffffff', font: { size: 12, weight: 'bold' }, callback: v => v.toFixed(3) } } } }
-        });
-        document.getElementById('graphLoadingMsg').style.display = 'none';
-    });
-}
-function downloadGraphImage() {
-    const canvas = document.getElementById('modalViewChart');
-    const link = document.createElement('a');
-    link.download = currentGraphFilename || 'Grafik_Suhu.png';
-    link.href = canvas.toDataURL('image/png');
-    link.click();
-}
-
-db.ref('live_data').on('value', (snap) => {
-    const d = snap.val();
-    if (!d) return;
-
-    if (d.ruangan !== undefined && d.ruangan !== null) {
-        lastUpdateR61 = Date.now();
-        const t = Number(d.ruangan);
-        if (!isNaN(t)) {
-            document.getElementById('val1').innerText = t.toFixed(1);
-            if (Date.now() - lastFakeHumiUpdate > FAKE_HUMI_INTERVAL) {
-                lastFakeHumi61 = 51.0 + (Math.random() * 8);
-                lastFakeHumiUpdate = Date.now();
-            }
-            document.getElementById('hum1').innerText = lastFakeHumi61.toFixed(1);
-            updateAnalytic('61', t, history61);
-            updateRecordIfNeeded('61', t);
-            c1.data.datasets[0].data.push(t); c1.data.datasets[0].data.shift(); c1.update('none');
-            saveHist('hist61', history61);
-            pushLog('logList1', t, lastFakeHumi61);
-        }
-    }
-
-    const rack77Data = d.rack_77;
-    if (rack77Data !== undefined && rack77Data !== null) {
-        const t = typeof rack77Data === 'number' ? rack77Data : Number(rack77Data.suhu);
-        const h = typeof rack77Data === 'number' ? 0 : Number(rack77Data.kelembaban || 0);
-        if (!isNaN(t)) {
-            lastUpdateR77 = Date.now();
-            document.getElementById('val77').innerText = t.toFixed(1);
-            document.getElementById('hum77').innerText = h.toFixed(1);
-            updateAnalytic('77', t, history77);
-            updateRecordIfNeeded('77', t);
-            c3.data.datasets[0].data.push(t); c3.data.datasets[0].data.shift(); c3.update('none');
-            saveHist('hist77', history77);
-            pushLog('logList77', t, h);
-        }
-    }
-
-    if (d.pac !== undefined && d.pac !== null) {
-        lastUpdateR139 = Date.now();
-        const t = Number(d.pac);
-        if (!isNaN(t)) {
-            document.getElementById('val2').innerText = t.toFixed(1);
-            document.getElementById('hum2').innerText = Number(d.kelembaban || 0).toFixed(1);
-            updateAnalytic('139', t, history139);
-            updateRecordIfNeeded('139', t);
-            c2.data.datasets[0].data.push(t); c2.data.datasets[0].data.shift(); c2.update('none');
-            saveHist('hist139', history139);
-            pushLog('logList2', t, d.kelembaban || 0);
-        }
-    }
-
-    updateTabTitle();
-    syncPiPWidget();
-});
-
-checkDeviceStatus();
-updateTabTitle();
-if ('Notification' in window && Notification.permission === 'default') {
-    try { Notification.requestPermission(); } catch(e) {}
-}
-window.addEventListener('resize', () => syncPiPWidget());
-document.addEventListener('click', function resumeAudioOnce() {
-    const ctx = initAudioContext();
-    if (ctx && ctx.state === 'suspended') ctx.resume().catch(()=>{});
-    document.removeEventListener('click', resumeAudioOnce);
-}, { once: true });
-
-const TOAST_AUTO_CLOSE_MS = 10 * 60 * 1000;
-setInterval(() => {
-    document.querySelectorAll('.toast-card').forEach(t => {
-        if (t.style.display === 'block') {
-            const shownAt = parseInt(t.dataset.shownAt || '0', 10);
-            if (shownAt && (Date.now() - shownAt > TOAST_AUTO_CLOSE_MS)) t.style.display = 'none';
-        }
-    });
-}, 5000);
-
-function buildYearSelects() {
-    const y = new Date().getFullYear();
-    document.querySelectorAll('.year-select').forEach(sel => {
-        sel.innerHTML = '';
-        for (let i = y; i >= y - 5; i--) sel.add(new Option(i, i));
-        sel.value = currentSelectedYear;
-        sel.onchange = () => {
-            currentSelectedYear = parseInt(sel.value, 10);
-            document.querySelectorAll('.year-select').forEach(s => s.value = currentSelectedYear);
-        };
-    });
-}
-buildYearSelects();
-
-console.log('%c✅ DC-SDI Monitoring Ready', 'color:#38bdf8;font-size:14px;font-weight:bold;');
-</script>
-</body>
-</html>
+/* Rentang sumbu Y menyesuaikan data, tapi garis ambang 17 / 25 / 26 tetap terlihat saat suhu mendekatinya */
+function fitThermalAxis(scale) {
+    const d = scale.chart.data.datasets[0].data;
+    if (!d.length) { scale.min = 20; scale.max = 28
