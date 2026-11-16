@@ -353,7 +353,7 @@ button{font-family:inherit}
  .side-nav a{justify-content:center;gap:8px;padding:11px 6px;font-size:13px;white-space:nowrap}
 }
 
-/* ===== v10: Map Fullscreen Mode (Optimized Desktop Control Room / Black Tab View) ===== */
+/* ===== v10: Map Fullscreen Mode ===== */
 .panel.map-fullscreen {
     position: fixed !important;
     inset: 0 !important;
@@ -362,33 +362,13 @@ button{font-family:inherit}
     max-width: none !important;
     max-height: none !important;
     border-radius: 0 !important;
-    border: none !important;
     z-index: 99999 !important;
-    overflow: hidden !important;
-    padding: 32px 48px !important;
+    overflow-y: auto !important;
+    padding: 24px !important;
     box-sizing: border-box !important;
     display: flex !important;
     flex-direction: column !important;
-    background: #000000 !important;
-    box-shadow: none !important;
-}
-.panel.map-fullscreen .panel-head {
-    border-bottom: 1px solid rgba(255, 255, 255, 0.12);
-    padding-bottom: 20px;
-    margin-bottom: 10px;
-}
-.panel.map-fullscreen .panel-head h2 {
-    color: #ffffff !important;
-    font-size: 22px !important;
-}
-.panel.map-fullscreen .panel-head .sub {
-    color: #94a3b8 !important;
-    font-size: 13px !important;
-}
-.panel.map-fullscreen .map-legend {
-    border-top: 1px solid rgba(255, 255, 255, 0.12) !important;
-    padding-top: 16px !important;
-    color: #cbd5e1 !important;
+    background: var(--card-color) !important;
 }
 .panel.map-fullscreen .map-wrap {
     flex: 1 1 auto !important;
@@ -396,23 +376,11 @@ button{font-family:inherit}
     align-items: center !important;
     justify-content: center !important;
     min-height: 0 !important;
-    padding: 10px 0 !important;
 }
 .panel.map-fullscreen .map-svg {
-    max-height: 85vh !important;
+    max-height: 80vh !important;
     width: auto !important;
     max-width: 100% !important;
-    filter: drop-shadow(0 0 30px rgba(3, 105, 161, 0.35));
-}
-.panel.map-fullscreen .btn-mini {
-    background: rgba(255, 255, 255, 0.1) !important;
-    border-color: rgba(255, 255, 255, 0.2) !important;
-    color: #ffffff !important;
-    font-size: 11px !important;
-    padding: 10px 16px !important;
-}
-.panel.map-fullscreen .btn-mini:hover {
-    background: rgba(255, 255, 255, 0.2) !important;
 }
 </style>
 </head>
@@ -483,6 +451,7 @@ button{font-family:inherit}
     <div id="ind2" class="indicator"><span class="dot-icon">●</span> RACK 139 CONNECTING…</div>
    </div>
    <button type="button" class="audio-btn active" id="audioToggle" onclick="toggleAudio()"><div><i class="fa-solid fa-volume-high" id="audioIcon" style="color:var(--accent-green);"></i><b>THERMAL ALARM:</b><span id="audioStatusText" style="color:var(--accent-green);font-weight:800;">ACTIVE</span></div></button>
+   <button type="button" class="audio-btn" id="pipToggleBtn" onclick="togglePiPWidget()"><div><i class="fa-solid fa-window-restore" id="pipIcon" style="color:var(--accent-blue);"></i><b>FLOATING MONITOR:</b><span id="pipStatusText" style="color:var(--text-dim);font-weight:800;">OFF</span></div></button>
   </div>
  </header>
 
@@ -874,6 +843,12 @@ function clearNotificationHistory(event) {
         document.getElementById('notificationList').innerHTML = '';
     }
 }
+function toggleNotificationHistory() {
+    const body = document.getElementById('panelBody');
+    const arrow = document.getElementById('panelArrow');
+    if (body.style.display === 'none') { body.style.display = 'block'; arrow.classList.add('rotated'); }
+    else { body.style.display = 'none'; arrow.classList.remove('rotated'); }
+}
 
 const RECORD_TZ = 'Asia/Jakarta';
 const RACK_IDS = ['61', '77', '139'];
@@ -1158,6 +1133,7 @@ function triggerPopUpAlarm(rackId, temp, status) {
         btn.style.color = "var(--accent-red)";
     }
     modal.style.display = 'flex';
+    notifyThermal(rackId, temp, status);
 }
 function closeAlertPopUp(e, force = false) {
     if (force || e.target.id === 'alertPopUp') {
@@ -1172,23 +1148,16 @@ function checkDeviceStatus() {
     RACK_IDS.forEach(r => updateLogStatus(r));
     const now = Date.now();
     const racks = [
-        { indId:'ind1',  group:'.r61-group',  label:'61',  num:'1', getLast: () => lastUpdateR61, el: 'val1'  },
-        { indId:'ind77', group:'.r77-group',  label:'77',  num:'2', getLast: () => lastUpdateR77, el: 'val77' },
-        { indId:'ind2',  group:'.r139-group', label:'139', num:'3', getLast: () => lastUpdateR139, el: 'val2' }
+        { indId:'ind1',  group:'.r61-group',  label:'61',  num:'1', last: lastUpdateR61  },
+        { indId:'ind77', group:'.r77-group',  label:'77',  num:'2', last: lastUpdateR77  },
+        { indId:'ind2',  group:'.r139-group', label:'139', num:'3', last: lastUpdateR139 }
     ];
-    const onlineCount = racks.filter(r => {
-        const valText = document.getElementById(r.el) ? document.getElementById(r.el).textContent : '--';
-        const t = parseFloat(valText);
-        return Number.isFinite(t) || (r.getLast() > 0 && (now - r.getLast()) < OFFLINE_TIMEOUT);
-    }).length;
+    const onlineCount = racks.filter(r => (now - r.last) < OFFLINE_TIMEOUT).length;
     const allOffline = (onlineCount === 0);
     racks.forEach(r => {
         const ind = document.getElementById(r.indId);
         const cards = document.querySelectorAll(r.group);
-        const lastVal = r.getLast();
-        const valText = document.getElementById(r.el) ? document.getElementById(r.el).textContent : '--';
-        const t = parseFloat(valText);
-        const isOnline = Number.isFinite(t) || (lastVal > 0 && (now - lastVal) < OFFLINE_TIMEOUT);
+        const isOnline = (now - r.last) < OFFLINE_TIMEOUT;
         setChartOnline(r.label, isOnline);
         if (!isOnline) {
             if (allOffline) ind.innerHTML = `<span class='dot-icon offline-exclaim'>!</span> RACK ${r.label} OFFLINE`;
@@ -1203,6 +1172,8 @@ function checkDeviceStatus() {
             cards.forEach(c => { c.classList.remove('device-offline'); c.classList.remove('glow-red'); });
         }
     });
+    updateTabTitle();
+    syncPiPWidget();
     updateKpis();
 }
 (function startTicker() {
@@ -1686,7 +1657,9 @@ db.ref('live_data').on('value', (snap) => {
         }
     }
 
-    checkDeviceStatus();
+    updateTabTitle();
+    syncPiPWidget();
+    updateKpis();
 });
 
 let currentChartRack = '61';
@@ -1707,33 +1680,26 @@ function updateKpis() {
     if (!$('kpiFleet')) return;
     const now = Date.now();
     const rows = [
-        { id: '61',  getLast: () => lastUpdateR61,  el: 'val1'  },
-        { id: '77',  getLast: () => lastUpdateR77,  el: 'val77' },
-        { id: '139', getLast: () => lastUpdateR139, el: 'val2'  }
-    ].map(r => {
-        const lastVal = r.getLast();
-        const valText = $(r.el) ? $(r.el).textContent : '--';
-        const t = parseFloat(valText);
-        const hasValidTemp = Number.isFinite(t);
-        const online = hasValidTemp || (lastVal > 0 && (now - lastVal) < OFFLINE_TIMEOUT);
-        return { id: r.id, last: lastVal, t: hasValidTemp ? t : NaN, online };
-    });
+        { id: '61',  last: lastUpdateR61,  el: 'val1'  },
+        { id: '77',  last: lastUpdateR77,  el: 'val77' },
+        { id: '139', last: lastUpdateR139, el: 'val2'  }
+    ].map(r => ({ id: r.id, last: r.last, t: parseFloat($(r.el).textContent), online: r.last > 0 && (now - r.last) < OFFLINE_TIMEOUT }));
     const live = rows.filter(r => r.online && Number.isFinite(r.t));
-    const seen = rows.some(r => r.last > 0 || Number.isFinite(r.t));
+    const seen = rows.some(r => r.last > 0);
     const offline = rows.filter(r => !r.online);
 
-    $('kpiOnline').textContent = `${live.length} / 3`;
+    $('kpiOnline').textContent = `${rows.filter(r => r.online).length} / 3`;
     $('kpiOnlineSub').textContent = !seen ? 'Awaiting first reading…'
         : offline.length ? offline.map(r => 'Rack ' + r.id).join(', ') + ' offline' : 'All sensors reporting';
 
     const sd = $('sensorDot'), st = $('sensorText');
     if (sd && st) {
         sd.className = 'side-dot' + (!seen ? '' : offline.length ? ' bad' : ' ok');
-        st.textContent = !seen ? 'Sensors: waiting' : `Sensors: ${live.length}/3 online`;
+        st.textContent = !seen ? 'Sensors: waiting' : `Sensors: ${rows.length - offline.length}/3 online`;
     }
 
     if (!live.length) {
-        $('kpiFleet').textContent = seen ? 'Offline' : '--'; $('kpiFleet').style.color = '';
+        $('kpiFleet').textContent = '--'; $('kpiFleet').style.color = '';
         $('kpiFleetSub').textContent = seen ? 'No rack is reporting' : 'Awaiting first reading…';
         $('kpiAvg').textContent = '--'; $('kpiAvgSub').textContent = 'Across online racks';
         $('kpiHot').textContent = '--'; $('kpiHotSub').textContent = '—';
@@ -1772,9 +1738,11 @@ db.ref('.info/connected').on('value', s => {
 })();
 
 checkDeviceStatus();
+updateTabTitle();
 if ('Notification' in window && Notification.permission === 'default') {
     try { Notification.requestPermission(); } catch(e) {}
 }
+window.addEventListener('resize', () => syncPiPWidget());
 document.addEventListener('click', function resumeAudioOnce() {
     const ctx = initAudioContext();
     if (ctx && ctx.state === 'suspended') ctx.resume().catch(()=>{});
@@ -1842,7 +1810,7 @@ function selectLogTab(rack) {
       var id=r[0],c=document.getElementById('mapC'+id),s=document.getElementById('mapSlot'+id);
       if(!c||!s) return;
       var last=r[2](),t=parseFloat(document.getElementById(r[1]).textContent);
-      var online=Number.isFinite(t)||(last>0&&(now-last)<OFFLINE_TIMEOUT);
+      var online=last>0&&(now-last)<OFFLINE_TIMEOUT&&isFinite(t);
       var z=online?zoneOf(t):(last>0?'off':'wait');
       c.style.setProperty('--zc',Z[z][0]);c.style.setProperty('--zbg',Z[z][1]);c.style.setProperty('--zt',Z[z][3]||Z[z][0]);
       s.style.setProperty('--zc',Z[z][0]);document.getElementById('mapL'+id).style.fill=Z[z][4]||'#fff';
@@ -1860,13 +1828,7 @@ function selectLogTab(rack) {
 <script>
 (function(){
   var inc=document.getElementById('incidents'),act=document.getElementById('activity'),tg=document.getElementById('incToggle'),list=document.getElementById('notificationList'),badge=document.getElementById('incCount');
-  function sync(){ 
-    if(inc.classList.contains('open')) {
-      inc.style.height = act.offsetHeight + 'px'; 
-    } else {
-      inc.style.height = ''; 
-    }
-  }
+  function sync(){ if(inc.classList.contains('open')) inc.style.height=act.offsetHeight+'px'; else inc.style.height=''; }
   window.toggleIncidents=function(){
     var o=inc.classList.toggle('open');
     tg.setAttribute('aria-expanded',o?'true':'false');
