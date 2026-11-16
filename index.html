@@ -483,7 +483,6 @@ button{font-family:inherit}
     <div id="ind2" class="indicator"><span class="dot-icon">●</span> RACK 139 CONNECTING…</div>
    </div>
    <button type="button" class="audio-btn active" id="audioToggle" onclick="toggleAudio()"><div><i class="fa-solid fa-volume-high" id="audioIcon" style="color:var(--accent-green);"></i><b>THERMAL ALARM:</b><span id="audioStatusText" style="color:var(--accent-green);font-weight:800;">ACTIVE</span></div></button>
-   <button type="button" class="audio-btn" id="pipToggleBtn" onclick="togglePiPWidget()"><div><i class="fa-solid fa-window-restore" id="pipIcon" style="color:var(--accent-blue);"></i><b>FLOATING MONITOR:</b><span id="pipStatusText" style="color:var(--text-dim);font-weight:800;">OFF</span></div></button>
   </div>
  </header>
 
@@ -875,12 +874,6 @@ function clearNotificationHistory(event) {
         document.getElementById('notificationList').innerHTML = '';
     }
 }
-function toggleNotificationHistory() {
-    const body = document.getElementById('panelBody');
-    const arrow = document.getElementById('panelArrow');
-    if (body.style.display === 'none') { body.style.display = 'block'; arrow.classList.add('rotated'); }
-    else { body.style.display = 'none'; arrow.classList.remove('rotated'); }
-}
 
 const RECORD_TZ = 'Asia/Jakarta';
 const RACK_IDS = ['61', '77', '139'];
@@ -1165,7 +1158,6 @@ function triggerPopUpAlarm(rackId, temp, status) {
         btn.style.color = "var(--accent-red)";
     }
     modal.style.display = 'flex';
-    notifyThermal(rackId, temp, status);
 }
 function closeAlertPopUp(e, force = false) {
     if (force || e.target.id === 'alertPopUp') {
@@ -1211,8 +1203,6 @@ function checkDeviceStatus() {
             cards.forEach(c => { c.classList.remove('device-offline'); c.classList.remove('glow-red'); });
         }
     });
-    updateTabTitle();
-    syncPiPWidget();
     updateKpis();
 }
 (function startTicker() {
@@ -1696,9 +1686,7 @@ db.ref('live_data').on('value', (snap) => {
         }
     }
 
-    updateTabTitle();
-    syncPiPWidget();
-    updateKpis();
+    checkDeviceStatus();
 });
 
 let currentChartRack = '61';
@@ -1784,11 +1772,9 @@ db.ref('.info/connected').on('value', s => {
 })();
 
 checkDeviceStatus();
-updateTabTitle();
 if ('Notification' in window && Notification.permission === 'default') {
     try { Notification.requestPermission(); } catch(e) {}
 }
-window.addEventListener('resize', () => syncPiPWidget());
 document.addEventListener('click', function resumeAudioOnce() {
     const ctx = initAudioContext();
     if (ctx && ctx.state === 'suspended') ctx.resume().catch(()=>{});
@@ -1874,7 +1860,6 @@ function selectLogTab(rack) {
 <script>
 (function(){
   var inc=document.getElementById('incidents'),act=document.getElementById('activity'),tg=document.getElementById('incToggle'),list=document.getElementById('notificationList'),badge=document.getElementById('incCount');
-  var originalActivityStatus = null;
   function sync(){ 
     if(inc.classList.contains('open')) {
       inc.style.height = act.offsetHeight + 'px'; 
@@ -1889,7 +1874,7 @@ function selectLogTab(rack) {
   };
   function count(){ var n=list.children.length; badge.textContent=n; badge.classList.toggle('has',n>0); }
   new MutationObserver(count).observe(list,{childList:true}); count();
-  if('ResizeObserver' in window) newResizeObserver(sync).observe(act);
+  if('ResizeObserver' in window) new ResizeObserver(sync).observe(act);
   window.addEventListener('resize',sync);
 })();
 </script>
