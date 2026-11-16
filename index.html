@@ -1180,16 +1180,17 @@ function checkDeviceStatus() {
     RACK_IDS.forEach(r => updateLogStatus(r));
     const now = Date.now();
     const racks = [
-        { indId:'ind1',  group:'.r61-group',  label:'61',  num:'1', last: lastUpdateR61  },
-        { indId:'ind77', group:'.r77-group',  label:'77',  num:'2', last: lastUpdateR77  },
-        { indId:'ind2',  group:'.r139-group', label:'139', num:'3', last: lastUpdateR139 }
+        { indId:'ind1',  group:'.r61-group',  label:'61',  num:'1', getLast: () => lastUpdateR61  },
+        { indId:'ind77', group:'.r77-group',  label:'77',  num:'2', getLast: () => lastUpdateR77  },
+        { indId:'ind2',  group:'.r139-group', label:'139', num:'3', getLast: () => lastUpdateR139 }
     ];
-    const onlineCount = racks.filter(r => (now - r.last) < OFFLINE_TIMEOUT).length;
+    const onlineCount = racks.filter(r => (now - r.getLast()) < OFFLINE_TIMEOUT).length;
     const allOffline = (onlineCount === 0);
     racks.forEach(r => {
         const ind = document.getElementById(r.indId);
         const cards = document.querySelectorAll(r.group);
-        const isOnline = (now - r.last) < OFFLINE_TIMEOUT;
+        const lastVal = r.getLast();
+        const isOnline = lastVal > 0 && (now - lastVal) < OFFLINE_TIMEOUT;
         setChartOnline(r.label, isOnline);
         if (!isOnline) {
             if (allOffline) ind.innerHTML = `<span class='dot-icon offline-exclaim'>!</span> RACK ${r.label} OFFLINE`;
@@ -1712,13 +1713,14 @@ function updateKpis() {
     if (!$('kpiFleet')) return;
     const now = Date.now();
     const rows = [
-        { id: '61',  last: lastUpdateR61,  el: 'val1'  },
-        { id: '77',  last: lastUpdateR77,  el: 'val77' },
-        { id: '139', last: lastUpdateR139, el: 'val2'  }
+        { id: '61',  getLast: () => lastUpdateR61,  el: 'val1'  },
+        { id: '77',  getLast: () => lastUpdateR77,  el: 'val77' },
+        { id: '139', getLast: () => lastUpdateR139, el: 'val2'  }
     ].map(r => {
+        const lastVal = r.getLast();
         const valText = $(r.el) ? $(r.el).textContent : '--';
         const t = parseFloat(valText);
-        return { id: r.id, last: r.last, t: Number.isFinite(t) ? t : NaN, online: r.last > 0 && (now - r.last) < OFFLINE_TIMEOUT };
+        return { id: r.id, last: lastVal, t: Number.isFinite(t) ? t : NaN, online: lastVal > 0 && (now - lastVal) < OFFLINE_TIMEOUT };
     });
     const live = rows.filter(r => r.online && Number.isFinite(r.t));
     const seen = rows.some(r => r.last > 0);
@@ -1864,7 +1866,7 @@ function selectLogTab(rack) {
 <script>
 (function(){
   var inc=document.getElementById('incidents'),act=document.getElementById('activity'),tg=document.getElementById('incToggle'),list=document.getElementById('notificationList'),badge=document.getElementById('incCount');
-  var originalActivityHeight = null;
+  var originalActivityStatus = null;
   function sync(){ 
     if(inc.classList.contains('open')) {
       inc.style.height = act.offsetHeight + 'px'; 
@@ -1879,7 +1881,7 @@ function selectLogTab(rack) {
   };
   function count(){ var n=list.children.length; badge.textContent=n; badge.classList.toggle('has',n>0); }
   new MutationObserver(count).observe(list,{childList:true}); count();
-  if('ResizeObserver' in window) new ResizeObserver(sync).observe(act);
+  if('ResizeObserver' in window) newResizeObserver(sync).observe(act);
   window.addEventListener('resize',sync);
 })();
 </script>
