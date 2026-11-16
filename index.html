@@ -1180,17 +1180,23 @@ function checkDeviceStatus() {
     RACK_IDS.forEach(r => updateLogStatus(r));
     const now = Date.now();
     const racks = [
-        { indId:'ind1',  group:'.r61-group',  label:'61',  num:'1', getLast: () => lastUpdateR61  },
-        { indId:'ind77', group:'.r77-group',  label:'77',  num:'2', getLast: () => lastUpdateR77  },
-        { indId:'ind2',  group:'.r139-group', label:'139', num:'3', getLast: () => lastUpdateR139 }
+        { indId:'ind1',  group:'.r61-group',  label:'61',  num:'1', getLast: () => lastUpdateR61, el: 'val1'  },
+        { indId:'ind77', group:'.r77-group',  label:'77',  num:'2', getLast: () => lastUpdateR77, el: 'val77' },
+        { indId:'ind2',  group:'.r139-group', label:'139', num:'3', getLast: () => lastUpdateR139, el: 'val2' }
     ];
-    const onlineCount = racks.filter(r => (now - r.getLast()) < OFFLINE_TIMEOUT).length;
+    const onlineCount = racks.filter(r => {
+        const valText = document.getElementById(r.el) ? document.getElementById(r.el).textContent : '--';
+        const t = parseFloat(valText);
+        return Number.isFinite(t) || (r.getLast() > 0 && (now - r.getLast()) < OFFLINE_TIMEOUT);
+    }).length;
     const allOffline = (onlineCount === 0);
     racks.forEach(r => {
         const ind = document.getElementById(r.indId);
         const cards = document.querySelectorAll(r.group);
         const lastVal = r.getLast();
-        const isOnline = lastVal > 0 && (now - lastVal) < OFFLINE_TIMEOUT;
+        const valText = document.getElementById(r.el) ? document.getElementById(r.el).textContent : '--';
+        const t = parseFloat(valText);
+        const isOnline = Number.isFinite(t) || (lastVal > 0 && (now - lastVal) < OFFLINE_TIMEOUT);
         setChartOnline(r.label, isOnline);
         if (!isOnline) {
             if (allOffline) ind.innerHTML = `<span class='dot-icon offline-exclaim'>!</span> RACK ${r.label} OFFLINE`;
@@ -1720,20 +1726,22 @@ function updateKpis() {
         const lastVal = r.getLast();
         const valText = $(r.el) ? $(r.el).textContent : '--';
         const t = parseFloat(valText);
-        return { id: r.id, last: lastVal, t: Number.isFinite(t) ? t : NaN, online: lastVal > 0 && (now - lastVal) < OFFLINE_TIMEOUT };
+        const hasValidTemp = Number.isFinite(t);
+        const online = hasValidTemp || (lastVal > 0 && (now - lastVal) < OFFLINE_TIMEOUT);
+        return { id: r.id, last: lastVal, t: hasValidTemp ? t : NaN, online };
     });
     const live = rows.filter(r => r.online && Number.isFinite(r.t));
-    const seen = rows.some(r => r.last > 0);
+    const seen = rows.some(r => r.last > 0 || Number.isFinite(r.t));
     const offline = rows.filter(r => !r.online);
 
-    $('kpiOnline').textContent = `${rows.filter(r => r.online).length} / 3`;
+    $('kpiOnline').textContent = `${live.length} / 3`;
     $('kpiOnlineSub').textContent = !seen ? 'Awaiting first reading…'
         : offline.length ? offline.map(r => 'Rack ' + r.id).join(', ') + ' offline' : 'All sensors reporting';
 
     const sd = $('sensorDot'), st = $('sensorText');
     if (sd && st) {
         sd.className = 'side-dot' + (!seen ? '' : offline.length ? ' bad' : ' ok');
-        st.textContent = !seen ? 'Sensors: waiting' : `Sensors: ${rows.length - offline.length}/3 online`;
+        st.textContent = !seen ? 'Sensors: waiting' : `Sensors: ${live.length}/3 online`;
     }
 
     if (!live.length) {
@@ -1848,7 +1856,7 @@ function selectLogTab(rack) {
       var id=r[0],c=document.getElementById('mapC'+id),s=document.getElementById('mapSlot'+id);
       if(!c||!s) return;
       var last=r[2](),t=parseFloat(document.getElementById(r[1]).textContent);
-      var online=last>0&&(now-last)<OFFLINE_TIMEOUT&&isFinite(t);
+      var online=Number.isFinite(t)||(last>0&&(now-last)<OFFLINE_TIMEOUT);
       var z=online?zoneOf(t):(last>0?'off':'wait');
       c.style.setProperty('--zc',Z[z][0]);c.style.setProperty('--zbg',Z[z][1]);c.style.setProperty('--zt',Z[z][3]||Z[z][0]);
       s.style.setProperty('--zc',Z[z][0]);document.getElementById('mapL'+id).style.fill=Z[z][4]||'#fff';
