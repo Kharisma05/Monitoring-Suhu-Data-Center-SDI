@@ -353,7 +353,7 @@ button{font-family:inherit}
  .side-nav a{justify-content:center;gap:8px;padding:11px 6px;font-size:13px;white-space:nowrap}
 }
 
-/* ===== v10: Map Fullscreen Mode ===== */
+/* ===== v10: Map Fullscreen Mode (Optimized Desktop Control Room / Black Tab View) ===== */
 .panel.map-fullscreen {
     position: fixed !important;
     inset: 0 !important;
@@ -362,13 +362,33 @@ button{font-family:inherit}
     max-width: none !important;
     max-height: none !important;
     border-radius: 0 !important;
+    border: none !important;
     z-index: 99999 !important;
-    overflow-y: auto !important;
-    padding: 24px !important;
+    overflow: hidden !important;
+    padding: 32px 48px !important;
     box-sizing: border-box !important;
     display: flex !important;
     flex-direction: column !important;
-    background: var(--card-color) !important;
+    background: #000000 !important;
+    box-shadow: none !important;
+}
+.panel.map-fullscreen .panel-head {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+    padding-bottom: 20px;
+    margin-bottom: 10px;
+}
+.panel.map-fullscreen .panel-head h2 {
+    color: #ffffff !important;
+    font-size: 22px !important;
+}
+.panel.map-fullscreen .panel-head .sub {
+    color: #94a3b8 !important;
+    font-size: 13px !important;
+}
+.panel.map-fullscreen .map-legend {
+    border-top: 1px solid rgba(255, 255, 255, 0.12) !important;
+    padding-top: 16px !important;
+    color: #cbd5e1 !important;
 }
 .panel.map-fullscreen .map-wrap {
     flex: 1 1 auto !important;
@@ -376,11 +396,23 @@ button{font-family:inherit}
     align-items: center !important;
     justify-content: center !important;
     min-height: 0 !important;
+    padding: 10px 0 !important;
 }
 .panel.map-fullscreen .map-svg {
-    max-height: 80vh !important;
+    max-height: 85vh !important;
     width: auto !important;
     max-width: 100% !important;
+    filter: drop-shadow(0 0 30px rgba(3, 105, 161, 0.35));
+}
+.panel.map-fullscreen .btn-mini {
+    background: rgba(255, 255, 255, 0.1) !important;
+    border-color: rgba(255, 255, 255, 0.2) !important;
+    color: #ffffff !important;
+    font-size: 11px !important;
+    padding: 10px 16px !important;
+}
+.panel.map-fullscreen .btn-mini:hover {
+    background: rgba(255, 255, 255, 0.2) !important;
 }
 </style>
 </head>
@@ -1683,7 +1715,11 @@ function updateKpis() {
         { id: '61',  last: lastUpdateR61,  el: 'val1'  },
         { id: '77',  last: lastUpdateR77,  el: 'val77' },
         { id: '139', last: lastUpdateR139, el: 'val2'  }
-    ].map(r => ({ id: r.id, last: r.last, t: parseFloat($(r.el).textContent), online: r.last > 0 && (now - r.last) < OFFLINE_TIMEOUT }));
+    ].map(r => {
+        const valText = $(r.el) ? $(r.el).textContent : '--';
+        const t = parseFloat(valText);
+        return { id: r.id, last: r.last, t: Number.isFinite(t) ? t : NaN, online: r.last > 0 && (now - r.last) < OFFLINE_TIMEOUT };
+    });
     const live = rows.filter(r => r.online && Number.isFinite(r.t));
     const seen = rows.some(r => r.last > 0);
     const offline = rows.filter(r => !r.online);
@@ -1699,7 +1735,7 @@ function updateKpis() {
     }
 
     if (!live.length) {
-        $('kpiFleet').textContent = '--'; $('kpiFleet').style.color = '';
+        $('kpiFleet').textContent = seen ? 'Offline' : '--'; $('kpiFleet').style.color = '';
         $('kpiFleetSub').textContent = seen ? 'No rack is reporting' : 'Awaiting first reading…';
         $('kpiAvg').textContent = '--'; $('kpiAvgSub').textContent = 'Across online racks';
         $('kpiHot').textContent = '--'; $('kpiHotSub').textContent = '—';
@@ -1828,7 +1864,14 @@ function selectLogTab(rack) {
 <script>
 (function(){
   var inc=document.getElementById('incidents'),act=document.getElementById('activity'),tg=document.getElementById('incToggle'),list=document.getElementById('notificationList'),badge=document.getElementById('incCount');
-  function sync(){ if(inc.classList.contains('open')) inc.style.height=act.offsetHeight+'px'; else inc.style.height=''; }
+  var originalActivityHeight = null;
+  function sync(){ 
+    if(inc.classList.contains('open')) {
+      inc.style.height = act.offsetHeight + 'px'; 
+    } else {
+      inc.style.height = ''; 
+    }
+  }
   window.toggleIncidents=function(){
     var o=inc.classList.toggle('open');
     tg.setAttribute('aria-expanded',o?'true':'false');
