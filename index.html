@@ -352,6 +352,59 @@ button{font-family:inherit}
  .side-nav{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;width:100%}
  .side-nav a{justify-content:center;gap:8px;padding:11px 6px;font-size:13px;white-space:nowrap}
 }
+
+/* ===== v7: header ringkas, peta tanpa non-rack, rak sejajar cage, layar penuh ===== */
+.head-center .head-logo-svg{width:72px;height:72px}
+.head-center .head-actions{width:100%;max-width:640px;flex-direction:row;flex-wrap:wrap;align-items:center;justify-content:center;gap:10px}
+.head-center .audio-btn{flex:0 1 270px;max-width:270px;width:auto;min-height:40px;padding:0 12px;font-size:11px;justify-content:center;gap:6px;border-radius:10px}
+.head-center .audio-btn>div{justify-content:center;gap:6px;font-size:11px;white-space:nowrap}
+.head-center .indicators{order:3;justify-content:center;gap:10px}
+.btn-mini:focus-visible,.audio-btn:focus-visible,.map-fs-close:focus-visible{outline:2px solid var(--accent-blue);outline-offset:2px}
+.panel.map-panel{position:relative}
+.map-scroll{width:100%}
+.map-svg{display:block;width:100%;max-width:1100px;height:auto;margin:0 auto}
+.map-svg .frame{fill:#FFFFFF;stroke:#0B1B2B;stroke-width:9}
+.map-svg .rk{fill:#C7DCF8;stroke:#222;stroke-width:3.5}
+.map-svg .sl{fill:#C4DCF8;stroke:#2B5A8F;stroke-width:2.5}
+.map-svg .sl.hot{fill:var(--zc,#64748B);stroke:var(--zc,#64748B);transition:fill .4s,stroke .4s}
+.map-svg .slt{font:800 26px Inter,Arial,sans-serif;fill:#FFFFFF;text-anchor:middle;pointer-events:none}
+.map-svg .cg{fill:#C7DCF8;stroke:#1D3B6B;stroke-width:3}
+.map-svg .d1{fill:#FF9A92;stroke:#8B1A1A;stroke-width:3}
+.map-svg .d2{fill:#C7DCF8;stroke:#1D3B6B;stroke-width:3}
+.map-svg .d3{fill:#D9B8F8;stroke:#4A2B7A;stroke-width:3}
+.map-svg .dw{fill:none;stroke:#111;stroke-width:3.5}
+.map-svg .dl{stroke:#111;stroke-width:3.5}
+.map-svg .co{--zc:#64748B;--zbg:#F1F5F9;--zt:#475569}
+.map-svg .cob{fill:var(--zbg);stroke:var(--zc);stroke-width:5;transition:fill .4s,stroke .4s}
+.map-svg .arh{stroke:#fff;stroke-width:14;stroke-linecap:round}
+.map-svg .arl{stroke:var(--zc);stroke-width:7;stroke-linecap:round;transition:stroke .4s}
+.map-svg .arp{fill:var(--zc);stroke:#fff;stroke-width:3;stroke-linejoin:round;transition:fill .4s}
+.map-svg .cot{font:700 30px Inter,Arial,sans-serif;fill:#51607A;letter-spacing:.5px}
+.map-svg .cov{font:800 56px Inter,Arial,sans-serif;fill:#0B1B2B}
+.map-svg .cos{font:800 26px Inter,Arial,sans-serif;fill:var(--zt,var(--zc));letter-spacing:.6px}
+.map-svg .co.pulse .cob{animation:mapPulse 1.2s ease-in-out infinite}
+.map-hint{display:none;font-size:11px;font-weight:600;color:var(--text-dim)}
+.map-full-btn{white-space:nowrap}
+.map-fs-bar{display:none}
+.map-fs-title{display:flex;align-items:center;gap:8px}
+.map-fs-clock{font-variant-numeric:tabular-nums;color:#fff;font-size:16px;font-weight:700}
+.map-fs-close{display:inline-flex;align-items:center;gap:8px;min-height:36px;padding:0 14px;border-radius:9px;border:1px solid rgba(255,255,255,.28);background:rgba(255,255,255,.08);color:#fff;font:700 12px Inter,Arial,sans-serif;cursor:pointer}
+.map-fs-close:hover{background:rgba(255,255,255,.18)}
+.map-panel:fullscreen,.map-panel.is-fs{background:#000;border:0;border-radius:0;box-shadow:none;padding:0;margin:0;width:100vw;max-width:none;height:100vh;display:flex;flex-direction:column;justify-content:center;align-items:stretch;gap:0;overflow:hidden}
+.map-panel.is-fs{position:fixed;inset:0;z-index:10000}
+.map-panel:fullscreen .panel-head,.map-panel.is-fs .panel-head,
+.map-panel:fullscreen .map-legend,.map-panel.is-fs .map-legend,
+.map-panel:fullscreen .map-hint,.map-panel.is-fs .map-hint{display:none!important}
+.map-panel:fullscreen .map-fs-bar,.map-panel.is-fs .map-fs-bar{display:flex;position:absolute;top:14px;left:20px;right:20px;z-index:3;align-items:center;justify-content:space-between;gap:12px;color:#CBD5E1;font-size:13px;font-weight:700;letter-spacing:.6px}
+.map-panel:fullscreen .map-scroll,.map-panel.is-fs .map-scroll{flex:1 1 auto;min-height:0;display:flex;align-items:center;justify-content:center;overflow:visible;margin:0;padding:56px 16px 16px;width:100%;height:100%}
+.map-panel:fullscreen .map-svg,.map-panel.is-fs .map-svg{width:min(calc(100vw - 32px),calc((100vh - 72px) * 1.7527));max-width:none;min-width:0;height:auto}
+@media (max-width:640px){
+ .head-center .head-logo-svg{width:78px;height:78px}
+ .head-center .audio-btn{flex-basis:260px;max-width:260px}
+ .map-svg{width:100%;min-width:0;max-width:none}
+
+
+}
 </style>
 </head>
 <body>
@@ -377,7 +430,7 @@ button{font-family:inherit}
 <main class="main" id="top">
  <header class="page-head head-center">
   <div class="head-brand">
-   <div class="head-logo"><svg class="head-logo-svg" width="88" height="88" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="DC-SDI server and thermometer logo">
+   <div class="head-logo"><svg class="head-logo-svg" width="72" height="72" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="DC-SDI server and thermometer logo">
             <defs>
                 <linearGradient id="lgTileH" x1="14" y1="4" x2="86" y2="96" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#16345a"/><stop offset="1" stop-color="#060d16"/></linearGradient>
                 <linearGradient id="lgEdgeH" x1="4" y1="4" x2="96" y2="96" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#7dd3fc"/><stop offset=".55" stop-color="#38bdf8" stop-opacity=".4"/><stop offset="1" stop-color="#10b981"/></linearGradient>
@@ -490,23 +543,24 @@ button{font-family:inherit}
 
 
  <section class="map-section" id="map" aria-label="Rack location map">
-  <div class="panel">
-   <div class="panel-head"><div><h2>Rack location map</h2><span class="sub">Live thermal condition · arrows point to each monitored rack</span></div></div>
-   <div class="map-wrap"><svg class="map-svg" viewBox="-30 -215 1690 1190" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Rack floor plan with live thermal status"><g transform="translate(-28 900) rotate(-90)"><rect x="130" y="28" width="770" height="1621" class="frame"/><rect x="275" y="40" width="178" height="85" rx="7" class="nr"/><rect x="598" y="40" width="176" height="85" rx="7" class="nr"/><rect x="266" y="1553" width="176" height="85" rx="7" class="nr"/><rect x="603" y="1553" width="176" height="85" rx="7" class="nr"/><rect x="780" y="654" width="85" height="177" rx="7" class="nr"/><rect x="146" y="141.0" width="118" height="126.2" rx="8" class="cg"/><rect x="146" y="283.2" width="118" height="126.2" rx="8" class="cg"/><rect x="146" y="425.4" width="118" height="126.2" rx="8" class="cg"/><rect x="146" y="567.6" width="118" height="126.2" rx="8" class="cg"/><rect x="146" y="709.8" width="118" height="126.2" rx="8" class="cg"/><rect x="146" y="852.0" width="118" height="126.2" rx="8" class="cg"/><rect x="135" y="995" width="136" height="123" rx="8" class="d1"/><rect x="137" y="1006" width="8" height="100" class="d1" style="stroke:#111"/><path d="M145,1006 A78,100 0 0 1 223,1106 L145,1106 Z" fill="none" stroke="#111" stroke-width="3.5"/><rect x="135" y="1255" width="110" height="114" rx="8" class="d2"/><rect x="137" y="1272" width="8" height="86" class="d2" style="stroke:#111"/><path d="M145,1272 A66,86 0 0 1 211,1358 L145,1358 Z" fill="none" stroke="#111" stroke-width="3.5"/><rect x="135" y="1456" width="118" height="111" rx="8" class="d3"/><rect x="137" y="1468" width="8" height="85" class="d3" style="stroke:#111"/><path d="M145,1468 A70,85 0 0 1 215,1553 L145,1553 Z" fill="none" stroke="#111" stroke-width="3.5"/>
-   <!-- Kolom Rack Kiri -->
-   <rect x="320" y="141" width="105" height="837.2" rx="7" class="rk"/><rect x="336" y="156.0" width="73" height="33" rx="3" class="sl"/><rect x="336" y="204.6" width="73" height="33" rx="3" class="sl"/><rect x="336" y="253.2" width="73" height="33" rx="3" class="sl"/><rect x="336" y="301.8" width="73" height="33" rx="3" class="sl"/><rect x="336" y="350.5" width="73" height="33" rx="3" class="sl"/><rect x="336" y="399.1" width="73" height="33" rx="3" class="sl"/><rect x="336" y="447.7" width="73" height="33" rx="3" class="sl"/><rect x="336" y="496.3" width="73" height="33" rx="3" class="sl"/><rect x="336" y="544.9" width="73" height="33" rx="3" class="sl"/><rect id="mapSlot77" x="336" y="593.5" width="73" height="33" rx="3" class="sl hot"/><text x="372.5" y="616.0" class="slt" id="mapL77" transform="rotate(90 372.5 610.0)">77</text><rect x="336" y="642.2" width="73" height="33" rx="3" class="sl"/><rect x="336" y="690.8" width="73" height="33" rx="3" class="sl"/><rect x="336" y="739.4" width="73" height="33" rx="3" class="sl"/><rect x="336" y="788.0" width="73" height="33" rx="3" class="sl"/><rect x="336" y="836.6" width="73" height="33" rx="3" class="sl"/><rect x="336" y="885.2" width="73" height="33" rx="3" class="sl"/><rect x="336" y="933.8" width="73" height="33" rx="3" class="sl"/>
-   <rect x="470" y="141" width="105" height="837.2" rx="7" class="rk"/><rect x="486" y="156.0" width="73" height="33" rx="3" class="sl"/><rect x="486" y="204.6" width="73" height="33" rx="3" class="sl"/><rect x="486" y="253.2" width="73" height="33" rx="3" class="sl"/><rect x="486" y="301.8" width="73" height="33" rx="3" class="sl"/><rect x="486" y="350.5" width="73" height="33" rx="3" class="sl"/><rect x="486" y="399.1" width="73" height="33" rx="3" class="sl"/><rect x="486" y="447.7" width="73" height="33" rx="3" class="sl"/><rect x="486" y="496.3" width="73" height="33" rx="3" class="sl"/><rect x="486" y="544.9" width="73" height="33" rx="3" class="sl"/><rect x="486" y="593.5" width="73" height="33" rx="3" class="sl"/><rect x="486" y="642.2" width="73" height="33" rx="3" class="sl"/><rect x="486" y="690.8" width="73" height="33" rx="3" class="sl"/><rect x="486" y="739.4" width="73" height="33" rx="3" class="sl"/><rect x="486" y="788.0" width="73" height="33" rx="3" class="sl"/><rect x="486" y="836.6" width="73" height="33" rx="3" class="sl"/><rect x="486" y="885.2" width="73" height="33" rx="3" class="sl"/><rect x="486" y="933.8" width="73" height="33" rx="3" class="sl"/>
-   <rect x="620" y="141" width="105" height="837.2" rx="7" class="rk"/><rect id="mapSlot61" x="636" y="156.0" width="73" height="33" rx="3" class="sl hot"/><text x="672.5" y="178.5" class="slt" id="mapL61" transform="rotate(90 672.5 172.5)">61</text><rect x="636" y="204.6" width="73" height="33" rx="3" class="sl"/><rect x="636" y="253.2" width="73" height="33" rx="3" class="sl"/><rect x="636" y="301.8" width="73" height="33" rx="3" class="sl"/><rect x="636" y="350.5" width="73" height="33" rx="3" class="sl"/><rect x="636" y="399.1" width="73" height="33" rx="3" class="sl"/><rect x="636" y="447.7" width="73" height="33" rx="3" class="sl"/><rect x="636" y="496.3" width="73" height="33" rx="3" class="sl"/><rect x="636" y="544.9" width="73" height="33" rx="3" class="sl"/><rect x="636" y="593.5" width="73" height="33" rx="3" class="sl"/><rect x="636" y="642.2" width="73" height="33" rx="3" class="sl"/><rect x="636" y="690.8" width="73" height="33" rx="3" class="sl"/><rect x="636" y="739.4" width="73" height="33" rx="3" class="sl"/><rect x="636" y="788.0" width="73" height="33" rx="3" class="sl"/><rect x="636" y="836.6" width="73" height="33" rx="3" class="sl"/><rect x="636" y="885.2" width="73" height="33" rx="3" class="sl"/><rect x="636" y="933.8" width="73" height="33" rx="3" class="sl"/>
-   <!-- Kolom Rack Kanan (Diperbaiki: berhenti sejajar di y=1540 sebelum kotak kuning y=1553; Rack 139 di slot ke-6 y=1299.1) -->
-   <rect x="320" y="1077" width="105" height="463" rx="7" class="rk"/><rect x="336" y="1088.0" width="73" height="31" rx="3" class="sl"/><rect x="336" y="1130.2" width="73" height="31" rx="3" class="sl"/><rect x="336" y="1172.4" width="73" height="31" rx="3" class="sl"/><rect x="336" y="1214.7" width="73" height="31" rx="3" class="sl"/><rect x="336" y="1256.9" width="73" height="31" rx="3" class="sl"/><rect id="mapSlot139" x="336" y="1299.1" width="73" height="31" rx="3" class="sl hot"/><text x="372.5" y="1320.6" class="slt" id="mapL139" transform="rotate(90 372.5 1314.6)">139</text><rect x="336" y="1341.3" width="73" height="31" rx="3" class="sl"/><rect x="336" y="1383.6" width="73" height="31" rx="3" class="sl"/><rect x="336" y="1425.8" width="73" height="31" rx="3" class="sl"/><rect x="336" y="1468.0" width="73" height="31" rx="3" class="sl"/>
-   <rect x="470" y="1077" width="105" height="463" rx="7" class="rk"/><rect x="486" y="1088.0" width="73" height="31" rx="3" class="sl"/><rect x="486" y="1130.2" width="73" height="31" rx="3" class="sl"/><rect x="486" y="1172.4" width="73" height="31" rx="3" class="sl"/><rect x="486" y="1214.7" width="73" height="31" rx="3" class="sl"/><rect x="486" y="1256.9" width="73" height="31" rx="3" class="sl"/><rect x="486" y="1299.1" width="73" height="31" rx="3" class="sl"/><rect x="486" y="1341.3" width="73" height="31" rx="3" class="sl"/><rect x="486" y="1383.6" width="73" height="31" rx="3" class="sl"/><rect x="486" y="1425.8" width="73" height="31" rx="3" class="sl"/><rect x="486" y="1468.0" width="73" height="31" rx="3" class="sl"/>
-   <rect x="620" y="1077" width="105" height="463" rx="7" class="rk"/><rect x="636" y="1088.0" width="73" height="31" rx="3" class="sl"/><rect x="636" y="1130.2" width="73" height="31" rx="3" class="sl"/><rect x="636" y="1172.4" width="73" height="31" rx="3" class="sl"/><rect x="636" y="1214.7" width="73" height="31" rx="3" class="sl"/><rect x="636" y="1256.9" width="73" height="31" rx="3" class="sl"/><rect x="636" y="1299.1" width="73" height="31" rx="3" class="sl"/><rect x="636" y="1341.3" width="73" height="31" rx="3" class="sl"/><rect x="636" y="1383.6" width="73" height="31" rx="3" class="sl"/><rect x="636" y="1425.8" width="73" height="31" rx="3" class="sl"/><rect x="636" y="1468.0" width="73" height="31" rx="3" class="sl"/>
-   <!-- Rack Atas (Kiri & Kanan) -->
-   <rect x="770" y="141" width="105" height="501" rx="7" class="rk"/><rect x="786" y="156.0" width="73" height="33" rx="3" class="sl"/><rect x="786" y="204.7" width="73" height="33" rx="3" class="sl"/><rect x="786" y="253.3" width="73" height="33" rx="3" class="sl"/><rect x="786" y="302.0" width="73" height="33" rx="3" class="sl"/><rect x="786" y="350.7" width="73" height="33" rx="3" class="sl"/><rect x="786" y="399.3" width="73" height="33" rx="3" class="sl"/><rect x="786" y="448.0" width="73" height="33" rx="3" class="sl"/><rect x="786" y="496.7" width="73" height="33" rx="3" class="sl"/><rect x="786" y="545.3" width="73" height="33" rx="3" class="sl"/><rect x="786" y="594.0" width="73" height="33" rx="3" class="sl"/>
-   <rect x="770" y="843" width="105" height="693" rx="7" class="rk"/><rect x="786" y="858.0" width="73" height="33" rx="3" class="sl"/><rect x="786" y="906.5" width="73" height="33" rx="3" class="sl"/><rect x="786" y="954.9" width="73" height="33" rx="3" class="sl"/><rect x="786" y="1003.4" width="73" height="33" rx="3" class="sl"/><rect x="786" y="1051.8" width="73" height="33" rx="3" class="sl"/><rect x="786" y="1100.3" width="73" height="33" rx="3" class="sl"/><rect x="786" y="1148.8" width="73" height="33" rx="3" class="sl"/><rect x="786" y="1197.2" width="73" height="33" rx="3" class="sl"/><rect x="786" y="1245.7" width="73" height="33" rx="3" class="sl"/><rect x="786" y="1294.2" width="73" height="33" rx="3" class="sl"/><rect x="786" y="1342.6" width="73" height="33" rx="3" class="sl"/><rect x="786" y="1391.1" width="73" height="33" rx="3" class="sl"/><rect x="786" y="1439.5" width="73" height="33" rx="3" class="sl"/><rect x="786" y="1488.0" width="73" height="33" rx="3" class="sl"/></g><g class="co" id="mapC61"><line x1="144" y1="-50" x2="144" y2="183" class="arh"/><line x1="144" y1="-50" x2="144" y2="183" class="arl"/><polygon points="144,183 128,155 160,155" class="arp"/><rect x="9" y="-200" width="270" height="150" rx="18" class="cob"/><text x="31" y="-158" class="cot">RACK 61</text><text x="31" y="-100" class="cov" id="mapT61">-- °C</text><text x="31" y="-66" class="cos" id="mapS61">WAITING</text></g><g class="co" id="mapC77"><line x1="582" y1="810" x2="582" y2="572" class="arh"/><line x1="582" y1="810" x2="582" y2="572" class="arl"/><polygon points="582,572 566,600 598,600" class="arp"/><rect x="447" y="810" width="270" height="150" rx="18" class="cob"/><text x="469" y="852" class="cot">RACK 77</text><text x="469" y="910" class="cov" id="mapT77">-- °C</text><text x="469" y="944" class="cos" id="mapS77">WAITING</text></g><g class="co" id="mapC139"><line x1="1287" y1="810" x2="1287" y2="572" class="arh"/><line x1="1287" y1="810" x2="1287" y2="572" class="arl"/><polygon points="1287,572 1271,600 1303,600" class="arp"/><rect x="1152" y="810" width="270" height="150" rx="18" class="cob"/><text x="1174" y="852" class="cot">RACK 139</text><text x="1174" y="910" class="cov" id="mapT139">-- °C</text><text x="1174" y="944" class="cos" id="mapS139">WAITING</text></g></svg></div>
-   <div class="zone-legend map-legend"><span><i style="background:#0369A1"></i>Below range</span><span><i style="background:#0B7A4B"></i>Nominal</span><span><i style="background:#EAB308"></i>Elevated</span><span><i style="background:#B42318"></i>Critical</span><span><i style="background:#64748B"></i>Offline</span></div>
+ <div class="panel map-panel" id="mapPanel">
+  <div class="map-fs-bar">
+   <span class="map-fs-title"><i class="fa-solid fa-map-location-dot"></i> RACK LOCATION MAP · LIVE</span>
+   <span class="map-fs-clock" id="mapFsClock">--:--:--</span>
+   <button type="button" class="map-fs-close" onclick="toggleMapFullscreen(false)" aria-label="Keluar dari layar penuh"><i class="fa-solid fa-xmark"></i> KELUAR (ESC)</button>
   </div>
- </section>
+  <div class="panel-head">
+   <div>
+    <h2>Rack location map</h2>
+    <span class="sub">Live thermal condition · panah menunjuk tiap rack · <span id="mapUpd">menunggu data…</span></span>
+   </div>
+   <button type="button" class="btn-mini map-full-btn" id="mapFullBtn" aria-pressed="false" title="Tampilkan peta layar penuh" onclick="toggleMapFullscreen()"><i class="fa-solid fa-expand"></i> FULLSCREEN</button>
+  </div>
+  <div class="map-scroll"><svg class="map-svg" viewBox="-70 -170 1963 1120" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Denah rack dengan status suhu live"><rect x="0" y="0" width="1873" height="770" class="frame"/><rect x="50" y="25" width="837" height="105" rx="7" class="rk"/><rect x="65.00" y="41" width="33" height="73" rx="3" class="sl"/><rect x="124.54" y="41" width="33" height="73" rx="3" class="sl"/><rect x="184.08" y="41" width="33" height="73" rx="3" class="sl"/><rect x="243.62" y="41" width="33" height="73" rx="3" class="sl"/><rect x="303.15" y="41" width="33" height="73" rx="3" class="sl"/><rect x="362.69" y="41" width="33" height="73" rx="3" class="sl"/><rect x="422.23" y="41" width="33" height="73" rx="3" class="sl"/><rect x="481.77" y="41" width="33" height="73" rx="3" class="sl"/><rect x="541.31" y="41" width="33" height="73" rx="3" class="sl"/><rect x="600.85" y="41" width="33" height="73" rx="3" class="sl"/><rect x="660.38" y="41" width="33" height="73" rx="3" class="sl"/><rect x="719.92" y="41" width="33" height="73" rx="3" class="sl"/><rect x="779.46" y="41" width="33" height="73" rx="3" class="sl"/><rect x="839.00" y="41" width="33" height="73" rx="3" class="sl"/><rect x="50" y="175" width="837" height="105" rx="7" class="rk"/><rect id="mapSlot61" x="61.50" y="191" width="40" height="73" rx="5" class="sl hot"/><text id="mapL61" class="slt" x="81.50" y="227.50" transform="rotate(-90 81.50 227.50)" dominant-baseline="central">61</text><rect x="124.54" y="191" width="33" height="73" rx="3" class="sl"/><rect x="184.08" y="191" width="33" height="73" rx="3" class="sl"/><rect x="243.62" y="191" width="33" height="73" rx="3" class="sl"/><rect x="303.15" y="191" width="33" height="73" rx="3" class="sl"/><rect x="362.69" y="191" width="33" height="73" rx="3" class="sl"/><rect x="422.23" y="191" width="33" height="73" rx="3" class="sl"/><rect x="481.77" y="191" width="33" height="73" rx="3" class="sl"/><rect x="541.31" y="191" width="33" height="73" rx="3" class="sl"/><rect x="600.85" y="191" width="33" height="73" rx="3" class="sl"/><rect x="660.38" y="191" width="33" height="73" rx="3" class="sl"/><rect x="719.92" y="191" width="33" height="73" rx="3" class="sl"/><rect x="779.46" y="191" width="33" height="73" rx="3" class="sl"/><rect x="839.00" y="191" width="33" height="73" rx="3" class="sl"/><rect x="50" y="325" width="837" height="105" rx="7" class="rk"/><rect x="65.00" y="341" width="33" height="73" rx="3" class="sl"/><rect x="124.54" y="341" width="33" height="73" rx="3" class="sl"/><rect x="184.08" y="341" width="33" height="73" rx="3" class="sl"/><rect x="243.62" y="341" width="33" height="73" rx="3" class="sl"/><rect x="303.15" y="341" width="33" height="73" rx="3" class="sl"/><rect x="362.69" y="341" width="33" height="73" rx="3" class="sl"/><rect x="422.23" y="341" width="33" height="73" rx="3" class="sl"/><rect x="481.77" y="341" width="33" height="73" rx="3" class="sl"/><rect x="541.31" y="341" width="33" height="73" rx="3" class="sl"/><rect x="600.85" y="341" width="33" height="73" rx="3" class="sl"/><rect x="660.38" y="341" width="33" height="73" rx="3" class="sl"/><rect x="719.92" y="341" width="33" height="73" rx="3" class="sl"/><rect x="779.46" y="341" width="33" height="73" rx="3" class="sl"/><rect x="839.00" y="341" width="33" height="73" rx="3" class="sl"/><rect x="50" y="475" width="837" height="105" rx="7" class="rk"/><rect x="65.00" y="491" width="33" height="73" rx="3" class="sl"/><rect x="124.54" y="491" width="33" height="73" rx="3" class="sl"/><rect x="184.08" y="491" width="33" height="73" rx="3" class="sl"/><rect x="243.62" y="491" width="33" height="73" rx="3" class="sl"/><rect x="303.15" y="491" width="33" height="73" rx="3" class="sl"/><rect x="362.69" y="491" width="33" height="73" rx="3" class="sl"/><rect x="422.23" y="491" width="33" height="73" rx="3" class="sl"/><rect x="481.77" y="491" width="33" height="73" rx="3" class="sl"/><rect id="mapSlot77" x="537.81" y="491" width="40" height="73" rx="5" class="sl hot"/><text id="mapL77" class="slt" x="557.81" y="527.50" transform="rotate(-90 557.81 527.50)" dominant-baseline="central">77</text><rect x="600.85" y="491" width="33" height="73" rx="3" class="sl"/><rect x="660.38" y="491" width="33" height="73" rx="3" class="sl"/><rect x="719.92" y="491" width="33" height="73" rx="3" class="sl"/><rect x="779.46" y="491" width="33" height="73" rx="3" class="sl"/><rect x="839.00" y="491" width="33" height="73" rx="3" class="sl"/><rect x="986" y="25" width="837" height="105" rx="7" class="rk"/><rect x="1001.00" y="41" width="33" height="73" rx="3" class="sl"/><rect x="1060.54" y="41" width="33" height="73" rx="3" class="sl"/><rect x="1120.08" y="41" width="33" height="73" rx="3" class="sl"/><rect x="1179.62" y="41" width="33" height="73" rx="3" class="sl"/><rect x="1239.15" y="41" width="33" height="73" rx="3" class="sl"/><rect x="1298.69" y="41" width="33" height="73" rx="3" class="sl"/><rect x="1358.23" y="41" width="33" height="73" rx="3" class="sl"/><rect x="1417.77" y="41" width="33" height="73" rx="3" class="sl"/><rect x="1477.31" y="41" width="33" height="73" rx="3" class="sl"/><rect x="1536.85" y="41" width="33" height="73" rx="3" class="sl"/><rect x="1596.38" y="41" width="33" height="73" rx="3" class="sl"/><rect x="1655.92" y="41" width="33" height="73" rx="3" class="sl"/><rect x="1715.46" y="41" width="33" height="73" rx="3" class="sl"/><rect x="1775.00" y="41" width="33" height="73" rx="3" class="sl"/><rect x="986" y="175" width="837" height="105" rx="7" class="rk"/><rect x="1001.00" y="191" width="33" height="73" rx="3" class="sl"/><rect x="1060.54" y="191" width="33" height="73" rx="3" class="sl"/><rect x="1120.08" y="191" width="33" height="73" rx="3" class="sl"/><rect x="1179.62" y="191" width="33" height="73" rx="3" class="sl"/><rect x="1239.15" y="191" width="33" height="73" rx="3" class="sl"/><rect x="1298.69" y="191" width="33" height="73" rx="3" class="sl"/><rect x="1358.23" y="191" width="33" height="73" rx="3" class="sl"/><rect x="1417.77" y="191" width="33" height="73" rx="3" class="sl"/><rect x="1477.31" y="191" width="33" height="73" rx="3" class="sl"/><rect x="1536.85" y="191" width="33" height="73" rx="3" class="sl"/><rect x="1596.38" y="191" width="33" height="73" rx="3" class="sl"/><rect x="1655.92" y="191" width="33" height="73" rx="3" class="sl"/><rect x="1715.46" y="191" width="33" height="73" rx="3" class="sl"/><rect x="1775.00" y="191" width="33" height="73" rx="3" class="sl"/><rect x="986" y="325" width="837" height="105" rx="7" class="rk"/><rect x="1001.00" y="341" width="33" height="73" rx="3" class="sl"/><rect x="1060.54" y="341" width="33" height="73" rx="3" class="sl"/><rect x="1120.08" y="341" width="33" height="73" rx="3" class="sl"/><rect x="1179.62" y="341" width="33" height="73" rx="3" class="sl"/><rect x="1239.15" y="341" width="33" height="73" rx="3" class="sl"/><rect x="1298.69" y="341" width="33" height="73" rx="3" class="sl"/><rect x="1358.23" y="341" width="33" height="73" rx="3" class="sl"/><rect x="1417.77" y="341" width="33" height="73" rx="3" class="sl"/><rect x="1477.31" y="341" width="33" height="73" rx="3" class="sl"/><rect x="1536.85" y="341" width="33" height="73" rx="3" class="sl"/><rect x="1596.38" y="341" width="33" height="73" rx="3" class="sl"/><rect x="1655.92" y="341" width="33" height="73" rx="3" class="sl"/><rect x="1715.46" y="341" width="33" height="73" rx="3" class="sl"/><rect x="1775.00" y="341" width="33" height="73" rx="3" class="sl"/><rect x="986" y="475" width="837" height="105" rx="7" class="rk"/><rect x="1001.00" y="491" width="33" height="73" rx="3" class="sl"/><rect x="1060.54" y="491" width="33" height="73" rx="3" class="sl"/><rect x="1120.08" y="491" width="33" height="73" rx="3" class="sl"/><rect x="1179.62" y="491" width="33" height="73" rx="3" class="sl"/><rect x="1239.15" y="491" width="33" height="73" rx="3" class="sl"/><rect id="mapSlot139" x="1295.19" y="491" width="40" height="73" rx="5" class="sl hot"/><text id="mapL139" class="slt" x="1315.19" y="527.50" transform="rotate(-90 1315.19 527.50)" dominant-baseline="central">139</text><rect x="1358.23" y="491" width="33" height="73" rx="3" class="sl"/><rect x="1417.77" y="491" width="33" height="73" rx="3" class="sl"/><rect x="1477.31" y="491" width="33" height="73" rx="3" class="sl"/><rect x="1536.85" y="491" width="33" height="73" rx="3" class="sl"/><rect x="1596.38" y="491" width="33" height="73" rx="3" class="sl"/><rect x="1655.92" y="491" width="33" height="73" rx="3" class="sl"/><rect x="1715.46" y="491" width="33" height="73" rx="3" class="sl"/><rect x="1775.00" y="491" width="33" height="73" rx="3" class="sl"/><rect x="50.00" y="636" width="126.2" height="118" rx="8" class="cg"/><rect x="192.20" y="636" width="126.2" height="118" rx="8" class="cg"/><rect x="334.40" y="636" width="126.2" height="118" rx="8" class="cg"/><rect x="476.60" y="636" width="126.2" height="118" rx="8" class="cg"/><rect x="618.80" y="636" width="126.2" height="118" rx="8" class="cg"/><rect x="761.00" y="636" width="126.2" height="118" rx="8" class="cg"/><rect x="904" y="645" width="120" height="120" rx="8" class="d1"/><path d="M912,653 A112,112 0 0 1 1024,765" class="dw"/><line x1="912" y1="653" x2="912" y2="765" class="dl"/><rect x="1164" y="645" width="120" height="120" rx="8" class="d2"/><path d="M1172,653 A112,112 0 0 1 1284,765" class="dw"/><line x1="1172" y1="653" x2="1172" y2="765" class="dl"/><rect x="1365" y="645" width="120" height="120" rx="8" class="d3"/><path d="M1373,653 A112,112 0 0 1 1485,765" class="dw"/><line x1="1373" y1="653" x2="1373" y2="765" class="dl"/><g class="co" id="mapC61"><line x1="81.50" y1="-20" x2="81.50" y2="163" class="arh"/><line x1="81.50" y1="-20" x2="81.50" y2="163" class="arl"/><polygon points="81.50,189 66.50,163 96.50,163" class="arp"/><g class="cb"><rect x="-58.50" y="-150" width="280" height="130" rx="18" class="cob"/><text x="-36.50" y="-110" class="cot">RACK 61</text><text x="-36.50" y="-52" class="cov" id="mapT61">-- °C</text><text x="-36.50" y="-26" class="cos" id="mapS61">WAITING</text></g></g><g class="co" id="mapC77"><line x1="557.81" y1="800" x2="557.81" y2="594" class="arh"/><line x1="557.81" y1="800" x2="557.81" y2="594" class="arl"/><polygon points="557.81,568 542.81,594 572.81,594" class="arp"/><g class="cb"><rect x="417.81" y="800" width="280" height="130" rx="18" class="cob"/><text x="439.81" y="840" class="cot">RACK 77</text><text x="439.81" y="898" class="cov" id="mapT77">-- °C</text><text x="439.81" y="924" class="cos" id="mapS77">WAITING</text></g></g><g class="co" id="mapC139"><line x1="1315.19" y1="800" x2="1315.19" y2="594" class="arh"/><line x1="1315.19" y1="800" x2="1315.19" y2="594" class="arl"/><polygon points="1315.19,568 1300.19,594 1330.19,594" class="arp"/><g class="cb"><rect x="1175.19" y="800" width="280" height="130" rx="18" class="cob"/><text x="1197.19" y="840" class="cot">RACK 139</text><text x="1197.19" y="898" class="cov" id="mapT139">-- °C</text><text x="1197.19" y="924" class="cos" id="mapS139">WAITING</text></g></g></svg></div>
+  <span class="map-hint"><i class="fa-solid fa-arrows-left-right"></i> Geser ke samping untuk melihat seluruh denah</span>
+  <div class="zone-legend map-legend"><span><i style="background:#0369A1"></i>Below range</span><span><i style="background:#0B7A4B"></i>Nominal</span><span><i style="background:#EAB308"></i>Elevated</span><span><i style="background:#B42318"></i>Critical</span><span><i style="background:#64748B"></i>Offline / waiting</span></div>
+ </div>
+</section>
 
  <section class="trend-section" id="trends" aria-label="Thermal trend">
   <div class="panel">
@@ -2221,28 +2275,98 @@ function selectLogTab(rack) {
 }
 </script>
 <script>
+/* ===== Peta rack: warna & status live (zona suhu sama dengan kartu & grafik) + layar penuh ===== */
 (function(){
-  var Z={cool:['#0369A1','#E3F2FB','BELOW RANGE'],ok:['#0B7A4B','#E7F6EE','NOMINAL'],warn:['#EAB308','#FEF9C3','ELEVATED','#854D0E','#422006'],crit:['#B42318','#FDE8E6','CRITICAL'],off:['#64748B','#F1F5F9','OFFLINE'],wait:['#64748B','#F1F5F9','WAITING']};
-  var RACKS=[['61','val1',function(){return lastUpdateR61;}],['77','val77',function(){return lastUpdateR77;}],['139','val2',function(){return lastUpdateR139;}]];
+  var Z={
+    cool:['#0369A1','#E3F2FB','BELOW RANGE','#0369A1','#FFFFFF'],
+    ok:['#0B7A4B','#E7F6EE','NOMINAL','#0B7A4B','#FFFFFF'],
+    warn:['#EAB308','#FEF9C3','ELEVATED','#854D0E','#422006'],
+    crit:['#B42318','#FDE8E6','CRITICAL','#B42318','#FFFFFF'],
+    off:['#64748B','#F1F5F9','OFFLINE','#475569','#FFFFFF'],
+    wait:['#64748B','#F1F5F9','WAITING','#475569','#FFFFFF']
+  };
+  var RACKS=[
+    {id:'61', val:'val1',  last:function(){return lastUpdateR61;}},
+    {id:'77', val:'val77', last:function(){return lastUpdateR77;}},
+    {id:'139',val:'val2',  last:function(){return lastUpdateR139;}}
+  ];
+  var TZ={timeZone:'Asia/Jakarta',hour:'2-digit',minute:'2-digit',second:'2-digit'};
+  function hms(ms){ return new Date(ms).toLocaleTimeString('id-ID',TZ); }
+
   function updateRackMap(){
-    var now=Date.now();
+    var now=Date.now(), newest=0;
     RACKS.forEach(function(r){
-      var id=r[0],c=document.getElementById('mapC'+id),s=document.getElementById('mapSlot'+id);
-      if(!c||!s) return;
-      var last=r[2](),t=parseFloat(document.getElementById(r[1]).textContent);
-      var online=last>0&&(now-last)<OFFLINE_TIMEOUT&&isFinite(t);
-      var z=online?zoneOf(t):(last>0?'off':'wait');
-      c.style.setProperty('--zc',Z[z][0]);c.style.setProperty('--zbg',Z[z][1]);c.style.setProperty('--zt',Z[z][3]||Z[z][0]);
-      s.style.setProperty('--zc',Z[z][0]);document.getElementById('mapL'+id).style.fill=Z[z][4]||'#fff';
-      document.getElementById('mapT'+id).textContent=online?t.toFixed(1)+' °C':'-- °C';
-      document.getElementById('mapS'+id).textContent=Z[z][2];
-      c.classList.toggle('pulse',z==='crit');
+      var c=document.getElementById('mapC'+r.id), s=document.getElementById('mapSlot'+r.id), l=document.getElementById('mapL'+r.id);
+      if(!c||!s||!l) return;
+      var last=r.last(), t=parseFloat(document.getElementById(r.val).textContent);
+      var fresh=last>0 && (now-last)<OFFLINE_TIMEOUT && isFinite(t);
+      if(last>newest) newest=last;
+      var z= fresh ? zoneOf(t) : (last>0 ? 'off' : 'wait');
+      var P=Z[z];
+      c.style.setProperty('--zc',P[0]); c.style.setProperty('--zbg',P[1]); c.style.setProperty('--zt',P[3]);
+      s.style.setProperty('--zc',P[0]);
+      l.style.fill=P[4];
+      document.getElementById('mapT'+r.id).textContent = fresh ? t.toFixed(1)+' °C' : '-- °C';
+      document.getElementById('mapS'+r.id).textContent = P[2];
+      c.classList.toggle('pulse', z==='crit');
     });
+    var u=document.getElementById('mapUpd');
+    if(u) u.textContent = newest ? 'update terakhir '+hms(newest) : 'menunggu data…';
   }
   var _uk=updateKpis;
-  updateKpis=function(){_uk.apply(this,arguments);updateRackMap();};
+  updateKpis=function(){ _uk.apply(this,arguments); updateRackMap(); };
   setInterval(updateRackMap,2000);
   updateRackMap();
+
+  /* ----- Layar penuh: hanya peta dengan latar hitam ----- */
+  var panel=document.getElementById('mapPanel'), fsBtn=document.getElementById('mapFullBtn'), fsClock=document.getElementById('mapFsClock');
+  if(!panel||!fsBtn) return;
+  function nativeFs(){ return document.fullscreenElement||document.webkitFullscreenElement||null; }
+  function paintBtn(on){
+    fsBtn.innerHTML = on ? '<i class="fa-solid fa-compress"></i> KELUAR' : '<i class="fa-solid fa-expand"></i> FULLSCREEN';
+    fsBtn.setAttribute('aria-pressed', on?'true':'false');
+  }
+  function lockLandscape(on){
+    try{
+      var o=screen.orientation; if(!o) return;
+      if(on && o.lock) o.lock('landscape').catch(function(){});
+      else if(!on && o.unlock) o.unlock();
+    }catch(e){}
+  }
+  function enterFs(){
+    panel.classList.add('is-fs'); paintBtn(true);
+    var req=panel.requestFullscreen||panel.webkitRequestFullscreen;
+    if(!req) return;
+    try{
+      var p=req.call(panel);
+      if(p && p.then){ p.then(function(){ panel.dataset.native='1'; lockLandscape(true); }).catch(function(){}); }
+    }catch(e){}
+  }
+  function exitFs(){
+    panel.classList.remove('is-fs'); paintBtn(false); panel.dataset.native='0'; lockLandscape(false);
+    if(nativeFs()){
+      var ex=document.exitFullscreen||document.webkitExitFullscreen;
+      try{ var p=ex.call(document); if(p&&p.catch) p.catch(function(){}); }catch(e){}
+    }
+  }
+  window.toggleMapFullscreen=function(force){
+    var on=panel.classList.contains('is-fs');
+    var want=(typeof force==='boolean')?force:!on;
+    if(want&&!on) enterFs(); else if(!want&&on) exitFs();
+  };
+  function onFsChange(){
+    if(!nativeFs() && panel.dataset.native==='1'){
+      panel.classList.remove('is-fs'); panel.dataset.native='0'; paintBtn(false); lockLandscape(false);
+    }
+  }
+  document.addEventListener('fullscreenchange',onFsChange);
+  document.addEventListener('webkitfullscreenchange',onFsChange);
+  document.addEventListener('keydown',function(e){
+    if(e.key==='Escape' && panel.classList.contains('is-fs') && !nativeFs()) exitFs();
+  });
+  function tick(){ if(fsClock) fsClock.textContent=hms(Date.now()); }
+  tick(); setInterval(tick,1000);
+  paintBtn(false);
 })();
 </script>
 <script>
