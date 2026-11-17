@@ -433,6 +433,14 @@ button{font-family:inherit}
 .map-fs-clock{color:#0B1B2B}
 .map-fs-close{color:#0B1B2B;border:1px solid #B6C4D6;background:#FFFFFF}
 .map-fs-close:hover{background:#EEF2F7}
+/* ===== v8: jam layar penuh dekat tulisan LIVE ===== */
+.map-panel:fullscreen .map-fs-bar,.map-panel.is-fs .map-fs-bar{justify-content:flex-start;gap:10px}
+.map-panel:fullscreen .map-fs-close,.map-panel.is-fs .map-fs-close{margin-left:auto}
+/* ===== v8: judul dan jam layar penuh sejajar ===== */
+.map-panel:fullscreen .map-fs-bar,.map-panel.is-fs .map-fs-bar{align-items:center}
+.map-panel:fullscreen .map-fs-title,.map-panel.is-fs .map-fs-title{line-height:1;font-size:13px}
+.map-panel:fullscreen .map-fs-title i,.map-panel.is-fs .map-fs-title i{line-height:1}
+.map-panel:fullscreen .map-fs-clock,.map-panel.is-fs .map-fs-clock{font-size:13px;line-height:1;font-weight:800;letter-spacing:.6px;display:inline-block;padding-top:0;margin:0}
 </style>
 </head>
 <body>
@@ -2339,7 +2347,7 @@ function selectLogTab(rack) {
       c.classList.toggle('pulse', z==='crit');
     });
     var u=document.getElementById('mapUpd');
-    if(u) u.textContent = newest ? 'Most recent update '+hms(newest) : 'menunggu data…';
+    if(u) u.textContent = newest ? 'Last synced '+hms(newest) : 'menunggu data…';
   }
   var _uk=updateKpis;
   updateKpis=function(){ _uk.apply(this,arguments); updateRackMap(); };
