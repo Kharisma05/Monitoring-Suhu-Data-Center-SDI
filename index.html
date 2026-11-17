@@ -411,14 +411,17 @@ button{font-family:inherit}
 /* ===== v8: background putih, sidebar ringkas (desktop) ===== */
 :root{--bg-color:#FFFFFF}
 @media (min-width:901px){
- .sidebar{flex:0 0 92px;max-width:92px;padding:18px 8px;gap:18px}
- .side-nav{gap:6px}
+ .sidebar{flex:0 0 92px;max-width:92px;padding:18px 4px;gap:18px}
+ .side-nav{display:grid;grid-template-columns:1fr 1fr;gap:4px}
+ .side-nav a:nth-child(-n+4){grid-column:span 2}
  .side-nav a{flex-direction:column;justify-content:center;gap:5px;padding:10px 2px;font-size:10px;text-align:center;line-height:1.15}
- .side-nav i{width:auto;font-size:16px}
+ .side-nav i{width:auto;font-size:13px}
+ .side-nav a:nth-child(n+5){font-size:9px}
  .side-status{padding:10px 8px;gap:8px;align-items:center}
  .side-status b{font-size:9px;letter-spacing:.4px;text-align:center}
- .side-row{justify-content:center;font-size:0}
- .side-row span:last-child{display:none}
+ .side-row{flex-direction:column;justify-content:center;gap:4px;font-size:0}
+ .side-row .side-txt{display:none}
+ .side-tag{font-size:9px;font-weight:700;letter-spacing:.4px;line-height:1;color:#9FB2C9;text-align:center}
 }
 /* ===== v8: kotak suhu di HP diperbesar (skala di atas peta) ===== */
 @media (max-width:640px){
@@ -449,6 +452,8 @@ button{font-family:inherit}
 }
 /* ===== v8: huruf legenda peta lebih besar ===== */
 .map-legend,.map-legend span{font-size:14px}
+/* ===== v9: titik status sistem diberi label (DB, SENSOR, DATA) ===== */
+.side-dot.warn{background:#FBBF24}
 </style>
 </head>
 <body>
@@ -466,8 +471,9 @@ button{font-family:inherit}
  </nav>
  <div class="side-status">
   <b>SYSTEM</b>
-  <div class="side-row"><span class="side-dot" id="dbDot"></span><span id="dbText">Connecting…</span></div>
-  <div class="side-row"><span class="side-dot" id="sensorDot"></span><span id="sensorText">Sensors: waiting</span></div>
+  <div class="side-row"><span class="side-dot" id="dbDot"></span><span class="side-txt" id="dbText">Connecting…</span><span class="side-tag">DB</span></div>
+  <div class="side-row"><span class="side-dot" id="sensorDot"></span><span class="side-txt" id="sensorText">Sensors: waiting</span><span class="side-tag">SENSOR</span></div>
+  <div class="side-row"><span class="side-dot" id="dataDot"></span><span class="side-txt" id="dataText">Data: waiting</span><span class="side-tag">DATA</span></div>
  </div>
 </aside>
 
@@ -596,7 +602,7 @@ button{font-family:inherit}
   <div class="panel-head">
    <div>
     <h2>Rack location map</h2>
-    <span class="sub">Live thermal condition · panah menunjuk tiap rack · <span id="mapUpd">menunggu data…</span></span>
+    <span class="sub">Live thermal condition · <span id="mapUpd">menunggu data…</span></span>
    </div>
    <button type="button" class="btn-mini map-full-btn" id="mapFullBtn" aria-pressed="false" title="Tampilkan peta layar penuh" onclick="toggleMapFullscreen()"><i class="fa-solid fa-expand"></i> FULLSCREEN</button>
   </div>
@@ -2355,7 +2361,17 @@ function selectLogTab(rack) {
       c.classList.toggle('pulse', z==='crit');
     });
     var u=document.getElementById('mapUpd');
-    if(u) u.textContent = newest ? 'update terakhir '+hms(newest) : 'menunggu data…';
+    if(u) u.textContent = newest ? 'Last synced '+hms(newest) : 'menunggu data…';
+    /* status DATA di kotak SYSTEM: hijau <1 menit, kuning 1-5 menit, merah >5 menit */
+    var dd=document.getElementById('dataDot'), dt=document.getElementById('dataText');
+    if(dd && dt){
+      if(!newest){ dd.className='side-dot'; dt.textContent='Data: waiting'; }
+      else{
+        var age=now-newest, sec=Math.round(age/1000);
+        dd.className='side-dot '+(age<60000 ? 'ok' : (age<OFFLINE_TIMEOUT ? 'warn' : 'bad'));
+        dt.textContent='Data: '+(sec<60 ? sec+' dtk lalu' : Math.floor(sec/60)+' mnt lalu');
+      }
+    }
   }
   var _uk=updateKpis;
   updateKpis=function(){ _uk.apply(this,arguments); updateRackMap(); };
