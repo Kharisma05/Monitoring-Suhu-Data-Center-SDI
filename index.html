@@ -2339,7 +2339,7 @@ function selectLogTab(rack) {
       c.classList.toggle('pulse', z==='crit');
     });
     var u=document.getElementById('mapUpd');
-    if(u) u.textContent = newest ? 'update terakhir '+hms(newest) : 'menunggu data…';
+    if(u) u.textContent = newest ? 'Most recent update '+hms(newest) : 'menunggu data…';
   }
   var _uk=updateKpis;
   updateKpis=function(){ _uk.apply(this,arguments); updateRackMap(); };
