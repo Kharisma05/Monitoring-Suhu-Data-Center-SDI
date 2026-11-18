@@ -2365,7 +2365,7 @@ function selectLogTab(rack) {
       c.classList.toggle('pulse', z==='crit');
     });
     var u=document.getElementById('mapUpd');
-    if(u) u.textContent = newest ? 'Last synced'+hms(newest) : 'menunggu data…';
+    if(u) u.textContent = newest ? 'Last synced '+hms(newest) : 'menunggu data…';
     /* status DATA di kotak SYSTEM: hijau <1 menit, kuning 1-5 menit, merah >5 menit */
     var dd=document.getElementById('dataDot'), dt=document.getElementById('dataText');
     if(dd && dt){
