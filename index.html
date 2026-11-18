@@ -606,7 +606,7 @@ button{font-family:inherit}
   <div class="panel-head">
    <div>
     <h2>Rack location map</h2>
-    <span class="sub">Live thermal condition · panah menunjuk tiap rack · <span id="mapUpd">menunggu data…</span></span>
+    <span class="sub">Live thermal condition · <span id="mapUpd">menunggu data…</span></span>
    </div>
    <button type="button" class="btn-mini map-full-btn" id="mapFullBtn" aria-pressed="false" title="Tampilkan peta layar penuh" onclick="toggleMapFullscreen()"><i class="fa-solid fa-expand"></i> FULLSCREEN</button>
   </div>
@@ -2365,7 +2365,7 @@ function selectLogTab(rack) {
       c.classList.toggle('pulse', z==='crit');
     });
     var u=document.getElementById('mapUpd');
-    if(u) u.textContent = newest ? 'update terakhir '+hms(newest) : 'menunggu data…';
+    if(u) u.textContent = newest ? 'Last synced'+hms(newest) : 'menunggu data…';
     /* status DATA di kotak SYSTEM: hijau <1 menit, kuning 1-5 menit, merah >5 menit */
     var dd=document.getElementById('dataDot'), dt=document.getElementById('dataText');
     if(dd && dt){
