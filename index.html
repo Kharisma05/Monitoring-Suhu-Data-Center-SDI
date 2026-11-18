@@ -1851,7 +1851,7 @@ async function togglePiPWidget() {
                 display: flex; flex-direction: column;
             }
 
-            .pip-head { position: relative; flex: 0 0 auto; display: none; align-items: center; justify-content: center; padding: calc(var(--u) * .08) calc(var(--u) * .12) 0; min-width: 0; }
+            .pip-head { position: relative; flex: 0 0 auto; display: flex; align-items: center; justify-content: center; padding: calc(var(--u) * .08) calc(var(--u) * .12) 0; min-width: 0; }
             .pip-title { flex: 0 0 auto; display: flex; align-items: baseline; justify-content: center; gap: calc(var(--u) * .25); width: max-content; font-size: var(--hf); color: #000000; letter-spacing: .04em; font-weight: 800; line-height: 1.15; white-space: nowrap; transition: opacity .2s ease; }
             .pip-title-text { flex: 0 0 auto; }
             .pip-clock { flex: 0 0 auto; font-variant-numeric: tabular-nums; color: #000000; font-weight: 900; letter-spacing: .04em; font-size: 1em; line-height: 1.15; }
