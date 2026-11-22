@@ -502,6 +502,14 @@ html[data-theme="dark"] .ts-sun{display:block}
 @media (max-width:900px){.theme-switch{width:24px;height:44px;flex-direction:column;justify-content:flex-start;padding:3px 0}.ts-knob{margin:0}html[data-theme="dark"] .theme-switch .ts-knob{transform:translateY(18px)}}
 @media (max-width:900px){.side-nav{grid-template-columns:repeat(3,auto);justify-content:space-between;width:calc(100% - 18px)}.theme-switch{right:4px}}
 @media (max-width:359px){.side-nav a{gap:5px;padding:11px 3px;font-size:12px}}
+/* switch: warna dan ukuran menyatu dengan menu sidebar */
+.theme-switch{background:#17314F;border:1px solid #2B4A6E;box-shadow:none}
+html[data-theme="dark"] .theme-switch{background:#17314F;border-color:#2B4A6E}
+.ts-knob{background:#C4D2E4;box-shadow:none}
+html[data-theme="dark"] .ts-knob{background:#C4D2E4}
+.ts-moon{color:#0B1520}
+.ts-sun{color:#F59E0B}
+@media (max-width:900px){.theme-switch{width:20px;height:38px;padding:2px 0;right:8px}.ts-knob{width:14px;height:14px}.ts-moon,.ts-sun{width:8px;height:8px}}
 </style>
 </head>
 <body>
