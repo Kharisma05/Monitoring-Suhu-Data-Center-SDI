@@ -510,6 +510,14 @@ html[data-theme="dark"] .ts-knob{background:#C4D2E4}
 .ts-moon{color:#0B1520}
 .ts-sun{color:#F59E0B}
 @media (max-width:900px){.theme-switch{width:20px;height:38px;padding:2px 0;right:8px}.ts-knob{width:14px;height:14px}.ts-moon,.ts-sun{width:8px;height:8px}}
+/* ===== NAMA KOTAK BESAR (manual) ===== */
+.map-svg .rk,.map-svg .nr{cursor:pointer}
+.map-svg .bx-name{font:700 32px Inter,Arial,sans-serif;fill:#0B1B2B;stroke:#FFFFFF;stroke-width:6px;paint-order:stroke;stroke-linejoin:round;pointer-events:none}
+html[data-theme="dark"] .map-svg .bx-name{fill:#E6EEF8;stroke:#0B1520}
+.map-svg .bxn{transform:scale(var(--cs,1));transform-box:fill-box;transform-origin:50% 50%}
+.map-svg .bx-name.bx-in{fill:#FFFFFF;stroke:none;font-size:28px}
+html[data-theme="dark"] .map-svg .bx-name.bx-in{fill:#FFFFFF;stroke:none}
+.map-svg .sl:not(.hot){cursor:pointer}
 </style>
 </head>
 <body>
@@ -583,7 +591,7 @@ html[data-theme="dark"] .ts-knob{background:#C4D2E4}
     <div id="ind2" class="indicator"><span class="dot-icon">●</span> RACK 139 CONNECTING…</div>
    </div>
    <button type="button" class="audio-btn active" id="audioToggle" onclick="toggleAudio()"><div><i class="fa-solid fa-volume-high" id="audioIcon" style="color:var(--accent-green);"></i><b>THERMAL ALARM:</b><span id="audioStatusText" style="color:var(--accent-green);font-weight:800;">ACTIVE</span></div></button>
-   <button type="button" class="audio-btn" id="pipToggleBtn" onclick="togglePiPWidget()"><div><i class="fa-solid fa-window-restore" id="pipIcon" style="color:var(--accent-blue);"></i><b>TELEMETRY OVERLAY:</b><span id="pipStatusText" style="color:var(--text-dim);font-weight:800;">OFF</span></div></button>
+   <button type="button" class="audio-btn" id="pipToggleBtn" onclick="togglePiPWidget()"><div><i class="fa-solid fa-window-restore" id="pipIcon" style="color:var(--accent-blue);"></i><b>FLOATING MONITOR:</b><span id="pipStatusText" style="color:var(--text-dim);font-weight:800;">OFF</span></div></button>
   </div>
  </header>
 
@@ -2545,6 +2553,105 @@ function selectLogTab(rack) {
   new MutationObserver(count).observe(list,{childList:true}); count();
   if('ResizeObserver' in window) new ResizeObserver(sync).observe(act);
   window.addEventListener('resize',sync);
+})();
+</script>
+<script>
+/* ===== NAMA KOTAK & ISI RACK: disimpan di Firebase (semua browser/device ikut), localStorage sebagai cache ===== */
+(function(){
+  var svg=document.querySelector('#mapPanel .map-svg');
+  if(!svg) return;
+  var NS='http://www.w3.org/2000/svg';
+  function skey(k){ return k.replace(/[.#$\[\]\/]/g,'_'); }
+  function readCache(name){ try{ return JSON.parse(localStorage.getItem(name)||'{}')||{}; }catch(e){ return {}; } }
+  function writeCache(name,obj){ try{ localStorage.setItem(name, JSON.stringify(obj)); }catch(e){} }
+  function fbRef(path){ try{ return db.ref(path); }catch(e){ return null; } }
+
+  /* ---------- kotak besar (baris rack & non-rack) ---------- */
+  var BOX_CACHE='dcsdi-box-names', BOX_PATH='denah/boxNames', boxNames=readCache(BOX_CACHE);
+  var layer=document.createElementNS(NS,'g'); layer.setAttribute('class','bx-layer'); svg.appendChild(layer);
+  function boxKey(r){ return skey(r.getAttribute('class')+'@'+r.getAttribute('x')+','+r.getAttribute('y')); }
+  var groups={}, texts={};
+  function cs(){
+    var w=svg.getBoundingClientRect().width; if(!w) return 1;
+    return Math.max(1,Math.min(1.9,15/(50*(w/1888))));
+  }
+  function fitText(k){
+    var t=texts[k]; if(!t || t.getAttribute('class').indexOf('bx-in')<0) return;
+    var len=parseFloat(t.getAttribute('data-len')), n=Math.max(1,t.textContent.length);
+    t.style.fontSize=Math.max(12,Math.min(28,(len-16)/(0.6*n*cs()))).toFixed(1)+'px';
+  }
+  function renderBox(r){
+    var k=boxKey(r);
+    if(groups[k]){ groups[k].parentNode.removeChild(groups[k]); delete groups[k]; delete texts[k]; }
+    var name=boxNames[k]; if(!name) return;
+    var x=+r.getAttribute('x'), y=+r.getAttribute('y'), w=+r.getAttribute('width'), h=+r.getAttribute('height');
+    var g=document.createElementNS(NS,'g'); g.setAttribute('class','bxn');
+    var t=document.createElementNS(NS,'text'); t.textContent=name;
+    if(r.getAttribute('class')==='rk'){
+      t.setAttribute('class','bx-name');
+      t.setAttribute('x', x+w-8); t.setAttribute('y', y-9); t.setAttribute('text-anchor','end');
+      g.style.transformOrigin='100% 100%';
+    } else {
+      var cx=x+w/2, cy=y+h/2, tall=h>w;
+      t.setAttribute('class','bx-name bx-in');
+      t.setAttribute('x', cx); t.setAttribute('y', cy);
+      t.setAttribute('text-anchor','middle'); t.setAttribute('dominant-baseline','central');
+      if(tall) t.setAttribute('transform','rotate(-90 '+cx+' '+cy+')');
+      t.setAttribute('data-len', tall ? h : w);
+      g.style.transformOrigin='50% 50%';
+    }
+    g.appendChild(t); layer.appendChild(g); groups[k]=g; texts[k]=t;
+    g.style.setProperty('--cs', cs().toFixed(3));
+    fitText(k);
+  }
+  var boxEls=[].slice.call(svg.querySelectorAll('rect.rk, rect.nr'));
+  function renderAllBoxes(){ boxEls.forEach(renderBox); }
+  function fitLabels(){
+    var v=cs().toFixed(3);
+    Object.keys(groups).forEach(function(k){ groups[k].style.setProperty('--cs',v); fitText(k); });
+  }
+  renderAllBoxes();
+  svg.addEventListener('click', function(e){
+    var r=e.target.closest ? e.target.closest('rect.rk, rect.nr') : null;
+    if(!r) return;
+    var k=boxKey(r), v=window.prompt('Nama kotak ini (kosongkan untuk menghapus):', boxNames[k]||'');
+    if(v===null) return;
+    v=v.trim().slice(0,30);
+    if(v) boxNames[k]=v; else delete boxNames[k];
+    writeCache(BOX_CACHE, boxNames); renderBox(r);
+    var ref=fbRef(BOX_PATH+'/'+k);
+    if(ref){ (v ? ref.set(v) : ref.remove()).catch(function(err){ console.warn('Gagal simpan nama kotak', err); }); }
+  });
+  var bRef=fbRef(BOX_PATH);
+  if(bRef){ bRef.on('value', function(snap){ boxNames=snap.val()||{}; writeCache(BOX_CACHE, boxNames); renderAllBoxes(); }); }
+  window.addEventListener('resize', fitLabels);
+  document.addEventListener('fullscreenchange', function(){ setTimeout(fitLabels,60); });
+
+  /* ---------- isi rack (slot kecil) ---------- */
+  var SLOT_CACHE='dcsdi-slot-names', SLOT_PATH='denah/slotNames', slotNames=readCache(SLOT_CACHE);
+  function slotKey(r){ return skey('sl@'+r.getAttribute('x')+','+r.getAttribute('y')); }
+  function renderSlot(r){
+    var k=slotKey(r), old=r.querySelector(':scope > title');
+    if(old) r.removeChild(old);
+    if(!slotNames[k]) return;
+    var t=document.createElementNS(NS,'title'); t.textContent=slotNames[k]; r.appendChild(t);
+  }
+  var slotEls=[].slice.call(svg.querySelectorAll('rect.sl:not(.hot)'));
+  function renderAllSlots(){ slotEls.forEach(renderSlot); }
+  renderAllSlots();
+  svg.addEventListener('click', function(e){
+    var r=e.target.closest ? e.target.closest('rect.sl:not(.hot)') : null;
+    if(!r) return;
+    var k=slotKey(r), v=window.prompt('Nama isi rack ini (kosongkan untuk menghapus):', slotNames[k]||'');
+    if(v===null) return;
+    v=v.trim().slice(0,40);
+    if(v) slotNames[k]=v; else delete slotNames[k];
+    writeCache(SLOT_CACHE, slotNames); renderSlot(r);
+    var ref=fbRef(SLOT_PATH+'/'+k);
+    if(ref){ (v ? ref.set(v) : ref.remove()).catch(function(err){ console.warn('Gagal simpan nama slot', err); }); }
+  });
+  var sRef=fbRef(SLOT_PATH);
+  if(sRef){ sRef.on('value', function(snap){ slotNames=snap.val()||{}; writeCache(SLOT_CACHE, slotNames); renderAllSlots(); }); }
 })();
 </script>
 </body>
