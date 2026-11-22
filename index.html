@@ -518,6 +518,9 @@ html[data-theme="dark"] .map-svg .bx-name{fill:#E6EEF8;stroke:#0B1520}
 .map-svg .bx-name.bx-in{fill:#FFFFFF;stroke:none;font-size:28px}
 html[data-theme="dark"] .map-svg .bx-name.bx-in{fill:#FFFFFF;stroke:none}
 .map-svg .sl:not(.hot){cursor:pointer}
+.map-svg .cg{cursor:pointer}
+.map-svg .bx-name.bx-in.bx-cage{fill:#0B1B2B;stroke:none}
+html[data-theme="dark"] .map-svg .bx-name.bx-in.bx-cage{fill:#E6EEF8;stroke:none}
 </style>
 </head>
 <body>
@@ -2593,7 +2596,7 @@ function selectLogTab(rack) {
       g.style.transformOrigin='100% 100%';
     } else {
       var cx=x+w/2, cy=y+h/2, tall=h>w;
-      t.setAttribute('class','bx-name bx-in');
+      t.setAttribute('class','bx-name bx-in'+(r.getAttribute('class')==='cg'?' bx-cage':''));
       t.setAttribute('x', cx); t.setAttribute('y', cy);
       t.setAttribute('text-anchor','middle'); t.setAttribute('dominant-baseline','central');
       if(tall) t.setAttribute('transform','rotate(-90 '+cx+' '+cy+')');
@@ -2604,7 +2607,7 @@ function selectLogTab(rack) {
     g.style.setProperty('--cs', cs().toFixed(3));
     fitText(k);
   }
-  var boxEls=[].slice.call(svg.querySelectorAll('rect.rk, rect.nr'));
+  var boxEls=[].slice.call(svg.querySelectorAll('rect.rk, rect.nr, rect.cg'));
   function renderAllBoxes(){ boxEls.forEach(renderBox); }
   function fitLabels(){
     var v=cs().toFixed(3);
@@ -2612,7 +2615,7 @@ function selectLogTab(rack) {
   }
   renderAllBoxes();
   svg.addEventListener('click', function(e){
-    var r=e.target.closest ? e.target.closest('rect.rk, rect.nr') : null;
+    var r=e.target.closest ? e.target.closest('rect.rk, rect.nr, rect.cg') : null;
     if(!r) return;
     var k=boxKey(r), v=window.prompt('Nama kotak ini (kosongkan untuk menghapus):', boxNames[k]||'');
     if(v===null) return;
