@@ -521,6 +521,8 @@ html[data-theme="dark"] .map-svg .bx-name.bx-in{fill:#FFFFFF;stroke:none}
 .map-svg .cg{cursor:pointer}
 .map-svg .bx-name.bx-in.bx-cage{fill:#0B1B2B;stroke:none}
 html[data-theme="dark"] .map-svg .bx-name.bx-in.bx-cage{fill:#E6EEF8;stroke:none}
+.map-svg .d1,.map-svg .d2,.map-svg .d3{cursor:pointer}
+.map-svg .dw,.map-svg .dl{pointer-events:none}
 </style>
 </head>
 <body>
@@ -2590,10 +2592,16 @@ function selectLogTab(rack) {
     var x=+r.getAttribute('x'), y=+r.getAttribute('y'), w=+r.getAttribute('width'), h=+r.getAttribute('height');
     var g=document.createElementNS(NS,'g'); g.setAttribute('class','bxn');
     var t=document.createElementNS(NS,'text'); t.textContent=name;
-    if(r.getAttribute('class')==='rk'){
+    var cls=r.getAttribute('class');
+    if(cls==='rk'){
       t.setAttribute('class','bx-name');
       t.setAttribute('x', x+w-8); t.setAttribute('y', y-9); t.setAttribute('text-anchor','end');
       g.style.transformOrigin='100% 100%';
+    } else if(/^d[123]$/.test(cls)){
+      /* pintu: nama di atas pintu, rata kiri */
+      t.setAttribute('class','bx-name');
+      t.setAttribute('x', x+4); t.setAttribute('y', y-9); t.setAttribute('text-anchor','start');
+      g.style.transformOrigin='0% 100%';
     } else {
       var cx=x+w/2, cy=y+h/2, tall=h>w;
       t.setAttribute('class','bx-name bx-in'+(r.getAttribute('class')==='cg'?' bx-cage':''));
@@ -2607,7 +2615,7 @@ function selectLogTab(rack) {
     g.style.setProperty('--cs', cs().toFixed(3));
     fitText(k);
   }
-  var boxEls=[].slice.call(svg.querySelectorAll('rect.rk, rect.nr, rect.cg'));
+  var boxEls=[].slice.call(svg.querySelectorAll('rect.rk, rect.nr, rect.cg, rect.d1, rect.d2, rect.d3'));
   function renderAllBoxes(){ boxEls.forEach(renderBox); }
   function fitLabels(){
     var v=cs().toFixed(3);
@@ -2615,7 +2623,7 @@ function selectLogTab(rack) {
   }
   renderAllBoxes();
   svg.addEventListener('click', function(e){
-    var r=e.target.closest ? e.target.closest('rect.rk, rect.nr, rect.cg') : null;
+    var r=e.target.closest ? e.target.closest('rect.rk, rect.nr, rect.cg, rect.d1, rect.d2, rect.d3') : null;
     if(!r) return;
     var k=boxKey(r), v=window.prompt('Nama kotak ini (kosongkan untuk menghapus):', boxNames[k]||'');
     if(v===null) return;
