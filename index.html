@@ -10,6 +10,7 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.js"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script>try{if(localStorage.getItem('dcsdi-theme')==='dark')document.documentElement.setAttribute('data-theme','dark')}catch(e){}</script>
 <style>
 :root{--bg-color:#F3F6FA;--card-color:#FFFFFF;--text-main:#0B1B2B;--text-dim:#51607A;--accent-blue:#0369A1;--accent-green:#0B7A4B;--accent-red:#B42318;--accent-orange:#9A4A06;--accent-teal:#0F766E;--line:#E1E8F0;--navy:#0B1B2B}
 *{box-sizing:border-box}
@@ -458,6 +459,45 @@ button{font-family:inherit}
 @media (min-width:1200px){
  .ops-grid{align-items:stretch!important}
 }
+/* ===== DARK THEME ===== */
+html[data-theme="dark"]{--bg-color:#070F1C;--card-color:#101D2E;--text-main:#F4F8FD;--text-dim:#AFC2D9;--accent-blue:#4CC9F0;--accent-green:#3DDC97;--accent-red:#FF6B6B;--accent-orange:#FFB020;--accent-teal:#2EE6D6;--line:#25394F;--navy:#050C17;color-scheme:dark}
+html[data-theme="dark"] .indicator,html[data-theme="dark"] .audio-btn,html[data-theme="dark"] .btn-mini,html[data-theme="dark"] .year-select,html[data-theme="dark"] .chip-dev,html[data-theme="dark"] .modal-content,html[data-theme="dark"] .toast-card{background:#16263A;border-color:#2A3F57;color:var(--text-main)}
+html[data-theme="dark"] .indicator.offline{background:#2A1716;border-color:#5A2A28}
+html[data-theme="dark"] .audio-btn:hover,html[data-theme="dark"] .btn-mini:hover,html[data-theme="dark"] .btn-day,html[data-theme="dark"] .stat,html[data-theme="dark"] .log-status,html[data-theme="dark"] .records-info:hover,html[data-theme="dark"] .tabs,html[data-theme="dark"] .status-tag,html[data-theme="dark"] .inc-badge{background:#1A2D43}
+html[data-theme="dark"] .btn-day,html[data-theme="dark"] .stat,html[data-theme="dark"] .log-status{border-color:#2A3F57}
+html[data-theme="dark"] .btn-day:hover{background:var(--accent-blue);border-color:var(--accent-blue);color:#06101C}
+html[data-theme="dark"] .notification-type.warning,html[data-theme="dark"] .lvl-warn{background:rgba(251,191,36,.14);color:#FBBF24}
+html[data-theme="dark"] .notification-type.critical,html[data-theme="dark"] .lvl-crit,html[data-theme="dark"] .inc-badge.has{background:rgba(248,113,113,.16);color:#F87171}
+html[data-theme="dark"] .notification-type.verycritical{background:rgba(248,113,113,.26);color:#FCA5A5}
+html[data-theme="dark"] .lvl-cool{background:rgba(56,189,248,.14);color:#38BDF8}
+html[data-theme="dark"] [style*="background:#fff;"],html[data-theme="dark"] [style*="background:#F6F8FB"]{background:#121F2F !important;border-color:#22344A !important}
+html[data-theme="dark"] [style*="background:#E3F2FB"]{background:#10283D !important}
+html[data-theme="dark"] .map-svg .frame{fill:#0A1828;stroke:#4F86BF}
+html[data-theme="dark"] .map-svg .rk{fill:#173A63;stroke:#3E7CB8}
+html[data-theme="dark"] .map-svg .sl:not(.hot){fill:#2B63A0;stroke:#7FB8EA}
+html[data-theme="dark"] .map-svg .cg,html[data-theme="dark"] .map-svg .d2{fill:#1B3F68;stroke:#3E7CB8}
+html[data-theme="dark"] .map-svg .nr{stroke:#0B1520}
+html[data-theme="dark"] .map-svg .dw,html[data-theme="dark"] .map-svg .dl{stroke:#D5E1EF}
+html[data-theme="dark"] .map-svg .arh,html[data-theme="dark"] .map-svg .arp{stroke:#0E1B2B}
+html[data-theme="dark"] .map-svg .cot{fill:#9FB2C9}
+html[data-theme="dark"] .map-svg .cov{fill:#F1F5FA}
+html[data-theme="dark"] .map-svg .co{--zbg:#18293D !important;--zt:#E6EEF8 !important}
+html[data-theme="dark"] .map-panel:fullscreen,html[data-theme="dark"] .map-panel.is-fs{background:#0B1520}
+html[data-theme="dark"] .map-panel .map-fs-bar,html[data-theme="dark"] .map-fs-clock{color:#E6EEF8}
+html[data-theme="dark"] .map-fs-close{color:#E6EEF8;border-color:rgba(255,255,255,.28);background:rgba(255,255,255,.08)}
+html[data-theme="dark"] .map-fs-close:hover{background:rgba(255,255,255,.16)}
+.main{position:relative}
+html[data-theme="dark"] .card,html[data-theme="dark"] .panel,html[data-theme="dark"] .kpi-row{background:linear-gradient(180deg,#132439 0%,#0E1B2C 100%);box-shadow:0 10px 30px rgba(0,0,0,.35),inset 0 1px 0 rgba(255,255,255,.04)}
+.theme-switch{position:absolute;top:14px;right:14px;z-index:5;width:44px;height:24px;padding:0;border:1px solid var(--line);border-radius:999px;background:#DCE5EF;cursor:pointer;display:flex;align-items:center;box-shadow:0 1px 2px rgba(11,27,43,.08);transition:background .25s,border-color .25s}
+.theme-switch:focus-visible{outline:2px solid var(--accent-blue);outline-offset:2px}
+.ts-knob{width:18px;height:18px;margin-left:2px;border-radius:50%;background:#fff;display:flex;align-items:center;justify-content:center;box-shadow:0 1px 3px rgba(0,0,0,.25);transition:transform .25s,background .25s}
+.ts-moon{display:block;color:#0B1B2B}
+.ts-sun{display:none;color:#FBBF24}
+html[data-theme="dark"] .theme-switch{background:#1B3450;border-color:#2F4A69}
+html[data-theme="dark"] .ts-knob{transform:translateX(20px);background:#0B1520}
+html[data-theme="dark"] .ts-moon{display:none}
+html[data-theme="dark"] .ts-sun{display:block}
+@media (prefers-reduced-motion:reduce){.theme-switch,.ts-knob{transition:none}}
 </style>
 </head>
 <body>
@@ -482,6 +522,7 @@ button{font-family:inherit}
 </aside>
 
 <main class="main" id="top">
+  <button type="button" class="theme-switch" id="themeToggle" onclick="toggleTheme()" aria-label="Ganti tema" title="Ganti tema" aria-pressed="false"><span class="ts-knob"><svg class="ts-moon" viewBox="0 0 24 24" width="11" height="11" aria-hidden="true"><path fill="currentColor" d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg><svg class="ts-sun" viewBox="0 0 24 24" width="11" height="11" aria-hidden="true"><circle cx="12" cy="12" r="4.5" fill="currentColor"/><path stroke="currentColor" stroke-width="2.2" stroke-linecap="round" d="M12 2.5v2.2M12 19.3v2.2M2.5 12h2.2M19.3 12h2.2M5.3 5.3l1.6 1.6M17.1 17.1l1.6 1.6M5.3 18.7l1.6-1.6M17.1 6.9l1.6-1.6"/></svg></span></button>
  <header class="page-head head-center">
   <div class="head-brand">
    <div class="head-logo"><svg class="head-logo-svg" width="72" height="72" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="DC-SDI server and thermometer logo">
@@ -864,6 +905,37 @@ function playCriticalAlarmSound() {
         }
     } catch(e) {}
 }
+/* ===== TEMA (terang / gelap) ===== */
+function isDark(){ return document.documentElement.getAttribute('data-theme') === 'dark'; }
+function themeTick(){ return isDark() ? '#9FB2C9' : '#51607A'; }
+function themeGrid(){ return isDark() ? 'rgba(159,178,201,.14)' : 'rgba(11,27,43,.07)'; }
+function themeCross(){ return isDark() ? 'rgba(159,178,201,.45)' : 'rgba(11,27,43,.30)'; }
+function syncThemeUI(){
+  var b = document.getElementById('themeToggle');
+  if (b) b.setAttribute('aria-pressed', isDark() ? 'true' : 'false');
+}
+function applyTheme(mode){
+  var dark = mode === 'dark';
+  document.documentElement.setAttribute('data-theme', dark ? 'dark' : 'light');
+  try { localStorage.setItem('dcsdi-theme', dark ? 'dark' : 'light'); } catch(e) {}
+  syncThemeUI();
+  try {
+    if (window.Chart && Chart.instances) {
+      Object.keys(Chart.instances).forEach(function(k){
+        var c = Chart.instances[k], sc = c.options && c.options.scales;
+        if (!sc) return;
+        Object.keys(sc).forEach(function(a){
+          var ax = sc[a];
+          if (ax.ticks) ax.ticks.color = themeTick();
+          if (ax.grid) ax.grid.color = themeGrid();
+        });
+        c.update('none');
+      });
+    }
+  } catch(e) {}
+}
+function toggleTheme(){ applyTheme(isDark() ? 'light' : 'dark'); }
+document.addEventListener('DOMContentLoaded', syncThemeUI);
 function toggleAudio() {
     isAudioEnabled = !isAudioEnabled;
     const btn = document.getElementById('audioToggle');
@@ -1412,7 +1484,7 @@ const crosshairPlugin = {
         if (!tt || !tt.getActiveElements || !tt.getActiveElements().length) return;
         const x = tt.getActiveElements()[0].element.x, { ctx, chartArea: a } = chart;
         ctx.save();
-        ctx.strokeStyle = 'rgba(11,27,43,.30)'; ctx.lineWidth = 1; ctx.setLineDash([3, 3]);
+        ctx.strokeStyle = themeCross(); ctx.lineWidth = 1; ctx.setLineDash([3, 3]);
         ctx.beginPath(); ctx.moveTo(x, a.top); ctx.lineTo(x, a.bottom); ctx.stroke();
         ctx.restore();
     }
@@ -1501,13 +1573,13 @@ function makeThermalConfig(o) {
                 x: {
                     grid: { display: false }, border: { display: false },
                     ticks: {
-                        color: '#51607A', font: { size: fs }, maxRotation: 0, autoSkip: true, maxTicksLimit: big ? 10 : 5,
+                        color: themeTick(), font: { size: fs }, maxRotation: 0, autoSkip: true, maxTicksLimit: big ? 10 : 5,
                         callback(v) { const s = this.getLabelForValue(v) || ''; return o.tickFmt ? o.tickFmt(s) : s; }
                     }
                 },
                 y: {
-                    position: 'left', grid: { color: 'rgba(11,27,43,.07)' }, border: { display: false },
-                    ticks: { color: '#51607A', font: { size: fs }, maxTicksLimit: 5, padding: 6, includeBounds: false, callback: v => Number(v).toFixed(1) },
+                    position: 'left', grid: { color: themeGrid() }, border: { display: false },
+                    ticks: { color: themeTick(), font: { size: fs }, maxTicksLimit: 5, padding: 6, includeBounds: false, callback: v => Number(v).toFixed(1) },
                     afterDataLimits: fitThermalAxis
                 }
             }
