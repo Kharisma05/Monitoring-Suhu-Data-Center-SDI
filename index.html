@@ -3117,18 +3117,17 @@ function selectLogTab(rack) {
       if(act==='rot' && selected) rotateLabel(selected);
       else if(act==='txt' && selected) editText(selected);
       else if(act==='del' && selected) removeLabel(selected);
-      else if(act==='reset'){
-        if(window.confirm('Kembalikan kartu dan tag ke posisi awal, hapus semua label dan sensor tambahan?')){
-          state={cards:{}, sensors:{}, labels:{}, extras:[]};
-          renderAll(); save();
-        }
-      }
+      else if(act==='reset'){ document.dispatchEvent(new Event('mapResetRequest')); }
       else if(act==='addsensor') addSensor();
       else if(act==='delsensor') removeSensor();
       else if(act==='done') setEditing(false);
     });
   }
 
+  document.addEventListener('mapResetLayout', function(){
+    state={cards:{}, sensors:{}, labels:{}, extras:[]};
+    renderAll(); save();
+  });
   /* ----- muat: cache lokal dulu, lalu Firebase (sumber utama bila ada) ----- */
   function load(){
     var local=readCache();
@@ -3382,12 +3381,16 @@ function selectLogTab(rack) {
     delete boxes[selBox]; selBox=null;
     renderBoxes(); save();
   }
-  function resetBoxes(){
-    if(!window.confirm('Kembalikan semua rack dan kotak ke susunan awal?')) return;
-    boxes=copy(defBoxes); selBox=null;
-    renderBoxes(); save();
+  /* satu reset untuk semuanya: kotak, warna, latar, kartu, tag, label, dan sensor tambahan kembali ke susunan file ini */
+  function resetBoxes(){ document.dispatchEvent(new Event('mapResetRequest')); }
+  function resetView(){ document.dispatchEvent(new Event('mapResetRequest')); }
+  function resetEverything(){
+    if(!window.confirm('Kembalikan SEMUA ke susunan awal? Kotak, warna, latar, kartu suhu, tag, label, dan sensor tambahan akan kembali seperti semula. Nama kotak tidak ikut berubah.')) return;
+    boxes=copy(defBoxes); view=copy(defView); selBox=null; clip=null;
+    applyView(); renderBoxes(); save();
+    document.dispatchEvent(new Event('mapResetLayout'));
   }
-  function resetView(){ view=copy(defView); applyView(); save(); }
+  document.addEventListener('mapResetRequest', resetEverything);
 
   var bar=document.getElementById('mapBoxBar');
   if(bar){
