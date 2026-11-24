@@ -521,6 +521,8 @@ html[data-theme="dark"] .map-svg .bx-name.bx-in{fill:#FFFFFF;stroke:none}
 .map-svg .cg{cursor:pointer}
 .map-svg .bx-name.bx-in.bx-cage{fill:#0B1B2B;stroke:none}
 html[data-theme="dark"] .map-svg .bx-name.bx-in.bx-cage{fill:#E6EEF8;stroke:none}
+.map-svg .bx-name.bx-in.bx-door{fill:#0B1B2B;stroke:#FFFFFF;stroke-width:5px;paint-order:stroke;stroke-linejoin:round}
+html[data-theme="dark"] .map-svg .bx-name.bx-in.bx-door{fill:#0B1B2B;stroke:#FFFFFF;stroke-width:5px;paint-order:stroke;stroke-linejoin:round}
 .map-svg .d1,.map-svg .d2,.map-svg .d3{cursor:pointer}
 .map-svg .dw,.map-svg .dl{pointer-events:none}
 </style>
@@ -2663,10 +2665,13 @@ function selectLogTab(rack) {
       t.setAttribute('x', x+w-8); t.setAttribute('y', y-9); t.setAttribute('text-anchor','end');
       g.style.transformOrigin='100% 100%';
     } else if(kind==='d1'||kind==='d2'||kind==='d3'){
-      /* pintu: nama di atas pintu, rata kiri */
-      t.setAttribute('class','bx-name');
-      t.setAttribute('x', x+4); t.setAttribute('y', y-9); t.setAttribute('text-anchor','start');
-      g.style.transformOrigin='0% 100%';
+      /* pintu: nama di dalam kotak pintu, di tengah, mendatar */
+      var dcx=x+w/2, dcy=y+h/2;
+      t.setAttribute('class','bx-name bx-in bx-door');
+      t.setAttribute('x', dcx); t.setAttribute('y', dcy);
+      t.setAttribute('text-anchor','middle'); t.setAttribute('dominant-baseline','central');
+      t.setAttribute('data-len', w);
+      g.style.transformOrigin='50% 50%';
     } else {
       var cx=x+w/2, cy=y+h/2, tall=h>w;
       t.setAttribute('class','bx-name bx-in'+(kind==='cg'?' bx-cage':''));
@@ -3317,4 +3322,4 @@ function selectLogTab(rack) {
 })();
 </script>
 </body>
-</html>
+ </html>
