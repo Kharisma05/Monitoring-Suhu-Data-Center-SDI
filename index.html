@@ -733,6 +733,7 @@ html[data-theme="dark"] .map-edit-info{color:#CBD5E1}
    <button type="button" class="btn-mini" data-act="del" disabled><i class="fa-solid fa-trash"></i> HAPUS</button>
    <button type="button" class="btn-mini" data-act="addsensor"><i class="fa-solid fa-plus"></i> TAMBAH SENSOR</button>
    <button type="button" class="btn-mini" data-act="delsensor"><i class="fa-solid fa-minus"></i> HAPUS SENSOR</button>
+   <button type="button" class="btn-mini" data-act="copy-desk" id="mapCopyDesk" style="display:none"><i class="fa-solid fa-copy"></i> SALIN DARI DESKTOP</button>
    <button type="button" class="btn-mini" data-act="reset"><i class="fa-solid fa-rotate-left"></i> RESET POSISI</button>
    <button type="button" class="btn-mini" data-act="done"><i class="fa-solid fa-check"></i> DONE EDITING</button>
   </div>
@@ -751,10 +752,6 @@ html[data-theme="dark"] .map-edit-info{color:#CBD5E1}
    <button type="button" class="btn-mini" data-bact="flip" disabled>BALIK PINTU</button>
    <details class="map-palette"><summary class="btn-mini map-pal-btn" title="Pilih warna kotak">WARNA &#9662;</summary><div class="sw-grid"><button type="button" class="sw" data-bact="swatch" data-color="#ffffff" title="Putih" aria-label="Putih" style="--sw:#ffffff" disabled></button><button type="button" class="sw" data-bact="swatch" data-color="#fee2e2" title="Merah sangat terang" aria-label="Merah sangat terang" style="--sw:#fee2e2" disabled></button><button type="button" class="sw" data-bact="swatch" data-color="#ffedd5" title="Oranye sangat terang" aria-label="Oranye sangat terang" style="--sw:#ffedd5" disabled></button><button type="button" class="sw" data-bact="swatch" data-color="#fef3c7" title="Kuning sangat terang" aria-label="Kuning sangat terang" style="--sw:#fef3c7" disabled></button><button type="button" class="sw" data-bact="swatch" data-color="#ecfccb" title="Lime sangat terang" aria-label="Lime sangat terang" style="--sw:#ecfccb" disabled></button><button type="button" class="sw" data-bact="swatch" data-color="#dcfce7" title="Hijau sangat terang" aria-label="Hijau sangat terang" style="--sw:#dcfce7" disabled></button><button type="button" class="sw" data-bact="swatch" data-color="#ccfbf1" title="Toska sangat terang" aria-label="Toska sangat terang" style="--sw:#ccfbf1" disabled></button><button type="button" class="sw" data-bact="swatch" data-color="#e0f2fe" title="Biru langit sangat terang" aria-label="Biru langit sangat terang" style="--sw:#e0f2fe" disabled></button><button type="button" class="sw" data-bact="swatch" data-color="#dbeafe" title="Biru sangat terang" aria-label="Biru sangat terang" style="--sw:#dbeafe" disabled></button><button type="button" class="sw" data-bact="swatch" data-color="#e0e7ff" title="Indigo sangat terang" aria-label="Indigo sangat terang" style="--sw:#e0e7ff" disabled></button><button type="button" class="sw" data-bact="swatch" data-color="#f3e8ff" title="Ungu sangat terang" aria-label="Ungu sangat terang" style="--sw:#f3e8ff" disabled></button><button type="button" class="sw" data-bact="swatch" data-color="#fce7f3" title="Pink sangat terang" aria-label="Pink sangat terang" style="--sw:#fce7f3" disabled></button><button type="button" class="sw" data-bact="swatch" data-color="#e2e8f0" title="Abu terang" aria-label="Abu terang" style="--sw:#e2e8f0" disabled></button><button type="button" class="sw" data-bact="swatch" data-color="#fecaca" title="Merah terang" aria-label="Merah terang" style="--sw:#fecaca" disabled></button><button type="button" class="sw" data-bact="swatch" data-color="#fed7aa" title="Oranye terang" aria-label="Oranye terang" style="--sw:#fed7aa" disabled></button><button type="button" class="sw" data-bact="swatch" data-color="#fde68a" title="Kuning terang" aria-label="Kuning terang" style="--sw:#fde68a" disabled></button><button type="button" class="sw" data-bact="swatch" data-color="#d9f99d" title="Lime terang" aria-label="Lime terang" style="--sw:#d9f99d" disabled></button><button type="button" class="sw" data-bact="swatch" data-color="#bbf7d0" title="Hijau terang" aria-label="Hijau terang" style="--sw:#bbf7d0" disabled></button><button type="button" class="sw" data-bact="swatch" data-color="#99f6e4" title="Toska terang" aria-label="Toska terang" style="--sw:#99f6e4" disabled></button><button type="button" class="sw" data-bact="swatch" data-color="#bae6fd" title="Biru langit terang" aria-label="Biru langit terang" style="--sw:#bae6fd" disabled></button><button type="button" class="sw" data-bact="swatch" data-color="#bfdbfe" title="Biru terang" aria-label="Biru terang" style="--sw:#bfdbfe" disabled></button><button type="button" class="sw" data-bact="swatch" data-color="#c7d2fe" title="Indigo terang" aria-label="Indigo terang" style="--sw:#c7d2fe" disabled></button><button type="button" class="sw" data-bact="swatch" data-color="#e9d5ff" title="Ungu terang" aria-label="Ungu terang" style="--sw:#e9d5ff" disabled></button><button type="button" class="sw" data-bact="swatch" data-color="#fbcfe8" title="Pink terang" aria-label="Pink terang" style="--sw:#fbcfe8" disabled></button><button type="button" class="sw" data-bact="swatch" data-color="#94a3b8" title="Abu cerah" aria-label="Abu cerah" style="--sw:#94a3b8" disabled></button><button type="button" class="sw" data-bact="swatch" data-color="#f87171" title="Merah cerah" aria-label="Merah cerah" style="--sw:#f87171" disabled></button><button type="button" class="sw" data-bact="swatch" data-color="#fb923c" title="Oranye cerah" aria-label="Oranye cerah" style="--sw:#fb923c" disabled></button><button type="button" class="sw" data-bact="swatch" data-color="#fbbf24" title="Kuning cerah" aria-label="Kuning cerah" style="--sw:#fbbf24" disabled></button><button type="button" class="sw" data-bact="swatch" data-color="#a3e635" title="Lime cerah" aria-label="Lime cerah" style="--sw:#a3e635" disabled></button><button type="button" class="sw" data-bact="swatch" data-color="#4ade80" title="Hijau cerah" aria-label="Hijau cerah" style="--sw:#4ade80" disabled></button><button type="button" class="sw" data-bact="swatch" data-color="#2dd4bf" title="Toska cerah" aria-label="Toska cerah" style="--sw:#2dd4bf" disabled></button><button type="button" class="sw" data-bact="swatch" data-color="#38bdf8" title="Biru langit cerah" aria-label="Biru langit cerah" style="--sw:#38bdf8" disabled></button><button type="button" class="sw" data-bact="swatch" data-color="#60a5fa" title="Biru cerah" aria-label="Biru cerah" style="--sw:#60a5fa" disabled></button><button type="button" class="sw" data-bact="swatch" data-color="#818cf8" title="Indigo cerah" aria-label="Indigo cerah" style="--sw:#818cf8" disabled></button><button type="button" class="sw" data-bact="swatch" data-color="#c084fc" title="Ungu cerah" aria-label="Ungu cerah" style="--sw:#c084fc" disabled></button><button type="button" class="sw" data-bact="swatch" data-color="#f472b6" title="Pink cerah" aria-label="Pink cerah" style="--sw:#f472b6" disabled></button><button type="button" class="sw" data-bact="swatch" data-color="#64748b" title="Abu sedang" aria-label="Abu sedang" style="--sw:#64748b" disabled></button><button type="button" class="sw" data-bact="swatch" data-color="#ef4444" title="Merah sedang" aria-label="Merah sedang" style="--sw:#ef4444" disabled></button><button type="button" class="sw" data-bact="swatch" data-color="#f97316" title="Oranye sedang" aria-label="Oranye sedang" style="--sw:#f97316" disabled></button><button type="button" class="sw" data-bact="swatch" data-color="#f59e0b" title="Kuning sedang" aria-label="Kuning sedang" style="--sw:#f59e0b" disabled></button><button type="button" class="sw" data-bact="swatch" data-color="#84cc16" title="Lime sedang" aria-label="Lime sedang" style="--sw:#84cc16" disabled></button><button type="button" class="sw" data-bact="swatch" data-color="#22c55e" title="Hijau sedang" aria-label="Hijau sedang" style="--sw:#22c55e" disabled></button><button type="button" class="sw" data-bact="swatch" data-color="#14b8a6" title="Toska sedang" aria-label="Toska sedang" style="--sw:#14b8a6" disabled></button><button type="button" class="sw" data-bact="swatch" data-color="#0ea5e9" title="Biru langit sedang" aria-label="Biru langit sedang" style="--sw:#0ea5e9" disabled></button><button type="button" class="sw" data-bact="swatch" data-color="#3b82f6" title="Biru sedang" aria-label="Biru sedang" style="--sw:#3b82f6" disabled></button><button type="button" class="sw" data-bact="swatch" data-color="#6366f1" title="Indigo sedang" aria-label="Indigo sedang" style="--sw:#6366f1" disabled></button><button type="button" class="sw" data-bact="swatch" data-color="#a855f7" title="Ungu sedang" aria-label="Ungu sedang" style="--sw:#a855f7" disabled></button><button type="button" class="sw" data-bact="swatch" data-color="#ec4899" title="Pink sedang" aria-label="Pink sedang" style="--sw:#ec4899" disabled></button><button type="button" class="sw" data-bact="swatch" data-color="#334155" title="Abu gelap" aria-label="Abu gelap" style="--sw:#334155" disabled></button><button type="button" class="sw" data-bact="swatch" data-color="#b91c1c" title="Merah gelap" aria-label="Merah gelap" style="--sw:#b91c1c" disabled></button><button type="button" class="sw" data-bact="swatch" data-color="#c2410c" title="Oranye gelap" aria-label="Oranye gelap" style="--sw:#c2410c" disabled></button><button type="button" class="sw" data-bact="swatch" data-color="#b45309" title="Kuning gelap" aria-label="Kuning gelap" style="--sw:#b45309" disabled></button><button type="button" class="sw" data-bact="swatch" data-color="#4d7c0f" title="Lime gelap" aria-label="Lime gelap" style="--sw:#4d7c0f" disabled></button><button type="button" class="sw" data-bact="swatch" data-color="#15803d" title="Hijau gelap" aria-label="Hijau gelap" style="--sw:#15803d" disabled></button><button type="button" class="sw" data-bact="swatch" data-color="#0f766e" title="Toska gelap" aria-label="Toska gelap" style="--sw:#0f766e" disabled></button><button type="button" class="sw" data-bact="swatch" data-color="#0369a1" title="Biru langit gelap" aria-label="Biru langit gelap" style="--sw:#0369a1" disabled></button><button type="button" class="sw" data-bact="swatch" data-color="#1d4ed8" title="Biru gelap" aria-label="Biru gelap" style="--sw:#1d4ed8" disabled></button><button type="button" class="sw" data-bact="swatch" data-color="#4338ca" title="Indigo gelap" aria-label="Indigo gelap" style="--sw:#4338ca" disabled></button><button type="button" class="sw" data-bact="swatch" data-color="#7e22ce" title="Ungu gelap" aria-label="Ungu gelap" style="--sw:#7e22ce" disabled></button><button type="button" class="sw" data-bact="swatch" data-color="#be185d" title="Pink gelap" aria-label="Pink gelap" style="--sw:#be185d" disabled></button><button type="button" class="sw" data-bact="swatch" data-color="#0f172a" title="Abu sangat gelap" aria-label="Abu sangat gelap" style="--sw:#0f172a" disabled></button><button type="button" class="sw" data-bact="swatch" data-color="#7f1d1d" title="Merah sangat gelap" aria-label="Merah sangat gelap" style="--sw:#7f1d1d" disabled></button><button type="button" class="sw" data-bact="swatch" data-color="#7c2d12" title="Oranye sangat gelap" aria-label="Oranye sangat gelap" style="--sw:#7c2d12" disabled></button><button type="button" class="sw" data-bact="swatch" data-color="#78350f" title="Kuning sangat gelap" aria-label="Kuning sangat gelap" style="--sw:#78350f" disabled></button><button type="button" class="sw" data-bact="swatch" data-color="#365314" title="Lime sangat gelap" aria-label="Lime sangat gelap" style="--sw:#365314" disabled></button><button type="button" class="sw" data-bact="swatch" data-color="#14532d" title="Hijau sangat gelap" aria-label="Hijau sangat gelap" style="--sw:#14532d" disabled></button><button type="button" class="sw" data-bact="swatch" data-color="#134e4a" title="Toska sangat gelap" aria-label="Toska sangat gelap" style="--sw:#134e4a" disabled></button><button type="button" class="sw" data-bact="swatch" data-color="#0c4a6e" title="Biru langit sangat gelap" aria-label="Biru langit sangat gelap" style="--sw:#0c4a6e" disabled></button><button type="button" class="sw" data-bact="swatch" data-color="#1e3a8a" title="Biru sangat gelap" aria-label="Biru sangat gelap" style="--sw:#1e3a8a" disabled></button><button type="button" class="sw" data-bact="swatch" data-color="#312e81" title="Indigo sangat gelap" aria-label="Indigo sangat gelap" style="--sw:#312e81" disabled></button><button type="button" class="sw" data-bact="swatch" data-color="#581c87" title="Ungu sangat gelap" aria-label="Ungu sangat gelap" style="--sw:#581c87" disabled></button><button type="button" class="sw" data-bact="swatch" data-color="#831843" title="Pink sangat gelap" aria-label="Pink sangat gelap" style="--sw:#831843" disabled></button></div></details>
    <button type="button" class="btn-mini" data-bact="color-reset" disabled>WARNA ASLI</button>
-   <button type="button" class="btn-mini" data-bact="ext-L">◀ PERLUAS</button>
-   <button type="button" class="btn-mini" data-bact="ext-R">PERLUAS ▶</button>
-   <button type="button" class="btn-mini" data-bact="ext-U">▲ PERLUAS</button>
-   <button type="button" class="btn-mini" data-bact="ext-D">PERLUAS ▼</button>
    <button type="button" class="btn-mini" data-bact="view-reset">RESET LATAR</button>
    <button type="button" class="btn-mini" data-bact="box-reset">RESET KOTAK</button>
   </div>
@@ -2809,7 +2806,7 @@ function selectLogTab(rack) {
   var editing=false, selected=null, drag=null, moved=false, suppressClick=false;
   var layer=document.createElementNS(NS,'g');
   layer.setAttribute('class','mlbl-layer');
-  svg.appendChild(layer);
+  svg.insertBefore(layer, svg.querySelector('g.co') || null);
 
   function fmt(v){ return String(Math.round(v*100)/100); }
   function readCache(){ try{ var o=JSON.parse(localStorage.getItem(CACHE)||'null'); return (o&&typeof o==='object')?o:null; }catch(e){ return null; } }
@@ -2817,6 +2814,17 @@ function selectLogTab(rack) {
   function ref(){ try{ return db.ref(PATH); }catch(e){ return null; } }
   function readLegacy(){ try{ var o=JSON.parse(localStorage.getItem(LEG_CACHE)||'null'); return (o&&typeof o==='object')?o:null; }catch(e){ return null; } }
   function legacyRef(){ try{ return db.ref(LEG_PATH); }catch(e){ return null; } }
+  function deskRef(){ try{ return db.ref('denah3/layout_desk'); }catch(e){ return null; } }
+  function copyFromDesk(){
+    if(!window.confirm('Ganti kartu, tag, dan label di layout HP dengan yang dari layout desktop?')) return;
+    var dr=deskRef(); if(!dr) return;
+    dr.once('value').then(function(sn){
+      var v=sn&&sn.val();
+      if(!v){ window.alert('Layout desktop belum tersimpan.'); return; }
+      state=normalize(v); writeCache(v); renderAll(); save();
+    }, function(){ window.alert('Gagal mengambil layout desktop.'); });
+  }
+  function readDeskLayout(){ try{ var o=JSON.parse(localStorage.getItem('dcsdi-map-layout-v3-desk')||'null'); return (o&&typeof o==='object')?o:null; }catch(e){ return null; } }
   function normalize(o){ o=o||{}; var ex=o.extras; ex=Array.isArray(ex)?ex:(ex?Object.keys(ex).map(function(k){ return ex[k]; }):[]); return { cards:o.cards||{}, sensors:o.sensors||{}, labels:o.labels||{}, extras:ex.filter(function(x){ return typeof x==='string' && x; }) }; }
   function hasOverrides(s){ return Object.keys(s.cards).length+Object.keys(s.sensors).length+Object.keys(s.labels).length+(s.extras||[]).length>0; }
   function cellCenter(r){ return { x:+r.getAttribute('x')+(+r.getAttribute('width'))/2, y:+r.getAttribute('y')+(+r.getAttribute('height'))/2 }; }
@@ -3125,6 +3133,7 @@ function selectLogTab(rack) {
       if(act==='rot' && selected) rotateLabel(selected);
       else if(act==='txt' && selected) editText(selected);
       else if(act==='del' && selected) removeLabel(selected);
+      else if(act==='copy-desk'){ copyFromDesk(); }
       else if(act==='reset'){ document.dispatchEvent(new Event('mapResetRequest')); }
       else if(act==='addsensor') addSensor();
       else if(act==='delsensor') removeSensor();
@@ -3138,7 +3147,8 @@ function selectLogTab(rack) {
   });
   /* ----- muat: cache lokal dulu, lalu Firebase (sumber utama bila ada) ----- */
   function load(){
-    var local=readCache() || (PROF==='desk' ? readLegacy() : null);
+    var cpb=document.getElementById('mapCopyDesk'); if(cpb) cpb.style.display = PROF==='mob' ? '' : 'none';
+    var local=readCache() || (PROF==='desk' ? readLegacy() : readDeskLayout());
     if(local) state=normalize(local);
     renderAll();
     var r=ref();
@@ -3151,7 +3161,7 @@ function selectLogTab(rack) {
         if(v){ state=normalize(v); writeCache(v); renderAll(); }
         else if(!legTried){
           legTried=true;
-          var lr=(PROF==='desk')?legacyRef():null;
+          var lr=(PROF==='desk')?legacyRef():deskRef();
           var done=function(){ if(hasOverrides(state)) save(); };
           if(lr){ lr.once('value').then(function(s){ var lv=s&&s.val(); if(lv && !readCache()){ state=normalize(lv); writeCache(lv); renderAll(); save(); } else done(); }, done); }
           else done();
@@ -3282,14 +3292,6 @@ function selectLogTab(rack) {
     document.documentElement.style.setProperty('--map-ratio', (view.vw/view.vh).toFixed(4));
     window.dispatchEvent(new Event('resize'));
     renderViewHandles();
-  }
-  function extend(dir){
-    var s=EXT;
-    if(dir==='L'){ view.vx-=s; view.vw+=s; }
-    else if(dir==='R'){ view.vw+=s; }
-    else if(dir==='U'){ view.vy-=s; view.vh+=s; }
-    else if(dir==='D'){ view.vh+=s; }
-    applyView(); save();
   }
 
   /* ----- seret rack atau kotak (dari celah maupun dari kotak isi) ----- */
@@ -3506,7 +3508,6 @@ function selectLogTab(rack) {
       else if(a==='minus') addCell(-1);
       else if(a==='name') renameSel();
       else if(a==='del') deleteBox();
-      else if(a.indexOf('ext-')===0) extend(a.slice(4));
       else if(a==='view-reset') resetView();
       else if(a==='box-reset') resetBoxes();
       else if(a==='rot') rotateSel();
