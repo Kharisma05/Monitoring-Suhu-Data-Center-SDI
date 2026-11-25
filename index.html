@@ -563,6 +563,10 @@ html[data-theme="dark"] .map-edit-info{color:#CBD5E1}
 .map-panel.map-editing #mapBoxBar{display:flex;margin-top:8px}
 .map-svg .bsel{stroke:#0EA5E9 !important;stroke-width:7 !important;stroke-dasharray:14 8}
 .map-svg .bh{fill:#0EA5E9;stroke:#FFFFFF;stroke-width:2;cursor:nwse-resize}
+.map-svg .ovl{stroke:#DC2626 !important;stroke-width:6 !important;stroke-dasharray:10 6}
+.map-svg .vhd{fill:#0EA5E9;stroke:#FFFFFF;stroke-width:2;cursor:ew-resize;opacity:.9}
+.map-svg .vhd.vv{cursor:ns-resize}
+.map-panel.map-editing .map-svg .vhd,.map-panel.map-editing .map-svg #mapBoxes *{touch-action:none}
 </style>
 </head>
 <body>
@@ -2794,7 +2798,9 @@ function selectLogTab(rack) {
   var svg=panel?panel.querySelector('.map-svg'):null;
   if(!svg) return;
   var btn=document.getElementById('mapEditBtn'), bar=document.getElementById('mapEditBar');
-  var CACHE='dcsdi-map-layout-v3', PATH='denah3/layout';
+  var PROF=(window.matchMedia&&window.matchMedia('(max-width:640px)').matches)?'mob':'desk';
+  var CACHE='dcsdi-map-layout-v3-'+PROF, PATH='denah3/layout_'+PROF;
+  var LEG_CACHE='dcsdi-map-layout-v3', LEG_PATH='denah3/layout';
   var BASE_SENSORS=['61','77','139'];
   function allSensors(){ return BASE_SENSORS.concat(state.extras||[]); }
   var TAG_W=40, TAG_H=96, CARD_W=270, CARD_H=130, SNAP=35, PAD=12;
@@ -2809,6 +2815,8 @@ function selectLogTab(rack) {
   function readCache(){ try{ var o=JSON.parse(localStorage.getItem(CACHE)||'null'); return (o&&typeof o==='object')?o:null; }catch(e){ return null; } }
   function writeCache(o){ try{ localStorage.setItem(CACHE, JSON.stringify(o)); }catch(e){} }
   function ref(){ try{ return db.ref(PATH); }catch(e){ return null; } }
+  function readLegacy(){ try{ var o=JSON.parse(localStorage.getItem(LEG_CACHE)||'null'); return (o&&typeof o==='object')?o:null; }catch(e){ return null; } }
+  function legacyRef(){ try{ return db.ref(LEG_PATH); }catch(e){ return null; } }
   function normalize(o){ o=o||{}; var ex=o.extras; ex=Array.isArray(ex)?ex:(ex?Object.keys(ex).map(function(k){ return ex[k]; }):[]); return { cards:o.cards||{}, sensors:o.sensors||{}, labels:o.labels||{}, extras:ex.filter(function(x){ return typeof x==='string' && x; }) }; }
   function hasOverrides(s){ return Object.keys(s.cards).length+Object.keys(s.sensors).length+Object.keys(s.labels).length+(s.extras||[]).length>0; }
   function cellCenter(r){ return { x:+r.getAttribute('x')+(+r.getAttribute('width'))/2, y:+r.getAttribute('y')+(+r.getAttribute('height'))/2 }; }
@@ -3130,16 +3138,24 @@ function selectLogTab(rack) {
   });
   /* ----- muat: cache lokal dulu, lalu Firebase (sumber utama bila ada) ----- */
   function load(){
-    var local=readCache();
+    var local=readCache() || (PROF==='desk' ? readLegacy() : null);
     if(local) state=normalize(local);
     renderAll();
     var r=ref();
     if(!r) return;
+    var legTried=false;
     try{
       r.on('value', function(snap){
         if(drag) return;
         var v=snap.val();
         if(v){ state=normalize(v); writeCache(v); renderAll(); }
+        else if(!legTried){
+          legTried=true;
+          var lr=(PROF==='desk')?legacyRef():null;
+          var done=function(){ if(hasOverrides(state)) save(); };
+          if(lr){ lr.once('value').then(function(s){ var lv=s&&s.val(); if(lv && !readCache()){ state=normalize(lv); writeCache(lv); renderAll(); save(); } else done(); }, done); }
+          else done();
+        }
         else if(hasOverrides(state)){ save(); }
       });
     }catch(err){}
@@ -3157,19 +3173,27 @@ function selectLogTab(rack) {
   var svg=panel?panel.querySelector('.map-svg'):null;
   if(!svg) return;
   var frameEl=svg.querySelector('rect.frame');
-  var CACHE='dcsdi-map-boxes-v3', PATH='denah3/boxlayout';
+  var PROF=(window.matchMedia&&window.matchMedia('(max-width:640px)').matches)?'mob':'desk';
+  var CACHE='dcsdi-map-boxes-v3-'+PROF, PATH='denah3/boxlayout_'+PROF;
+  var LEG_CACHE='dcsdi-map-boxes-v3', LEG_PATH='denah3/boxlayout';
+  var OVL={}, OVN=0, noteTimer=null, profChanged=false;
+  var vhg=document.createElementNS(NS,'g'); vhg.setAttribute('id','mapViewHandles');
+  var GAP=4;
   var CELL_W=36, CELL_H=85, PITCH=58.7, ROW_H=100, EXT=150;
   var boxes={}, defBoxes={}, view={}, defView={};
   var selBox=null, clip=null, drag=null, moved=false, boxSuppress=false;
   var g=document.createElementNS(NS,'g');
   g.setAttribute('id','mapBoxes');
   svg.insertBefore(g, frameEl.nextSibling);
+  svg.appendChild(vhg);
 
   function f(v){ return String(Math.round(v*100)/100); }
   function copy(o){ return JSON.parse(JSON.stringify(o)); }
   function readCache(){ try{ var o=JSON.parse(localStorage.getItem(CACHE)||'null'); return (o&&typeof o==='object')?o:null; }catch(e){ return null; } }
   function writeCache(o){ try{ localStorage.setItem(CACHE, JSON.stringify(o)); }catch(e){} }
   function ref(){ try{ return db.ref(PATH); }catch(e){ return null; } }
+  function readLegacy(){ try{ var o=JSON.parse(localStorage.getItem(LEG_CACHE)||'null'); return (o&&typeof o==='object')?o:null; }catch(e){ return null; } }
+  function legacyRef(){ try{ return db.ref(LEG_PATH); }catch(e){ return null; } }
   function newId(c){ var id=(c==='rk'?'r':'k')+Math.random().toString(36).slice(2,7); return boxes[id]?newId(c):id; }
   function isEditing(){ return panel.classList.contains('map-editing'); }
 
@@ -3218,19 +3242,19 @@ function selectLogTab(rack) {
     var b=boxes[id]; if(!b) return;
     if(b.c==='rk'){
       var rkA={'data-key':id,x:f(b.x),y:f(b.y),width:f(b.w),height:f(b.h),rx:17}; if(b.color) rkA.style='fill:'+b.color;
-      g.appendChild(el('rect',rkA,'rk'));
+      g.appendChild(el('rect',rkA,'rk'+ovlCls(id)));
       var left=(b.w-((b.n-1)*PITCH+CELL_W))/2, cy=b.y+(ROW_H-CELL_H)/2;
       for(var k=0;k<b.n;k++){
         var clA={'data-key':id+'-'+k,x:f(b.x+left+k*PITCH),y:f(cy),width:CELL_W,height:CELL_H,rx:3}; if(b.color) clA.style='fill:'+b.color;
         g.appendChild(el('rect',clA,'sl'));
       }
     } else if(b.c==='d'){
-      g.appendChild(el('rect',{'data-key':id,x:f(b.x),y:f(b.y),width:f(b.w),height:f(b.h),rx:8,style:'fill:'+(b.color||b.fill)+';stroke:'+b.stroke},b.cls));
+      g.appendChild(el('rect',{'data-key':id,x:f(b.x),y:f(b.y),width:f(b.w),height:f(b.h),rx:8,style:'fill:'+(b.color||b.fill)+';stroke:'+b.stroke},b.cls+ovlCls(id)));
       g.appendChild(el('path',{d:arcPath(b)},'dw'));
       g.appendChild(el('line',{x1:f(b.x+8),y1:f(b.y+b.h-8),x2:f(b.x+b.w-8),y2:f(b.y+b.h-8)},'dl'));
     } else {
       var bxA={'data-key':id,x:f(b.x),y:f(b.y),width:f(b.w),height:f(b.h),rx:(b.c==='cg'?12:7)}; if(b.color) bxA.style='fill:'+b.color;
-      g.appendChild(el('rect',bxA,b.c));
+      g.appendChild(el('rect',bxA,b.c+ovlCls(id)));
     }
   }
   function applySel(){
@@ -3245,6 +3269,7 @@ function selectLogTab(rack) {
   }
   function renderBoxes(){
     while(g.firstChild) g.removeChild(g.firstChild);
+    computeOverlaps();
     Object.keys(boxes).forEach(drawBox);
     applySel(); updateBoxBar();
     document.dispatchEvent(new Event('mapBoxesChanged'));
@@ -3256,6 +3281,7 @@ function selectLogTab(rack) {
     svg.setAttribute('viewBox',[view.vx,view.vy,view.vw,view.vh].map(f).join(' '));
     document.documentElement.style.setProperty('--map-ratio', (view.vw/view.vh).toFixed(4));
     window.dispatchEvent(new Event('resize'));
+    renderViewHandles();
   }
   function extend(dir){
     var s=EXT;
@@ -3283,6 +3309,11 @@ function selectLogTab(rack) {
       drag={id:selBox, resize:true, p0:pr, w0:bb.w, h0:bb.h};
       moved=false; return;
     }
+    if(t.classList && t.classList.contains('vhd')){
+      /* seret pegangan biru di tepi latar: perluas atau persempit kanvas */
+      drag={view:true, side:t.getAttribute('data-vside'), p0:toSvg(e), v0:copy(view)};
+      moved=false; return;
+    }
     var hit=t.closest?t.closest('#mapBoxes [data-key]'):null;
     if(!hit){ selBox=null; applySel(); updateBoxBar(); return; }
     var key=hit.getAttribute('data-key');
@@ -3301,9 +3332,20 @@ function selectLogTab(rack) {
       moved=true;
       try{ svg.setPointerCapture(e.pointerId); }catch(err){}
     }
+    if(drag.view){ viewDrag(p); return; }
     var b=boxes[drag.id]; if(!b) return;
-    if(drag.resize){ b.w=Math.max(20,Math.round(drag.w0+(p.x-drag.p0.x))); b.h=Math.max(20,Math.round(drag.h0+(p.y-drag.p0.y))); renderBoxes(); return; }
-    b.x=p.x-drag.ox; b.y=p.y-drag.oy;
+    if(drag.resize){
+      var nw=Math.max(20,Math.round(drag.w0+(p.x-drag.p0.x))), nh=Math.max(20,Math.round(drag.h0+(p.y-drag.p0.y)));
+      if(!hits(drag.id,b.x,b.y,nw,nh)){ b.w=nw; b.h=nh; }
+      else if(!hits(drag.id,b.x,b.y,nw,b.h)){ b.w=nw; }
+      else if(!hits(drag.id,b.x,b.y,b.w,nh)){ b.h=nh; }
+      renderBoxes(); return;
+    }
+    /* kotak berhenti di tepi kotak lain; kalau salah satu sumbu masih bebas, kotak tetap bergeser di sumbu itu */
+    var nx=p.x-drag.ox, ny=p.y-drag.oy;
+    if(!hits(drag.id,nx,ny,b.w,b.h)){ b.x=nx; b.y=ny; }
+    else if(!hits(drag.id,nx,b.y,b.w,b.h)){ b.x=nx; }
+    else if(!hits(drag.id,b.x,ny,b.w,b.h)){ b.y=ny; }
     renderBoxes();
   });
   function endBox(){
@@ -3331,29 +3373,87 @@ function selectLogTab(rack) {
     var info=bar.querySelector('.map-edit-info');
     if(info){
       var nama={rk:'rack ('+(b?b.n:0)+' kotak)', d:'pintu', cg:'cage', nr:'kotak'};
-      info.textContent = b
-        ? ('Dipilih: '+(nama[b.c]||'kotak')+' · seret titik biru di pojok untuk ubah ukuran · NAMA KOTAK untuk memberi nama · panah keyboard untuk geser')
-        : 'Klik atau seret rack/kotak untuk memilih · tambah rack atau kotak baru · perluas latar dengan tombol ◀ ▶ ▲ ▼';
+      var lay=(PROF==='mob'?'HP':'desktop');
+      info.textContent = ('Layout '+lay+' · ' + (b
+        ? ('Dipilih: '+(nama[b.c]||'kotak')+' · seret titik biru di pojok untuk ubah ukuran · NAMA KOTAK untuk memberi nama')
+        : 'Klik atau seret rack/kotak untuk memilih · perluas latar: seret pegangan biru di tepi latar'))
+        + (OVN ? ' · ⚠ '+OVN+' pasang kotak saling menimpa (merah): geser salah satu' : '');
     }
+  }
+  /* tumpang tindih: kotak tidak boleh saling menimpa; yang sudah menimpa ditandai merah */
+  function hits(id, x, y, w, h){
+    for(var k in boxes){ if(k===id) continue; var o=boxes[k];
+      if(x < o.x+o.w+GAP && o.x < x+w+GAP && y < o.y+o.h+GAP && o.y < y+h+GAP) return true; }
+    return false;
+  }
+  function computeOverlaps(){
+    OVL={}; OVN=0;
+    var keys=Object.keys(boxes);
+    for(var i=0;i<keys.length;i++) for(var j=i+1;j<keys.length;j++){
+      var a=boxes[keys[i]], b=boxes[keys[j]];
+      if(a.x < b.x+b.w && b.x < a.x+a.w && a.y < b.y+b.h && b.y < a.y+a.h){ OVL[keys[i]]=true; OVL[keys[j]]=true; OVN++; }
+    }
+  }
+  function ovlCls(id){ return OVL[id]?' ovl':''; }
+  function freeSpot(w,h,x,y){
+    if(!hits(null,x,y,w,h)) return {x:x,y:y};
+    for(var r=1;r<=80;r++) for(var i=-r;i<=r;i++) for(var j=-r;j<=r;j++){
+      if(Math.max(Math.abs(i),Math.abs(j))!==r) continue;
+      var cx=x+i*40, cy=y+j*40;
+      if(!hits(null,cx,cy,w,h)) return {x:cx,y:cy};
+    }
+    return {x:x,y:y};
+  }
+  function showNote(msg){
+    var bar=document.getElementById('mapBoxBar'), info=bar&&bar.querySelector('.map-edit-info');
+    if(!info) return;
+    info.textContent=msg; clearTimeout(noteTimer); noteTimer=setTimeout(updateBoxBar, 2200);
+  }
+  /* pegangan biru di keempat tepi latar, dibuat ulang setiap ukuran layar atau kanvas berubah */
+  function renderViewHandles(){
+    while(vhg.firstChild) vhg.removeChild(vhg.firstChild);
+    if(view.vw===undefined || !isEditing() || panel.classList.contains('is-fs')) return;
+    var ctm=svg.getScreenCTM(); if(!ctm || !ctm.a) return;
+    var k=ctm.a, L=Math.round(110/k), T=Math.round(18/k), P=Math.round(6/k);
+    var cx=view.vx+view.vw/2, cy=view.vy+view.vh/2;
+    var hs={
+      R:{x:view.vx+view.vw-T-P, y:cy-L/2, w:T, h:L, c:''},
+      L:{x:view.vx+P, y:cy-L/2, w:T, h:L, c:''},
+      U:{x:cx-L/2, y:view.vy+P, w:L, h:T, c:' vv'},
+      D:{x:cx-L/2, y:view.vy+view.vh-T-P, w:L, h:T, c:' vv'}
+    };
+    Object.keys(hs).forEach(function(s){ var p=hs[s];
+      vhg.appendChild(el('rect',{'data-vside':s,x:f(p.x),y:f(p.y),width:f(p.w),height:f(p.h),rx:f(T/2)},'vhd'+p.c));
+    });
+  }
+  /* seret pegangan: kanvas boleh diperluas bebas, tapi tidak boleh lebih sempit dari garis hitam tepi */
+  function viewDrag(p){
+    var dx=p.x-drag.p0.x, dy=p.y-drag.p0.y, v0=drag.v0, m=40, s=drag.side;
+    var fr=defView.fx+defView.fw, fb=defView.fy+defView.fh;
+    if(s==='R'){ view.vw=Math.max(fr+m-view.vx, v0.vw+dx); }
+    else if(s==='L'){ var nx=Math.min(v0.vx+dx, defView.fx-m); view.vx=nx; view.vw=v0.vx+v0.vw-nx; }
+    else if(s==='D'){ view.vh=Math.max(fb+m-view.vy, v0.vh+dy); }
+    else if(s==='U'){ var ny=Math.min(v0.vy+dy, defView.fy-m); view.vy=ny; view.vh=v0.vy+v0.vh-ny; }
+    applyView();
   }
   function centerView(){ return { x:view.vx+view.vw/2, y:view.vy+view.vh/2 }; }
   function addRack(){
     var v=window.prompt('Jumlah kotak di rack baru (1–40):','5');
     if(v===null) return;
     var n=parseInt(v,10); if(!(n>=1 && n<=40)) return;
-    var c=centerView(), w=n*PITCH+24, id=newId('rk');
-    boxes[id]={c:'rk', x:c.x-w/2, y:c.y-ROW_H/2, w:w, h:ROW_H, n:n};
+    var c=centerView(), w=n*PITCH+24, id=newId('rk'), at=freeSpot(w,ROW_H,c.x-w/2,c.y-ROW_H/2);
+    boxes[id]={c:'rk', x:at.x, y:at.y, w:w, h:ROW_H, n:n};
     selBox=id; renderBoxes(); save();
   }
   function addBox(){
-    var c=centerView(), id=newId('nr');
-    boxes[id]={c:'nr', x:c.x-75, y:c.y-45, w:150, h:90};
+    var c=centerView(), id=newId('nr'), at=freeSpot(150,90,c.x-75,c.y-45);
+    boxes[id]={c:'nr', x:at.x, y:at.y, w:150, h:90};
     selBox=id; renderBoxes(); save();
   }
   function pasteClip(){
     if(!clip) return;
-    var nb=copy(clip), id=newId(nb.c);
-    nb.x=clip.x+40; nb.y=clip.y+40;
+    var nb=copy(clip), id=newId(nb.c), at=freeSpot(nb.w,nb.h,clip.x+40,clip.y+40);
+    nb.x=at.x; nb.y=at.y;
     clip=copy(nb);
     boxes[id]=nb; selBox=id; renderBoxes(); save();
   }
@@ -3366,8 +3466,9 @@ function selectLogTab(rack) {
   }
   function rotateSel(){
     var b=selBox?boxes[selBox]:null; if(!b || b.c==='rk') return;
-    var cx=b.x+b.w/2, cy=b.y+b.h/2, t=b.w;
-    b.w=b.h; b.h=t; b.x=cx-b.w/2; b.y=cy-b.h/2;
+    var cx=b.x+b.w/2, cy=b.y+b.h/2, nw=b.h, nh=b.w, nx=cx-nw/2, ny=cy-nh/2;
+    if(hits(selBox,nx,ny,nw,nh)){ showNote('Tidak bisa diputar: hasilnya akan menimpa kotak lain.'); return; }
+    b.w=nw; b.h=nh; b.x=nx; b.y=ny;
     renderBoxes(); save();
   }
   function flipSel(){
@@ -3439,11 +3540,13 @@ function selectLogTab(rack) {
     else if(k==='Delete' || k==='Backspace'){ e.preventDefault(); deleteBox(); return; }
     else return;
     e.preventDefault();
+    if(hits(selBox,b.x+dx,b.y+dy,b.w,b.h)){ showNote('Tidak bisa digeser: akan menimpa kotak lain.'); return; }
     b.x+=dx; b.y+=dy; renderBoxes(); save();
   });
   /* keluar mode edit: pilihan kotak dilepas */
   new MutationObserver(function(){
-    if(!isEditing()){ selBox=null; applySel(); updateBoxBar(); }
+    renderViewHandles();
+    if(!isEditing()){ selBox=null; applySel(); updateBoxBar(); if(profChanged) location.reload(); }
   }).observe(panel, { attributes:true, attributeFilter:['class'] });
 
   /* ----- simpan & muat: localStorage dan Firebase (denah3/boxlayout) ----- */
@@ -3455,20 +3558,31 @@ function selectLogTab(rack) {
   }
   function apply(){ renderBoxes(); applyView(); }
   function load(){
-    var local=readCache(), hadLocal=!!(local && local.boxes);
+    var local=readCache() || (PROF==='desk' ? readLegacy() : null), hadLocal=!!(local && local.boxes);
     if(hadLocal){ boxes=local.boxes; view=local.view||copy(defView); }
     else { boxes=copy(defBoxes); view=copy(defView); }
     apply();
     var r=ref(); if(!r) return;
+    var legTried=false;
     try{
       r.on('value', function(snap){
         if(drag) return;
         var v=snap.val();
         if(v && v.boxes){ boxes=v.boxes; view=v.view||copy(defView); writeCache(v); apply(); }
+        else if(!legTried){
+          legTried=true;
+          var lr=(PROF==='desk')?legacyRef():null;
+          var done=function(){ if(hadLocal) save(); };
+          if(lr){ lr.once('value').then(function(s){ var lv=s&&s.val(); if(lv && lv.boxes && !readCache()){ boxes=lv.boxes; view=lv.view||copy(defView); writeCache(lv); apply(); save(); } else done(); }, done); }
+          else done();
+        }
         else if(hadLocal){ save(); }
       });
     }catch(err){}
   }
+  try{ window.matchMedia('(max-width:640px)').addEventListener('change', function(){ profChanged=true; if(!isEditing()) location.reload(); }); }catch(e){}
+  window.addEventListener('resize', renderViewHandles);
+  if(window.ResizeObserver) new ResizeObserver(function(){ renderViewHandles(); }).observe(svg);
   readDefaults();
   load();
   updateBoxBar();
