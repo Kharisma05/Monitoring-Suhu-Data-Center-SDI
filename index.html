@@ -63,7 +63,10 @@ button{font-family:inherit}
 .card,.panel{background:var(--card-color);border:1px solid var(--line);border-radius:14px;box-shadow:0 1px 2px rgba(11,27,43,.04);min-width:0;transition:box-shadow .3s,border-color .3s}
 .card{padding:18px 20px;display:flex;flex-direction:column;gap:14px;position:relative}
 .panel{padding:20px;display:flex;flex-direction:column;gap:16px}
-.card.device-offline{opacity:.45;filter:grayscale(1);pointer-events:none}
+.card.device-offline{opacity:.45;filter:grayscale(1)}
+.card.device-offline .records-info{pointer-events:none}
+#card-temp-61,#card-temp-77,#card-temp-139{cursor:pointer}
+.map-panel:not(.map-editing) .map-svg g[id^="mapC"]{cursor:pointer}
 .glow-blue{border-color:#7DD3FC!important;box-shadow:0 0 0 3px rgba(56,189,248,.18),0 8px 24px rgba(3,105,161,.12)!important}
 .glow-green{border-color:#86D5AE!important;box-shadow:0 0 0 3px rgba(16,185,129,.16),0 8px 24px rgba(11,122,75,.10)!important}
 .glow-yellow{border-color:#F3B45B!important;box-shadow:0 0 0 3px rgba(245,158,11,.22),0 8px 24px rgba(154,74,6,.14)!important}
@@ -898,6 +901,18 @@ html[data-theme="dark"] .map-edit-info{color:#CBD5E1}
     </div>
 </div>
 
+<div id="cardHistModal" class="modal-overlay" onclick="if(event.target===this) closeCardHist()">
+  <div class="modal-content" style="width:680px;max-width:95%;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;gap:8px;">
+      <span id="cardHistTitle" style="color:var(--accent-blue);font-size:13px;font-weight:800;"></span>
+      <button type="button" class="btn-mini" onclick="closeCardHist()"><i class="fa-solid fa-xmark"></i> TUTUP</button>
+    </div>
+    <div id="cardHistDay" style="font-size:12px;color:var(--text-dim);margin-bottom:8px;"></div>
+    <div style="height:300px;background:#fff;border-radius:8px;padding:10px;box-sizing:border-box;border:1px solid #E1E8F0;position:relative;"><canvas id="cardHistChart"></canvas></div>
+    <div id="cardHistEmpty" style="display:none;font-size:13px;color:var(--text-dim);margin-top:10px;">Belum ada data hari ini.</div>
+    <div style="font-size:11px;color:var(--text-dim);margin-top:8px;">Satu titik per menit. Data hari sebelumnya dihapus otomatis pukul 00:00 WIB.</div>
+  </div>
+</div>
 <div id="graphModal" class="modal-overlay">
     <div class="modal-content" style="width:700px;max-width:95%;">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:15px;"><span style="color:var(--accent-blue);font-size:13px;font-weight:800;"><i class="fa-solid fa-chart-line"></i> HISTORY CHART (<span id="graphModalTargetRack"></span>)</span><i class="fa-solid fa-xmark" onclick="closeGraphModal()" style="cursor:pointer;color:var(--accent-red);font-size:18px;"></i></div>
@@ -2256,6 +2271,58 @@ function executeDownloadMonthFull(btn) { tarikDataFirebase(`${currentSelectedYea
 function executeDownloadDailyNum(dayStr, btn) { tarikDataFirebase(`${currentSelectedYear}-${currentSelectedMonthNum}-${dayStr}`, `Tanggal_${currentSelectedYear}-${currentSelectedMonthNum}-${dayStr}`, btn); }
 
 let currentGraphFilename = "";
+function wibDayKey(ts){ return new Date((ts||Date.now())+7*3600000).toISOString().slice(0,10); }
+function wibHHMM(ts){ return new Date((ts||Date.now())+7*3600000).toISOString().slice(11,16).replace(':',''); }
+const cardRecLast={};
+function recordCardDaily(id, t){
+  const now=Date.now(); const v=Number(t); if(!isFinite(v)) return;
+  if(cardRecLast[id] && now-cardRecLast[id]<60000) return;
+  cardRecLast[id]=now;
+  db.ref('riwayat_kartu/rack'+id+'/'+wibDayKey(now)+'/'+wibHHMM(now)).set({t:Number(v.toFixed(2)), ts:now});
+}
+function cleanupCardHist(){
+  const today=wibDayKey();
+  db.ref('riwayat_kartu').once('value').then(function(snap){
+    const all=snap.val()||{};
+    Object.keys(all).forEach(function(rk){
+      Object.keys(all[rk]||{}).forEach(function(dk){ if(dk!==today) db.ref('riwayat_kartu/'+rk+'/'+dk).remove(); });
+    });
+  }).catch(function(){});
+}
+let cardHistDay=wibDayKey();
+cleanupCardHist();
+setInterval(function(){ const k=wibDayKey(); if(k!==cardHistDay){ cardHistDay=k; cleanupCardHist(); } }, 30000);
+window.__cardHistChart=null;
+function openCardHist(id){
+  const day=wibDayKey();
+  const info=document.getElementById('cardHistDay'), empty=document.getElementById('cardHistEmpty');
+  document.getElementById('cardHistTitle').innerText='Riwayat suhu hari ini · RACK '+id;
+  info.innerText='Tanggal '+day+' (WIB) · memuat…';
+  empty.style.display='none';
+  document.getElementById('cardHistModal').style.display='flex';
+  if(typeof db==='undefined' || typeof Chart==='undefined'){
+    info.innerText='Tanggal '+day+' (WIB)';
+    empty.innerText='Firebase atau grafik belum termuat. Periksa koneksi internet lalu buka ulang halaman.';
+    empty.style.display='block'; return;
+  }
+  db.ref('riwayat_kartu/rack'+id+'/'+day).once('value').then(function(snap){
+    const v=snap.val()||{}; const keys=Object.keys(v).sort();
+    const labels=keys.map(function(k){ return k.slice(0,2)+':'+k.slice(2,4); });
+    const data=keys.map(function(k){ return Number(v[k].t); });
+    info.innerText='Tanggal '+day+' (WIB) · '+keys.length+' titik'+(keys.length ? ' · terakhir '+labels[labels.length-1]+' · '+data[data.length-1].toFixed(1)+' °C' : '');
+    if(window.__cardHistChart) window.__cardHistChart.destroy();
+    window.__cardHistChart=new Chart(document.getElementById('cardHistChart').getContext('2d'), {type:'line',
+      data:{labels:labels, datasets:[{label:'Suhu (°C)', data:data, borderColor:'#0EA5E9', backgroundColor:'rgba(14,165,233,.12)', fill:true, tension:.25, pointRadius: keys.length<60 ? 3 : 0, pointBackgroundColor:'#0EA5E9', borderWidth:2}]},
+      options:{responsive:true, maintainAspectRatio:false, animation:false, plugins:{legend:{display:false}}, scales:{x:{ticks:{maxTicksLimit:8}}, y:{title:{display:true, text:'°C'}}}}});
+    empty.innerText='Belum ada data hari ini. Pencatatan berjalan saat dashboard menerima data suhu, satu titik per menit.';
+    empty.style.display = keys.length ? 'none' : 'block';
+  }).catch(function(err){
+    info.innerText='Tanggal '+day+' (WIB)';
+    empty.innerText='Gagal memuat riwayat: '+((err&&err.message)||err);
+    empty.style.display='block';
+  });
+}
+function closeCardHist(){ document.getElementById('cardHistModal').style.display='none'; }
 function openGraphModal(rack) {
     targetRackGraph = rack;
     document.getElementById('graphModalTargetRack').innerText = rack.toUpperCase().replace('_',' ');
@@ -2343,7 +2410,7 @@ db.ref('live_data').on('value', (snap) => {
                 lastFakeHumiUpdate = Date.now();
             }
             document.getElementById('hum1').innerText = lastFakeHumi61.toFixed(1);
-            updateAnalytic('61', t, history61);
+            updateAnalytic('61', t, history61); recordCardDaily('61', t);
             updateRecordIfNeeded('61', t);
             pushChartPoint('61', t);
             saveHist('hist61', history61);
@@ -2359,7 +2426,7 @@ db.ref('live_data').on('value', (snap) => {
             lastUpdateR77 = Date.now();
             document.getElementById('val77').innerText = t.toFixed(1);
             document.getElementById('hum77').innerText = h.toFixed(1);
-            updateAnalytic('77', t, history77);
+            updateAnalytic('77', t, history77); recordCardDaily('77', t);
             updateRecordIfNeeded('77', t);
             pushChartPoint('77', t);
             saveHist('hist77', history77);
@@ -2373,7 +2440,7 @@ db.ref('live_data').on('value', (snap) => {
         if (!isNaN(t)) {
             document.getElementById('val2').innerText = t.toFixed(1);
             document.getElementById('hum2').innerText = Number(d.kelembaban || 0).toFixed(1);
-            updateAnalytic('139', t, history139);
+            updateAnalytic('139', t, history139); recordCardDaily('139', t);
             updateRecordIfNeeded('139', t);
             pushChartPoint('139', t);
             saveHist('hist139', history139);
@@ -3618,6 +3685,18 @@ function selectLogTab(rack) {
   load();
   updateBoxBar();
 })();
+</script>
+<script>
+document.addEventListener('click', function(e){
+  if(!e.target || !e.target.closest) return;
+  /* kartu suhu di baris atas (card-temp-61) dan kartu suhu di dalam peta (g#mapC61) */
+  var c=e.target.closest('[id^="card-temp-"], g[id^="mapC"]');
+  if(!c) return;
+  if(document.querySelector('.map-panel.map-editing')) return;
+  var id = c.id.indexOf('card-temp-')===0 ? c.id.slice('card-temp-'.length) : c.id.slice('mapC'.length);
+  if(['61','77','139'].indexOf(id) < 0) return;
+  if(typeof openCardHist==='function') openCardHist(id);
+});
 </script>
 </body>
 </html>
