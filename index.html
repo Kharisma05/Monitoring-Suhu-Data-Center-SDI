@@ -909,8 +909,9 @@ html[data-theme="dark"] .map-edit-info{color:#CBD5E1}
     </div>
     <div id="cardHistDay" style="font-size:12px;color:var(--text-dim);margin-bottom:8px;"></div>
     <div style="height:300px;background:#fff;border-radius:8px;padding:10px;box-sizing:border-box;border:1px solid #E1E8F0;position:relative;"><canvas id="cardHistChart"></canvas></div>
+    <div id="cardHistDetail" style="margin-top:10px;font-size:12px;color:var(--text-dim);background:#fff;border:1px solid #E1E8F0;border-radius:8px;padding:8px 10px;max-height:150px;overflow:auto;white-space:pre;font-family:ui-monospace,Menlo,Consolas,monospace;">Sentuh atau arahkan kursor ke titik grafik untuk melihat rincian per menit dan per detik.</div>
     <div id="cardHistEmpty" style="display:none;font-size:13px;color:var(--text-dim);margin-top:10px;">Belum ada data hari ini.</div>
-    <div style="font-size:11px;color:var(--text-dim);margin-top:8px;">Satu titik per menit. Data hari sebelumnya dihapus otomatis pukul 00:00 WIB.</div>
+    <div style="font-size:11px;color:var(--text-dim);margin-top:8px;">Satu titik per jam, diambil dari data thermal trend hari ini (mulai 00:00 WIB).</div>
   </div>
 </div>
 <div id="graphModal" class="modal-overlay">
@@ -2272,14 +2273,8 @@ function executeDownloadDailyNum(dayStr, btn) { tarikDataFirebase(`${currentSele
 
 let currentGraphFilename = "";
 function wibDayKey(ts){ return new Date((ts||Date.now())+7*3600000).toISOString().slice(0,10); }
-function wibHHMM(ts){ return new Date((ts||Date.now())+7*3600000).toISOString().slice(11,16).replace(':',''); }
-const cardRecLast={};
-function recordCardDaily(id, t){
-  const now=Date.now(); const v=Number(t); if(!isFinite(v)) return;
-  if(cardRecLast[id] && now-cardRecLast[id]<60000) return;
-  cardRecLast[id]=now;
-  db.ref('riwayat_kartu/rack'+id+'/'+wibDayKey(now)+'/'+wibHHMM(now)).set({t:Number(v.toFixed(2)), ts:now});
-}
+// Grafik harian kartu membaca history_suhu (sumber thermal trend).
+// Tidak ada lagi penulisan riwayat_kartu; cleanupCardHist hanya membersihkan sisa data lama.
 function cleanupCardHist(){
   const today=wibDayKey();
   db.ref('riwayat_kartu').once('value').then(function(snap){
@@ -2305,22 +2300,49 @@ function openCardHist(id){
     empty.innerText='Firebase atau grafik belum termuat. Periksa koneksi internet lalu buka ulang halaman.';
     empty.style.display='block'; return;
   }
-  db.ref('riwayat_kartu/rack'+id+'/'+day).once('value').then(function(snap){
-    const v=snap.val()||{}; const keys=Object.keys(v).sort();
-    const labels=keys.map(function(k){ return k.slice(0,2)+':'+k.slice(2,4); });
-    const data=keys.map(function(k){ return Number(v[k].t); });
-    info.innerText='Tanggal '+day+' (WIB) · '+keys.length+' titik'+(keys.length ? ' · terakhir '+labels[labels.length-1]+' · '+data[data.length-1].toFixed(1)+' °C' : '');
+  /* sumber sama dengan thermal trend: history_suhu/rack_<id>, dibatasi tanggal hari ini (WIB) */
+  db.ref('history_suhu/rack_'+id).orderByKey().startAt(day).endAt(day+'').once('value').then(function(snap){
+    /* 1 titik per jam: bacaan pertama di setiap jam; baris status memakai bacaan terakhir */
+    const byHour={}, hourOrder=[], detail={}; let lastHM=null, lastT=null;
+    snap.forEach(function(child){
+      const p=parseHistoryKey(child.key); if(!p) return;
+      const raw=child.val(); const t=Number(raw!==null && typeof raw==='object' ? raw.suhu : raw);
+      if(!isValidRecordTemp(t)) return;
+      const hm=p.stamp.slice(0,5), hh=hm.slice(0,2);
+      lastHM=hm; lastT=t;
+      if(!(hh in byHour)){ hourOrder.push(hh); byHour[hh]=t; detail[hh]=[]; }
+      detail[hh].push({stamp:p.stamp, t:t}); /* semua bacaan di jam itu, untuk rincian saat grafik disentuh */
+    });
+    window.__cardHistDetail=detail; window.__cardHistHours=hourOrder; window.__cardHistSel=null;
+    const dBox=document.getElementById('cardHistDetail');
+    if(dBox) dBox.textContent='Sentuh atau arahkan kursor ke titik grafik untuk melihat rincian per menit dan per detik.';
+    const labels=hourOrder.map(function(hh){ return hh+':00'; });
+    const data=hourOrder.map(function(hh){ return byHour[hh]; });
+    const n=data.length;
+    info.innerText='Tanggal '+day+' (WIB) · '+n+' titik'+(lastHM ? ' · terakhir '+lastHM+' · '+lastT.toFixed(1)+' °C' : '');
     if(window.__cardHistChart) window.__cardHistChart.destroy();
     window.__cardHistChart=new Chart(document.getElementById('cardHistChart').getContext('2d'), {type:'line',
-      data:{labels:labels, datasets:[{label:'Suhu (°C)', data:data, borderColor:'#0EA5E9', backgroundColor:'rgba(14,165,233,.12)', fill:true, tension:.25, pointRadius: keys.length<60 ? 3 : 0, pointBackgroundColor:'#0EA5E9', borderWidth:2}]},
-      options:{responsive:true, maintainAspectRatio:false, animation:false, plugins:{legend:{display:false}}, scales:{x:{ticks:{maxTicksLimit:8}}, y:{title:{display:true, text:'°C'}}}}});
-    empty.innerText='Belum ada data hari ini. Pencatatan berjalan saat dashboard menerima data suhu, satu titik per menit.';
-    empty.style.display = keys.length ? 'none' : 'block';
+      data:{labels:labels, datasets:[{label:'Suhu (°C)', data:data, borderColor:'#0EA5E9', backgroundColor:'rgba(14,165,233,.12)', fill:true, tension:.25, pointRadius: n<60 ? 3 : 0, pointBackgroundColor:'#0EA5E9', borderWidth:2}]},
+      options:{responsive:true, maintainAspectRatio:false, animation:false, interaction:{mode:'index', intersect:false},
+        onHover:function(e, els){ if(els && els.length) showHourDetail(els[0].index); },
+        onClick:function(e, els){ if(els && els.length) showHourDetail(els[0].index); },
+        plugins:{legend:{display:false}}, scales:{x:{ticks:{maxTicksLimit:8}}, y:{title:{display:true, text:'°C'}}}}});
+    empty.innerText='Belum ada data suhu hari ini. Grafik ini mengambil data thermal trend mulai 00:00 WIB.';
+    empty.style.display = n ? 'none' : 'block';
   }).catch(function(err){
     info.innerText='Tanggal '+day+' (WIB)';
     empty.innerText='Gagal memuat riwayat: '+((err&&err.message)||err);
     empty.style.display='block';
   });
+}
+function showHourDetail(idx){
+  const box=document.getElementById('cardHistDetail'); if(!box) return;
+  if(window.__cardHistSel===idx) return; window.__cardHistSel=idx;
+  const hh=(window.__cardHistHours||[])[idx];
+  const list=(hh!==undefined && window.__cardHistDetail) ? window.__cardHistDetail[hh] : null;
+  if(!list || !list.length){ box.textContent='Tidak ada bacaan pada titik ini.'; return; }
+  box.textContent='Rincian jam '+hh+':00 WIB · '+list.length+' bacaan\n'+list.map(function(x){ return x.stamp+'   '+x.t.toFixed(2)+' °C'; }).join('\n');
+  box.scrollTop=0;
 }
 function closeCardHist(){ document.getElementById('cardHistModal').style.display='none'; }
 function openGraphModal(rack) {
@@ -2410,7 +2432,7 @@ db.ref('live_data').on('value', (snap) => {
                 lastFakeHumiUpdate = Date.now();
             }
             document.getElementById('hum1').innerText = lastFakeHumi61.toFixed(1);
-            updateAnalytic('61', t, history61); recordCardDaily('61', t);
+            updateAnalytic('61', t, history61);
             updateRecordIfNeeded('61', t);
             pushChartPoint('61', t);
             saveHist('hist61', history61);
@@ -2426,7 +2448,7 @@ db.ref('live_data').on('value', (snap) => {
             lastUpdateR77 = Date.now();
             document.getElementById('val77').innerText = t.toFixed(1);
             document.getElementById('hum77').innerText = h.toFixed(1);
-            updateAnalytic('77', t, history77); recordCardDaily('77', t);
+            updateAnalytic('77', t, history77);
             updateRecordIfNeeded('77', t);
             pushChartPoint('77', t);
             saveHist('hist77', history77);
@@ -2440,7 +2462,7 @@ db.ref('live_data').on('value', (snap) => {
         if (!isNaN(t)) {
             document.getElementById('val2').innerText = t.toFixed(1);
             document.getElementById('hum2').innerText = Number(d.kelembaban || 0).toFixed(1);
-            updateAnalytic('139', t, history139); recordCardDaily('139', t);
+            updateAnalytic('139', t, history139);
             updateRecordIfNeeded('139', t);
             pushChartPoint('139', t);
             saveHist('hist139', history139);
